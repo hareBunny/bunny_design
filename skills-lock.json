@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "skills": {
+    "Frontend Responsive Design Standards": {
+      "source": "am-will/codex-skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-responsive-ui/SKILL.md",
+      "computedHash": "7b16cf170e7701494d246e48cfb968ed8ef11cd3ce83c99ed6b914b1ca302e07"
+    },
+    "best-practices": {
+      "source": "addyosmani/web-quality-skills",
+      "sourceType": "github",
+      "skillPath": "skills/best-practices/SKILL.md",
+      "computedHash": "2de17c9838c439f6ed12b9963d303e058cd46f1ba0c2700814fe4762e0e307b9"
+    },
+    "canvas-component-composability": {
+      "source": "drupal-canvas/skills",
+      "sourceType": "github",
+      "skillPath": "skills/canvas-component-composability/SKILL.md",
+      "computedHash": "ecfd802151d7c3ac340f188e61fc7ddbbec4dec8745bc34e96ed11a0bb7ddef6"
+    },
+    "canvas-design-decomposition": {
+      "source": "drupal-canvas/skills",
+      "sourceType": "github",
+      "skillPath": "skills/canvas-design-decomposition/SKILL.md",
+      "computedHash": "8ff0b9fda72c473104fb0de518efbc18337cbf52f85f389cce7d11da07a74c10"
+    },
+    "electron-forge": {
+      "source": "hairyf/skills",
+      "sourceType": "github",
+      "skillPath": "skills/electron-forge/SKILL.md",
+      "computedHash": "3374a4d6bb73403841b437cc546efa1baa952034c0a8f2666fa260d52e97e166"
+    },
+    "figma-use": {
+      "source": "nexu-io/open-design",
+      "sourceType": "github",
+      "skillPath": "skills/figma-use/SKILL.md",
+      "computedHash": "c758d069679db2ded9b4921ccf00d89c28db0c2a828eb742d4a4020081f87632"
+    },
+    "frontend-design-system": {
+      "source": "akillness/oh-my-skills",
+      "sourceType": "github",
+      "skillPath": ".agent-skills/frontend-design-system/SKILL.md",
+      "computedHash": "2319d565559f72539de9ae46514c728eda93fb167d3fb32471f6e23207f8d52f"
+    },
+    "quality-code": {
+      "source": "rhyssullivan/skills",
+      "sourceType": "github",
+      "skillPath": "skills/quality-code/SKILL.md",
+      "computedHash": "327fc074c121d259ff0c8d7a031dd4f63877d490169cf8d91a3bb30f4a017311"
+    },
+    "tailwind-v4": {
+      "source": "existential-birds/beagle",
+      "sourceType": "github",
+      "skillPath": "plugins/beagle-react/skills/tailwind-v4/SKILL.md",
+      "computedHash": "0ca68c159f03933cedc4063f60b27a508562e54c237d858fe3047aab8bcb7b59"
+    },
+    "ui-component-patterns": {
+      "source": "akillness/oh-my-skills",
+      "sourceType": "github",
+      "skillPath": ".agent-skills/ui-component-patterns/SKILL.md",
+      "computedHash": "0250ee5c62669b7629644d0773608c7f0534ca336d01013c6ec748e9fa5f4c34"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/composition-patterns/SKILL.md",
+      "computedHash": "f98931159fa9c7fed043bcd18a891a46dcf89ababa38df13a4c5b7b30dc0ce07"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-best-practices/SKILL.md",
+      "computedHash": "3219a1944e404ffc14d1d9d6aef6dd2e3855b81387ee0a044ccbfe14d34c2357"
+    },
+    "vercel-react-view-transitions": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/react-view-transitions/SKILL.md",
+      "computedHash": "4fea9144f604256d0a21faaea904b7e205e7676e316721ba5fdd68c2600c7d42"
+    },
+    "web-accessibility": {
+      "source": "akillness/oh-my-skills",
+      "sourceType": "github",
+      "skillPath": ".agent-skills/web-accessibility/SKILL.md",
+      "computedHash": "4bb4cc9a3b6577d2dfc0604cf2236b94c91e3d3e336cf6626b1165706200387e"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/web-design-guidelines/SKILL.md",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    }
+  }
+}
