@@ -19,6 +19,8 @@ pids
 # Dependency directories
 node_modules/
 jspm_packages/
+.miaomaignore
+.dependencygraph
 
 # TypeScript cache
 *.tsbuildinfo
@@ -45,8 +47,10 @@ coverage
 .webpack/
 .vite/
 out/
+dist/
 
 /temp
+/tmp
 **/*/docker/postgresql_data
 **/*/generated
 

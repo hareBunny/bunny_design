@@ -13,12 +13,27 @@ if (started) {
 }
 
 const createWindow = () => {
+    const preloadPath = path.join(__dirname, 'preload.js');
+
     const mainWindow = new BrowserWindow({
-        width: 1200,
+        width: 1280,
         height: 800,
+        minWidth: 1280,
+        minHeight: 720,
+        frame: false,
+        titleBarStyle: 'hidden',
+        autoHideMenuBar: true,
+        backgroundColor: '#00000000',
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js')
-        }
+            preload: preloadPath
+        },
+        trafficLightPosition: {
+            x: 20,
+            y: 16
+        },
+        vibrancy: 'sidebar',
+        visualEffectState: 'active',
+        transparent: true
     });
 
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {

@@ -9,3 +9,8 @@ interface Window {
         ping: () => Promise<{ success: boolean }>;
     };
 }
+
+declare module '*.png' {
+    const src: string;
+    export default src;
+}

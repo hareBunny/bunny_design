@@ -6,18 +6,11 @@
 
 import { createBrowserRouter } from 'react-router-dom';
 
-const HomePage = () => {
-    return (
-        <main style={{ padding: 24 }}>
-            <h1>妙码设计 AI 平台</h1>
-            <p>桌面端基础壳已就绪。</p>
-        </main>
-    );
-};
+import { MiaomaEditorScreen } from '../pages/MiaomaEditorScreen';
 
 export const router = createBrowserRouter([
     {
         path: '/',
-        element: <HomePage />
+        element: <MiaomaEditorScreen />
     }
 ]);
