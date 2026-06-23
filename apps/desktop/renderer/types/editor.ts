@@ -15,6 +15,18 @@ export type EditorIconButtonConfig = {
     compact?: boolean;
 };
 
+export type InspectorValueInputProps = {
+    value: string;
+    ariaLabel: string;
+    label?: string;
+    startIcon?: LucideIcon;
+    swatch?: string;
+    unit?: string;
+    size?: 'default' | 'compact';
+    className?: string;
+    inputClassName?: string;
+};
+
 export type LayerRow = {
     id: string;
     label: string;
@@ -23,15 +35,6 @@ export type LayerRow = {
     expanded?: boolean;
     selected?: boolean;
     visible?: boolean;
-};
-
-export type InspectorControl = {
-    label?: string;
-    value: string;
-    icon?: LucideIcon;
-    swatch?: string;
-    checked?: boolean;
-    wide?: boolean;
 };
 
 export type DesignMetrics = {

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
+import { LayoutConfigurationContent } from '../renderer/components/editor/FlexLayoutSection';
 import { MiaomaEditorScreen } from '../renderer/pages/MiaomaEditorScreen';
 
 const rendererFile = (relativePath: string) =>
@@ -79,25 +80,40 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('Miaoma Editor Recr');
         expect(markup).toContain('Create Component');
         expect(markup).toContain('Context');
+        expect(markup).toContain('editor-inspector-body');
+        expect(markup).toContain('overflow-y-auto');
         expect(markup).toContain('Alignment');
         expect(markup.match(/aria-label="Align /g)).toHaveLength(6);
         expect(markup).toContain('Position');
         expect(markup).toContain('>X</');
         expect(markup).toContain('>Y</');
         expect(markup).toContain('>R</');
-        expect(markup).toContain('Layout');
+        expect(markup).toContain('Flex Layout');
+        expect(markup).toContain('aria-label="Grid layout"');
+        expect(markup).toContain('aria-label="Vertical layout"');
+        expect(markup).toContain('aria-pressed="true"');
+        expect(markup).toContain('Alignment');
+        expect(markup).toContain('Gap');
+        expect(markup).toContain('Space Between');
+        expect(markup).toContain('Space Around');
+        expect(markup).toContain('Padding');
+        expect(markup).toContain('Dimensions');
         expect(markup).toContain('>W</');
-        expect(markup).toContain('1920');
+        expect(markup).toContain('404');
         expect(markup).toContain('>H</');
         expect(markup).toContain('1205');
         expect(markup).toContain('Fill Width');
         expect(markup).toContain('Fill Height');
+        expect(markup).toContain('Hug Width');
+        expect(markup).toContain('Hug Height');
         expect(markup).toContain('Clip Content');
+        expect(markup).not.toContain('1920');
         expect(markup).toContain('Appearance');
-        expect(markup).toContain('% 100');
+        expect(markup).toContain('aria-label="Opacity"');
+        expect(markup).toContain('aria-label="Corner radius"');
         expect(markup).toContain('Fill');
         expect(markup).toContain('#f3f4f6');
-        expect(markup).toContain('100%');
+        expect(markup).toContain('aria-label="Fill opacity"');
         expect(markup).toContain('Stroke');
         expect(markup).toContain('Effects');
         expect(markup).toContain('2x');
@@ -165,6 +181,10 @@ describe('MiaomaEditorScreen', () => {
             'components/editor/LeftSidebar.tsx',
             'components/editor/CanvasStage.tsx',
             'components/editor/RightInspector.tsx',
+            'components/editor/FlexLayoutSection.tsx',
+            'components/editor/FillControl.tsx',
+            'components/editor/InspectorCheckbox.tsx',
+            'components/editor/InspectorValueInput.tsx',
             'constants/editor.ts',
             'types/editor.ts',
             'utils/classNames.ts'
@@ -173,6 +193,150 @@ describe('MiaomaEditorScreen', () => {
                 true
             );
         });
+    });
+
+    it('reuses the inspector value input primitive for fixed icon-value-unit controls', () => {
+        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const rightInspectorSource = rendererSource(
+            'components/editor/RightInspector.tsx'
+        );
+        const valueInputSource = rendererSource(
+            'components/editor/InspectorValueInput.tsx'
+        );
+
+        expect(rightInspectorSource).toContain('InspectorValueInput');
+        expect(valueInputSource).toContain('startIcon');
+        expect(valueInputSource).toContain('unit');
+        expect(
+            markup.match(/editor-inspector-value-input/g)?.length ?? 0
+        ).toBeGreaterThanOrEqual(8);
+    });
+
+    it('keeps Fill as a dedicated inspector control instead of overloading the value input primitive', () => {
+        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const rightInspectorSource = rendererSource(
+            'components/editor/RightInspector.tsx'
+        );
+        const fillControlSource = rendererSource(
+            'components/editor/FillControl.tsx'
+        );
+
+        expect(rightInspectorSource).toContain('FillControl');
+        expect(fillControlSource).not.toContain('InspectorValueInput');
+        expect(markup).toContain('editor-fill-control');
+        expect(markup).toContain('editor-fill-color-field');
+        expect(markup).toContain('aria-label="Fill color"');
+        expect(markup).toContain('aria-label="Fill opacity"');
+        expect(fillControlSource).toContain('w-[221px]');
+        expect(fillControlSource).toContain('w-[144px]');
+        expect(fillControlSource).toContain('w-[73px]');
+        expect(fillControlSource).not.toContain('justify-between gap-2');
+        expect(fillControlSource).not.toContain(
+            'editor-fill-opacity-field flex h-8 min-w-0 flex-1'
+        );
+    });
+
+    it('makes the flex layout segmented control switchable by click state', () => {
+        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const flexLayoutSource = rendererSource(
+            'components/editor/FlexLayoutSection.tsx'
+        );
+
+        expect(markup).toContain('aria-label="Vertical layout"');
+        expect(markup).toContain('aria-pressed="true"');
+        expect(flexLayoutSource).toContain('useState<LayoutMode>');
+        expect(flexLayoutSource).toContain('onClick={() => selectLayoutMode');
+        expect(flexLayoutSource).toMatch(
+            /aria-pressed=\{\s*activeMode === mode \? 'true' : 'false'\s*\}/
+        );
+    });
+
+    it('switches the layout configuration content by selected segment', () => {
+        const gridMarkup = renderToStaticMarkup(
+            <LayoutConfigurationContent activeMode="grid" />
+        );
+        const verticalMarkup = renderToStaticMarkup(
+            <LayoutConfigurationContent activeMode="vertical" />
+        );
+        const rightMarkup = renderToStaticMarkup(
+            <LayoutConfigurationContent activeMode="right" />
+        );
+        const flexLayoutSource = rendererSource(
+            'components/editor/FlexLayoutSection.tsx'
+        );
+
+        expect(gridMarkup).toContain('editor-static-layout-controls');
+        expect(gridMarkup).toContain('1920');
+        expect(gridMarkup).toContain('Fill Width');
+        expect(gridMarkup).toContain('Fill Height');
+        expect(gridMarkup).not.toContain('Padding');
+        expect(gridMarkup).not.toContain('Space Between');
+
+        [verticalMarkup, rightMarkup].forEach((markup) => {
+            expect(markup).toContain('editor-flex-layout-controls');
+            expect(markup).toContain('Padding');
+            expect(markup).toContain('Space Between');
+            expect(markup).toContain('Hug Width');
+            expect(markup).toContain('404');
+            expect(markup).not.toContain('1920');
+        });
+
+        expect(flexLayoutSource).toContain(
+            '<LayoutConfigurationContent activeMode={activeMode} />'
+        );
+    });
+
+    it('matches the Layout Section header action and checkbox column geometry', () => {
+        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const flexLayoutSource = rendererSource(
+            'components/editor/FlexLayoutSection.tsx'
+        );
+
+        expect(markup).toContain('aria-label="Switch to layout"');
+        expect(flexLayoutSource).toContain('LayoutDashboard');
+        expect(flexLayoutSource).toContain('toggleLayoutMode');
+        expect(flexLayoutSource).toContain('useState<FlexDirectionMode>');
+        expect(flexLayoutSource).toContain('setLastFlexMode(mode)');
+        expect(flexLayoutSource).toContain('setActiveMode(lastFlexMode)');
+        expect(flexLayoutSource).toContain('onClick={toggleLayoutMode}');
+        expect(flexLayoutSource).toContain('grid-cols-[minmax(0,1fr)_116px]');
+        expect(flexLayoutSource).toContain('size={14}');
+        expect(flexLayoutSource).not.toContain('<Plus');
+        expect(flexLayoutSource).not.toContain('Add layout setting');
+        expect(flexLayoutSource).not.toMatch(
+            /flex h-\[[^\]]+px\] items-center justify-between gap-5/
+        );
+    });
+
+    it('matches the latest Alignment and Gap Row matrix behavior', () => {
+        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const flexLayoutSource = rendererSource(
+            'components/editor/FlexLayoutSection.tsx'
+        );
+
+        expect(markup.match(/editor-alignment-cell/g)).toHaveLength(9);
+        expect(markup).toContain('data-preview-mode="fixed"');
+        expect(markup).toContain('aria-label="Alignment top left"');
+        expect(markup).toContain('aria-label="Alignment middle center"');
+        expect(markup).toContain('aria-label="Fixed gap mode"');
+        expect(markup).toContain('aria-label="Space between gap mode"');
+        expect(markup).toContain('aria-label="Space around gap mode"');
+        expect(flexLayoutSource).toContain('h-[69px] w-[100px]');
+        expect(flexLayoutSource).toContain('grid-rows-[23px_23px_23px]');
+        expect(flexLayoutSource).toContain('grid-cols-[23px_23px_23px]');
+        expect(flexLayoutSource).toContain('hover:bg-[#eeeeee]');
+        expect(flexLayoutSource).toContain("activeMode === 'right'");
+        expect(flexLayoutSource).toContain("? 'row' : 'column'");
+        expect(flexLayoutSource).toContain('cell.row === activeRow');
+        expect(flexLayoutSource).toContain('cell.column === activeColumn');
+        expect(flexLayoutSource).toContain('h-4 w-1 rounded-full');
+        expect(flexLayoutSource).toContain('h-1 w-4 rounded-full');
+        expect(flexLayoutSource).not.toContain('hover:border');
+        expect(flexLayoutSource).not.toContain('hover:shadow');
+        expect(flexLayoutSource).not.toContain('absolute flex w-[60px]');
+        expect(flexLayoutSource).toContain(
+            'onSelect={() => setActiveGapMode(option.mode)}'
+        );
     });
 
     it('uses the Tailwind v4 CSS-first editor styling path', () => {
