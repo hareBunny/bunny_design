@@ -7,6 +7,7 @@
 import type { LucideIcon } from 'lucide-react';
 
 export type LayerDepth = 0 | 1 | 2;
+export type SidebarTab = 'agent' | 'layers';
 
 export type EditorIconButtonConfig = {
     icon: LucideIcon;
@@ -36,6 +37,31 @@ export type LayerRow = {
     selected?: boolean;
     visible?: boolean;
 };
+
+export type SidebarTabConfig = {
+    id: SidebarTab;
+    label: string;
+};
+
+export type AgentTimelineItem =
+    | {
+          id: string;
+          type: 'pill';
+          text: string;
+          height?: 24 | 28;
+      }
+    | {
+          id: string;
+          type: 'status';
+          label: string;
+      }
+    | {
+          id: string;
+          type: 'summary';
+          agent: string;
+          text: string;
+          height: 146 | 157;
+      };
 
 export type DesignMetrics = {
     frameId: string;

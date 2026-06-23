@@ -19,11 +19,12 @@ const createWindow = () => {
         width: 1280,
         height: 800,
         minWidth: 1280,
-        minHeight: 720,
+        minHeight: 800,
         frame: false,
         titleBarStyle: 'hidden',
         autoHideMenuBar: true,
-        backgroundColor: '#00000000',
+        // backgroundColor: '#feffffff',
+        // opacity: 0.99,
         webPreferences: {
             preload: preloadPath
         },

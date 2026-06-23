@@ -10,6 +10,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { LayoutConfigurationContent } from '../renderer/components/editor/FlexLayoutSection';
+import { SidebarContent } from '../renderer/components/editor/LeftSidebar';
 import { MiaomaEditorScreen } from '../renderer/pages/MiaomaEditorScreen';
 
 const rendererFile = (relativePath: string) =>
@@ -55,7 +56,9 @@ describe('MiaomaEditorScreen', () => {
     });
 
     it('keeps the left layer tree hierarchy from the Pencil frame', () => {
-        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const markup = renderToStaticMarkup(
+            <SidebarContent activeTab="layers" />
+        );
 
         expect(markup).toContain('Content');
         expect(markup).toContain('Right Divider');
@@ -69,6 +72,76 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('data-depth="0"');
         expect(markup).toContain('data-depth="1"');
         expect(markup).toContain('data-selected="true"');
+    });
+
+    it('renders the Sidebar Surface Agent frame as the default left sidebar tab', () => {
+        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const leftSidebarSource = rendererSource(
+            'components/editor/LeftSidebar.tsx'
+        );
+
+        expect(markup).toContain('aria-label="Sidebar surface"');
+        expect(markup).toContain('aria-selected="true"');
+        expect(markup).toContain('editor-agent-panel');
+        expect(markup).toContain('妙码学院 crm 系统');
+        expect(markup).toContain(
+            '正在检查 /Users/heyi/Downloads/miaoma-crm.pen'
+        );
+        expect(markup).toContain('Checked guidelines');
+        expect(markup).toContain('Read variables');
+        expect(markup).toContain('Read objects');
+        expect(markup).toContain('Set variables');
+        expect(markup).toContain('项激活后，请优化修改');
+        expect(markup).toContain('Newton');
+        expect(markup).toContain('Design anything...');
+        expect(markup).toContain('GPT 5.5');
+        expect(markup).toContain('editor-agent-prompt-dock');
+        expect(markup).not.toContain('Sidebar Surface</span>');
+        expect(leftSidebarSource).toContain('useState<SidebarTab>');
+        expect(leftSidebarSource).toContain('onClick={() => onSelectTab');
+    });
+
+    it('matches the Left Sidebar Agent frame typography and sizing details', () => {
+        const leftSidebarSource = rendererSource(
+            'components/editor/LeftSidebar.tsx'
+        );
+        const agentPanelSource = rendererSource(
+            'components/editor/SidebarAgentPanel.tsx'
+        );
+        const styles = rendererSource('index.css');
+
+        expect(leftSidebarSource).toContain('grid-rows-[30px_minmax(0,1fr)]');
+        expect(leftSidebarSource).toContain('editor-tabs-row flex h-[30px]');
+        expect(styles).toContain('--font-cn:');
+        expect(agentPanelSource).toContain('font-cn');
+        expect(agentPanelSource).toContain('text-[12px]/[normal]');
+        expect(agentPanelSource).toContain('text-[12.5px]/[19px]');
+        expect(agentPanelSource).toContain('editor-agent-prompt-dock');
+        expect(agentPanelSource).toContain('h-[104px]');
+        expect(agentPanelSource).toContain('w-[277px]');
+        expect(agentPanelSource).toContain('text-[14px]/[normal]');
+        expect(agentPanelSource).toContain('font-light');
+    });
+
+    it('keeps overflowing sidebar tab content scrollable on the y axis', () => {
+        const agentMarkup = renderToStaticMarkup(
+            <SidebarContent activeTab="agent" />
+        );
+        const layersMarkup = renderToStaticMarkup(
+            <SidebarContent activeTab="layers" />
+        );
+        const agentPanelSource = rendererSource(
+            'components/editor/SidebarAgentPanel.tsx'
+        );
+
+        expect(agentMarkup).toContain('editor-agent-timeline');
+        expect(agentMarkup).toContain('overflow-y-auto');
+        expect(agentMarkup).toContain('overflow-x-hidden');
+        expect(agentPanelSource).toContain('flex-1');
+        expect(agentPanelSource).toContain('shrink-0');
+        expect(layersMarkup).toContain('editor-sidebar-body');
+        expect(layersMarkup).toContain('overflow-y-auto');
+        expect(layersMarkup).toContain('overflow-x-hidden');
     });
 
     it('renders the detailed right inspector controls from the Pencil frame', () => {
@@ -148,7 +221,9 @@ describe('MiaomaEditorScreen', () => {
     });
 
     it('matches the updated Sidebar Body and selected layer styling hooks', () => {
-        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const markup = renderToStaticMarkup(
+            <SidebarContent activeTab="layers" />
+        );
         const leftSidebarSource = rendererSource(
             'components/editor/LeftSidebar.tsx'
         );
@@ -179,6 +254,7 @@ describe('MiaomaEditorScreen', () => {
             'components/editor/MiaomaEditor.tsx',
             'components/editor/TopHeader.tsx',
             'components/editor/LeftSidebar.tsx',
+            'components/editor/SidebarAgentPanel.tsx',
             'components/editor/CanvasStage.tsx',
             'components/editor/RightInspector.tsx',
             'components/editor/FlexLayoutSection.tsx',

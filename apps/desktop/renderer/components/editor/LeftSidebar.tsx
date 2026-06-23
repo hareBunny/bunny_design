@@ -5,16 +5,19 @@
   */
 
 import { ChevronDown, Eye } from 'lucide-react';
+import { useState } from 'react';
 
 import {
     CONTENT_LAYER_ROWS,
     RECREATION_LAYER_ROWS,
-    SIDEBAR_ACTIONS
+    SIDEBAR_ACTIONS,
+    SIDEBAR_TABS
 } from '../../constants/editor';
-import type { LayerRow } from '../../types/editor';
+import type { LayerRow, SidebarTab } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
 
 import { EditorIconButton } from './EditorIconButton';
+import { SidebarAgentPanel } from './SidebarAgentPanel';
 
 const LayerRowItem = ({
     label,
@@ -93,44 +96,77 @@ const LayerGroup = ({ rows }: { rows: LayerRow[] }) => (
     </div>
 );
 
-export const LeftSidebar = () => (
-    <aside
-        className="editor-sidebar h-full min-w-0 overflow-hidden"
-        data-region="left-sidebar"
+const SidebarTabs = ({
+    activeTab,
+    onSelectTab
+}: {
+    activeTab: SidebarTab;
+    onSelectTab: (tab: SidebarTab) => void;
+}) => (
+    <div
+        aria-label="Sidebar tabs"
+        className="editor-tabs-row flex h-[30px] items-center gap-3 px-2"
+        role="tablist"
     >
-        <header className="editor-sidebar-toolbar flex h-[var(--editor-header-height)] w-[var(--editor-sidebar-width)] min-w-0 items-center pr-5 [padding-left:calc(var(--editor-system-traffic-light-space)+20px)] [-webkit-app-region:drag]">
-            <div className="editor-toolbar-actions flex items-center gap-2 [-webkit-app-region:no-drag]">
-                {SIDEBAR_ACTIONS.map((action) => (
-                    <EditorIconButton key={action.label} {...action} />
-                ))}
-            </div>
-        </header>
+        {SIDEBAR_TABS.map((tab) => {
+            const selected = activeTab === tab.id;
 
-        <section
-            className="editor-sidebar-surface grid h-[calc(100%-var(--editor-header-height))] min-h-0 w-[var(--editor-sidebar-width)] grid-rows-[40px_minmax(0,1fr)] overflow-hidden rounded-3xl"
-            aria-label="Layers"
-        >
-            <div className="editor-tabs-row flex h-10 items-center gap-3 p-2">
+            return (
                 <button
-                    className="editor-tab h-7 cursor-default rounded-lg border-0 bg-transparent px-2 py-1 text-[13px] leading-none font-semibold text-[#6b7280]"
+                    aria-selected={selected ? 'true' : 'false'}
+                    className={classNames(
+                        'editor-tab cursor-default border-0 px-2 py-1 leading-none text-xs font-semibold rounded-md',
+                        selected
+                            ? 'editor-tab--active bg-[#CED3D3] text-[#111827]'
+                            : 'bg-transparent text-[#6b7280]'
+                    )}
+                    key={tab.id}
+                    onClick={() => onSelectTab(tab.id)}
+                    role="tab"
                     type="button"
                 >
-                    Agent
+                    {tab.label}
                 </button>
-                <button
-                    className="editor-tab editor-tab--active h-7 cursor-default rounded-md border-0 bg-[#e9e9e9] px-2 py-1 text-[14px] leading-none font-semibold text-[#111827]"
-                    type="button"
-                >
-                    Layers
-                </button>
-            </div>
-
-            <div className="editor-sidebar-body min-h-0 overflow-hidden px-2 pt-2.5 pb-6">
-                <div className="editor-layer-tree grid min-h-0 content-start gap-2.5 overflow-hidden">
-                    <LayerGroup rows={CONTENT_LAYER_ROWS} />
-                    <LayerGroup rows={RECREATION_LAYER_ROWS} />
-                </div>
-            </div>
-        </section>
-    </aside>
+            );
+        })}
+    </div>
 );
+
+const SidebarLayersPanel = () => (
+    <div className="editor-sidebar-body min-h-0 overflow-y-auto overflow-x-hidden px-2 pt-2.5 pb-6">
+        <div className="editor-layer-tree grid min-h-0 content-start gap-2.5">
+            <LayerGroup rows={CONTENT_LAYER_ROWS} />
+            <LayerGroup rows={RECREATION_LAYER_ROWS} />
+        </div>
+    </div>
+);
+
+export const SidebarContent = ({ activeTab }: { activeTab: SidebarTab }) =>
+    activeTab === 'agent' ? <SidebarAgentPanel /> : <SidebarLayersPanel />;
+
+export const LeftSidebar = () => {
+    const [activeTab, setActiveTab] = useState<SidebarTab>('agent');
+
+    return (
+        <aside
+            className="editor-sidebar h-full min-w-0 overflow-hidden"
+            data-region="left-sidebar"
+        >
+            <header className="editor-sidebar-toolbar flex h-[var(--editor-header-height)] w-[var(--editor-sidebar-width)] min-w-0 items-center pr-5 [padding-left:calc(var(--editor-system-traffic-light-space)+20px)] [-webkit-app-region:drag]">
+                <div className="editor-toolbar-actions flex items-center gap-2 [-webkit-app-region:no-drag]">
+                    {SIDEBAR_ACTIONS.map((action) => (
+                        <EditorIconButton key={action.label} {...action} />
+                    ))}
+                </div>
+            </header>
+
+            <section
+                aria-label="Sidebar surface"
+                className="editor-sidebar-surface grid h-[calc(100%-var(--editor-header-height))] min-h-0 w-[var(--editor-sidebar-width)] grid-rows-[30px_minmax(0,1fr)] overflow-hidden rounded-3xl"
+            >
+                <SidebarTabs activeTab={activeTab} onSelectTab={setActiveTab} />
+                <SidebarContent activeTab={activeTab} />
+            </section>
+        </aside>
+    );
+};
