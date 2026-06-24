@@ -15,6 +15,7 @@
 }
 
 :root {
+    color-scheme: light;
     --editor-sidebar-width: 300px;
     --editor-inspector-width: 268px;
     --editor-header-height: 48px;

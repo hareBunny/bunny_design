@@ -4,23 +4,69 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { ChevronDown, Eye } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { ChevronDown, Eye, FileText, Frame, Square, Type } from 'lucide-react';
 
-import {
-    CONTENT_LAYER_ROWS,
-    RECREATION_LAYER_ROWS,
-    SIDEBAR_ACTIONS,
-    SIDEBAR_TABS
-} from '../../constants/editor';
+import type { DesignNode } from '@miaoma-design-ai/document';
+
+import { SIDEBAR_ACTIONS, SIDEBAR_TABS } from '../../constants/editor';
+import { CANVAS_SAMPLE_DESIGN_DOCUMENT } from '../../fixtures/canvasSampleDocument';
 import type { LayerRow, SidebarTab } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
 
 import { EditorIconButton } from './EditorIconButton';
 import { SidebarAgentPanel } from './SidebarAgentPanel';
 
+const DEFAULT_SELECTED_LAYER_ID = 'u6EuTN';
+
+const NODE_TYPE_ICONS: Record<DesignNode['type'], LucideIcon> = {
+    ellipse: Square,
+    frame: Frame,
+    icon: Square,
+    rectangle: Square,
+    text: Type
+};
+
+const toLayerLabel = (node: DesignNode) => node.name ?? node.id;
+
+const toLayerIcon = (node: DesignNode) => {
+    if (node.type === 'text') {
+        const label = toLayerLabel(node).toLowerCase();
+
+        return label.includes('title') ? FileText : Type;
+    }
+
+    return NODE_TYPE_ICONS[node.type];
+};
+
+const flattenLayerRows = (nodes: DesignNode[], depth = 0): LayerRow[] =>
+    nodes.flatMap((node) => {
+        const expanded = node.type === 'frame' && node.children.length > 0;
+        const currentRow: LayerRow = {
+            id: node.id,
+            label: toLayerLabel(node),
+            icon: toLayerIcon(node),
+            nodeType: node.type,
+            depth,
+            expanded,
+            selected: node.id === DEFAULT_SELECTED_LAYER_ID
+        };
+
+        if (node.type !== 'frame' || node.children.length === 0) {
+            return [currentRow];
+        }
+
+        return [currentRow, ...flattenLayerRows(node.children, depth + 1)];
+    });
+
+const CANVAS_LAYER_ROWS = flattenLayerRows(
+    CANVAS_SAMPLE_DESIGN_DOCUMENT.children
+);
+
 const LayerRowItem = ({
     label,
     icon: Icon,
+    nodeType,
     depth,
     expanded,
     selected,
@@ -35,6 +81,7 @@ const LayerRowItem = ({
             !selected && depth === 0 && 'h-[30px] font-semibold'
         )}
         data-depth={depth}
+        data-layer-node-type={nodeType}
         data-selected={selected ? 'true' : undefined}
     >
         <span
@@ -46,10 +93,16 @@ const LayerRowItem = ({
         <span
             className={classNames(
                 'editor-layer-content flex h-full min-w-0 items-center gap-1.5 px-3 pl-2.5 text-[#64748b]',
-                depth === 1 && 'pl-7',
-                depth === 2 && 'pl-[46px]',
+                depth > 0 && 'pl-7',
                 selected && 'h-[33px] pl-7 text-[#374151]'
             )}
+            style={
+                depth > 1
+                    ? {
+                          paddingLeft: `${28 + (depth - 1) * 19}px`
+                      }
+                    : undefined
+            }
         >
             {expanded ? (
                 <ChevronDown
@@ -84,14 +137,6 @@ const LayerRowItem = ({
                 <Eye aria-hidden="true" size={16} strokeWidth={1.7} />
             </span>
         ) : null}
-    </div>
-);
-
-const LayerGroup = ({ rows }: { rows: LayerRow[] }) => (
-    <div className="editor-layer-group grid gap-0.5">
-        {rows.map((row) => (
-            <LayerRowItem key={row.id} {...row} />
-        ))}
     </div>
 );
 
@@ -133,9 +178,10 @@ const SidebarTabs = ({
 
 const SidebarLayersPanel = () => (
     <div className="editor-sidebar-body min-h-0 overflow-y-auto overflow-x-hidden px-2 pt-2.5 pb-6">
-        <div className="editor-layer-tree grid min-h-0 content-start gap-2.5">
-            <LayerGroup rows={CONTENT_LAYER_ROWS} />
-            <LayerGroup rows={RECREATION_LAYER_ROWS} />
+        <div className="editor-layer-tree grid min-h-0 content-start gap-0.5">
+            {CANVAS_LAYER_ROWS.map((row) => (
+                <LayerRowItem key={row.id} {...row} />
+            ))}
         </div>
     </div>
 );

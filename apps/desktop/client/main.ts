@@ -4,13 +4,15 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, nativeTheme } from 'electron';
 import started from 'electron-squirrel-startup';
 import path from 'node:path';
 
 if (started) {
     app.quit();
 }
+
+nativeTheme.themeSource = 'light';
 
 const createWindow = () => {
     const preloadPath = path.join(__dirname, 'preload.js');
@@ -23,8 +25,7 @@ const createWindow = () => {
         frame: false,
         titleBarStyle: 'hidden',
         autoHideMenuBar: true,
-        // backgroundColor: '#feffffff',
-        // opacity: 0.99,
+        backgroundColor: '#00000000',
         webPreferences: {
             preload: preloadPath
         },

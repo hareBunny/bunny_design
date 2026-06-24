@@ -68,23 +68,40 @@ describe('MiaomaEditorScreen', () => {
         expect(editorSource).toContain('[-webkit-app-region:no-drag]');
     });
 
-    it('keeps the left layer tree hierarchy from the Pencil frame', () => {
+    it('renders the Layers tab from the current canvas JSON tree', () => {
         const markup = renderToStaticMarkup(
             <SidebarContent activeTab="layers" />
         );
 
-        expect(markup).toContain('Content');
-        expect(markup).toContain('Right Divider');
-        expect(markup).toContain('Right Inspector');
-        expect(markup).toContain('Chrome Bottom Divider');
-        expect(markup).toContain('Main Right Region');
-        expect(markup).toContain('Main Title Region');
-        expect(markup).toContain('Document Title');
-        expect(markup).toContain('Miaoma Editor Recreation');
-        expect(markup).toContain('Sidebar Surface');
+        expect(markup).toContain('Miaoma Editor Recreation Course');
+        expect(markup).toContain('Window Chrome');
+        expect(markup).toContain('Prompt Dock Course');
+        expect(markup).toContain('01-cover');
+        expect(markup).toContain('MIAOMAEDU');
+        expect(markup).toContain('AI 大前端 全栈架构师训练营');
+        expect(markup).toContain('data-layer-node-type="frame"');
+        expect(markup).toContain('data-layer-node-type="text"');
         expect(markup).toContain('data-depth="0"');
         expect(markup).toContain('data-depth="1"');
+        expect(markup).toContain('data-depth="2"');
         expect(markup).toContain('data-selected="true"');
+    });
+
+    it('forces light appearance for macOS and renderer color scheme', () => {
+        const mainSource = readFileSync(
+            fileURLToPath(new URL('../client/main.ts', import.meta.url)),
+            'utf8'
+        );
+        const styles = rendererSource('index.css');
+        const html = readFileSync(
+            fileURLToPath(new URL('../index.html', import.meta.url)),
+            'utf8'
+        );
+
+        expect(mainSource).toContain("nativeTheme.themeSource = 'light'");
+        expect(styles).toContain('color-scheme: light;');
+        expect(html).toContain('name="color-scheme"');
+        expect(html).toContain('content="light"');
     });
 
     it('renders the Sidebar Surface Agent frame as the default left sidebar tab', () => {

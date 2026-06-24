@@ -4,6 +4,11 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import {
+    createRenderTree,
+    parseDesignDocument
+} from '@miaoma-design-ai/document';
+
 import designSchemaDocument from '../../../../miaoma-design-design-schema.json';
 
 import { COVER_DOCUMENT_FIXTURE } from './coverDocument';
@@ -28,3 +33,14 @@ export const CANVAS_SAMPLE_DOCUMENT_FIXTURE = {
         }
     ]
 } as const;
+
+export const PARSED_CANVAS_SAMPLE_DOCUMENT = parseDesignDocument(
+    CANVAS_SAMPLE_DOCUMENT_FIXTURE
+);
+
+export const CANVAS_SAMPLE_DESIGN_DOCUMENT =
+    PARSED_CANVAS_SAMPLE_DOCUMENT.document;
+
+export const CANVAS_SAMPLE_RENDER_TREE = createRenderTree(
+    CANVAS_SAMPLE_DESIGN_DOCUMENT
+);
