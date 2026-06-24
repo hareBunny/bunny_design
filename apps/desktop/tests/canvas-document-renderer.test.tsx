@@ -4,6 +4,8 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
@@ -13,6 +15,13 @@ import {
 } from '@miaoma-design-ai/document';
 
 import { CanvasDocumentRenderer } from '../renderer/components/document/CanvasDocumentRenderer';
+
+const designSchemaPath = fileURLToPath(
+    new URL('../../../miaoma-design-design-schema.json', import.meta.url)
+);
+
+const readDesignSchemaFixture = () =>
+    JSON.parse(readFileSync(designSchemaPath, 'utf8')) as unknown;
 
 const coverDocument = {
     version: '2.14',
@@ -159,5 +168,41 @@ describe('CanvasDocumentRenderer', () => {
         expect(markup).toContain('/assets/image-import.png');
         expect(markup).toContain('background-clip:text');
         expect(markup).toContain('主讲讲师：合一');
+    });
+
+    it('renders the complete Miaoma design schema with layout nodes, icons, and shape styles', () => {
+        const parsed = parseDesignDocument(readDesignSchemaFixture());
+        const renderTree = createRenderTree(parsed.document);
+        const markup = renderToStaticMarkup(
+            <CanvasDocumentRenderer
+                document={renderTree}
+                resolveAsset={(url) => `/resolved/${url}`}
+            />
+        );
+
+        expect(parsed.diagnostics).toEqual([]);
+        expect(markup.match(/data-design-node-id=/g)).toHaveLength(297);
+        expect(markup).toContain(
+            'data-design-node-name="Miaoma Editor Recreation Course"'
+        );
+        expect(markup).toContain('width:1920px');
+        expect(markup).toContain('height:1205px');
+        expect(markup).toContain('border-radius:24px');
+        expect(markup).toContain('border-width:1px');
+        expect(markup).toContain('box-shadow:-4px 0px 20px #0000000f');
+        expect(markup).toContain('data-design-node-name="Tool Rail"');
+        expect(markup).toContain('flex-direction:column');
+        expect(markup).toContain('gap:6px');
+        expect(markup).toContain('padding:8px 6px');
+        expect(markup).toContain('data-design-node-name="Agents Icon"');
+        expect(markup).toContain('data-design-icon-name="bot"');
+        expect(markup).toContain('data-design-node-name="Close Dot"');
+        expect(markup).toContain('border-radius:50%');
+        expect(markup).toContain('miaoma-magicut.miaomadesign');
+        expect(markup).toContain('Design anything...');
+        expect(markup).toContain('Layout');
+        expect(markup).toContain('Fill');
+        expect(markup).toContain('Export layer');
+        expect(markup).toContain('/resolved/favicon%40167.png');
     });
 });

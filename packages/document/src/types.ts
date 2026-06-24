@@ -41,6 +41,32 @@ export type ImageFill = {
 
 export type Fill = ColorFill | LinearGradientFill | ImageFill;
 
+export type Dimension = number | 'fill_container' | 'hug_contents';
+
+export type CornerRadius = number | [number, number, number, number];
+
+export type Spacing =
+    | number
+    | [number, number]
+    | [number, number, number, number];
+
+export type LayoutDirection = 'none' | 'horizontal' | 'vertical';
+
+export type JustifyContent = 'start' | 'center' | 'end' | 'space_between';
+
+export type AlignItems = 'start' | 'center' | 'end' | 'stretch';
+
+export type ShadowEffect = {
+    type: 'shadow';
+    shadowType?: 'inner' | 'outer';
+    color: string;
+    offset?: {
+        x: number;
+        y: number;
+    };
+    blur?: number;
+};
+
 type BaseNode = {
     id: string;
     name?: string;
@@ -48,28 +74,51 @@ type BaseNode = {
     y: number;
     rotation?: number;
     fill?: Fill;
+    stroke?: Fill;
+    strokeWidth?: number;
+    strokeAlignment?: 'center' | 'inner' | 'outer';
+    cornerRadius?: CornerRadius;
+    effect?: ShadowEffect;
 };
 
 export type FrameNode = BaseNode & {
     type: 'frame';
-    width: number;
-    height: number;
+    width?: Dimension;
+    height?: Dimension;
     clip?: boolean;
-    layout?: 'none';
+    layout?: LayoutDirection;
+    gap?: number;
+    padding?: Spacing;
+    justifyContent?: JustifyContent;
+    alignItems?: AlignItems;
     children: DesignNode[];
 };
 
 export type RectangleNode = BaseNode & {
     type: 'rectangle';
-    width: number;
-    height: number;
+    width: Dimension;
+    height: Dimension;
+};
+
+export type EllipseNode = BaseNode & {
+    type: 'ellipse';
+    width: Dimension;
+    height: Dimension;
+};
+
+export type IconNode = BaseNode & {
+    type: 'icon';
+    width: Dimension;
+    height: Dimension;
+    icon: string;
+    library?: string;
 };
 
 export type TextNode = BaseNode & {
     type: 'text';
     content: string;
-    width?: number;
-    height?: number;
+    width?: Dimension;
+    height?: Dimension;
     textGrowth?: 'auto' | 'fixed-width' | 'fixed-width-height';
     textAlign?: 'left' | 'center' | 'right' | 'justify';
     fontFamily?: string;
@@ -78,7 +127,12 @@ export type TextNode = BaseNode & {
     lineHeight?: number;
 };
 
-export type DesignNode = FrameNode | RectangleNode | TextNode;
+export type DesignNode =
+    | EllipseNode
+    | FrameNode
+    | IconNode
+    | RectangleNode
+    | TextNode;
 
 export type DesignDocument = {
     version: string;
@@ -107,6 +161,7 @@ export type ParserContext = {
     readString: (value: unknown) => string | undefined;
     readNumber: (value: unknown) => number | undefined;
     readBoolean: (value: unknown) => boolean | undefined;
+    readDimension: (value: unknown) => Dimension | undefined;
     readStringUnion: <T extends string>(
         value: unknown,
         allowed: readonly T[]

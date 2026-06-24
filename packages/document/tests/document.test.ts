@@ -141,6 +141,25 @@ const coverDocument = {
 const packageJsonPath = fileURLToPath(
     new URL('../package.json', import.meta.url)
 );
+const designSchemaPath = fileURLToPath(
+    new URL('../../../miaoma-design-design-schema.json', import.meta.url)
+);
+
+const readDesignSchemaFixture = () =>
+    JSON.parse(readFileSync(designSchemaPath, 'utf8')) as unknown;
+
+const flattenNodes = (
+    nodes: ReturnType<typeof parseDesignDocument>['document']['children']
+) =>
+    nodes.flatMap((node): typeof nodes => [
+        node,
+        ...(node.type === 'frame' ? flattenNodes(node.children) : [])
+    ]);
+
+const findNodeByName = (
+    nodes: ReturnType<typeof parseDesignDocument>['document']['children'],
+    name: string
+) => flattenNodes(nodes).find((node) => node.name === name);
 
 describe('document parser', () => {
     it('parses the 01-cover frame into supported node unions', () => {
@@ -219,7 +238,7 @@ describe('document parser', () => {
                     fill: { type: 'image', enabled: false, url: 'off.png' },
                     children: [
                         {
-                            type: 'ellipse',
+                            type: 'polygon',
                             id: 'unsupported',
                             width: 20,
                             height: 20
@@ -267,7 +286,8 @@ describe('document parser', () => {
             renderPlugins: [
                 {
                     transformNode: (node) =>
-                        node.type === 'rectangle'
+                        node.type === 'rectangle' &&
+                        typeof node.width === 'number'
                             ? {
                                   ...node,
                                   width: node.width + 12
@@ -324,5 +344,97 @@ describe('document parser', () => {
         expect(packageJson.exports['.'].import).toBe('./dist/index.js');
         expect(packageJson.exports['.'].types).toBe('./dist/index.d.ts');
         expect(packageJson.devDependencies.tsdown).toBeDefined();
+    });
+
+    it('parses the complete Miaoma design schema without dropping supported nodes', () => {
+        const result = parseDesignDocument(readDesignSchemaFixture());
+        const nodes = flattenNodes(result.document.children);
+        const typeCounts = nodes.reduce<Record<string, number>>(
+            (counts, node) => ({
+                ...counts,
+                [node.type]: (counts[node.type] ?? 0) + 1
+            }),
+            {}
+        );
+
+        expect(result.diagnostics).toEqual([]);
+        expect(result.document.version).toBe('2.14');
+        expect(nodes).toHaveLength(297);
+        expect(typeCounts).toMatchObject({
+            ellipse: 3,
+            frame: 155,
+            icon: 53,
+            rectangle: 29,
+            text: 57
+        });
+    });
+
+    it('preserves schema layout metrics, stroke, effects, and variable dimensions', () => {
+        const result = parseDesignDocument(readDesignSchemaFixture());
+        const root = result.document.children[0];
+        const toolRail = findNodeByName(result.document.children, 'Tool Rail');
+        const mainRightRegion = findNodeByName(
+            result.document.children,
+            'Main Right Region'
+        );
+        const headerDivider = findNodeByName(
+            result.document.children,
+            'Header Divider'
+        );
+        const closeDot = findNodeByName(result.document.children, 'Close Dot');
+        const agentsIcon = findNodeByName(
+            result.document.children,
+            'Agents Icon'
+        );
+
+        expect(root).toMatchObject({
+            type: 'frame',
+            name: 'Miaoma Editor Recreation Course',
+            width: 1920,
+            height: 1205,
+            cornerRadius: 24,
+            stroke: { type: 'color', color: '#e6e6e6ff' },
+            strokeWidth: 1
+        });
+        expect(root).toHaveProperty('effect', undefined);
+        expect(toolRail).toMatchObject({
+            type: 'frame',
+            layout: 'vertical',
+            gap: 6,
+            padding: [8, 6],
+            effect: {
+                type: 'shadow',
+                color: '#00000014',
+                offset: { x: 0, y: 3 },
+                blur: 18
+            }
+        });
+        expect(mainRightRegion).toMatchObject({
+            type: 'frame',
+            layout: 'horizontal',
+            gap: 10,
+            justifyContent: 'end',
+            alignItems: 'center'
+        });
+        expect(headerDivider).toMatchObject({
+            type: 'rectangle',
+            width: 'fill_container',
+            height: 1
+        });
+        expect(closeDot).toMatchObject({
+            type: 'ellipse',
+            fill: { type: 'color', color: '#FF5F57' },
+            stroke: { type: 'color', color: '#E0443E' },
+            width: 12,
+            height: 12
+        });
+        expect(agentsIcon).toMatchObject({
+            type: 'icon',
+            icon: 'bot',
+            library: 'lucide',
+            width: 14,
+            height: 14,
+            fill: { type: 'color', color: '#6B7280' }
+        });
     });
 });

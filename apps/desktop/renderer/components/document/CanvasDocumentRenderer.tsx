@@ -4,14 +4,53 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import type { CSSProperties } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import {
+    AlignCenterHorizontal,
+    AlignCenterVertical,
+    AlignEndHorizontal,
+    AlignEndVertical,
+    AlignStartHorizontal,
+    AlignStartVertical,
+    ArrowDownFromLine,
+    ArrowRightFromLine,
+    Bot,
+    Check,
+    ChevronDown,
+    CircleUser,
+    DiamondPlus,
+    Download,
+    Eye,
+    FileText,
+    Frame as FrameIcon,
+    Hand,
+    LayoutDashboard,
+    LayoutGrid,
+    Minus,
+    MousePointer2,
+    PanelLeft,
+    PanelRight,
+    Play,
+    Plus,
+    SlidersHorizontal,
+    Square,
+    Type as TypeIcon
+} from 'lucide-react';
+import type { CSSProperties, ReactElement } from 'react';
 
 import type {
+    AlignItems,
+    Dimension,
+    EllipseNode,
     Fill,
     FrameNode,
+    IconNode,
+    JustifyContent,
+    LayoutDirection,
     RectangleNode,
     RenderDocument,
     RenderNode,
+    Spacing,
     TextNode
 } from '@miaoma-design-ai/document';
 
@@ -24,10 +63,25 @@ type Bounds = {
     height: number;
 };
 
+type ParentLayout = 'absolute' | Exclude<LayoutDirection, 'none'>;
+
+type NodeRendererProps<TNode extends RenderNode = RenderNode> = {
+    node: TNode;
+    nodeRenderers: NodeRendererRegistry;
+    parentLayout: ParentLayout;
+    resolveAsset: AssetResolver;
+    topLevelBounds?: Bounds;
+};
+
+type NodeRenderer = (props: NodeRendererProps) => ReactElement;
+
+type NodeRendererRegistry = Record<RenderNode['type'], NodeRenderer>;
+
 type CanvasDocumentRendererProps = {
     document: RenderDocument;
     resolveAsset?: AssetResolver;
     className?: string;
+    nodeRenderers?: Partial<NodeRendererRegistry>;
 };
 
 const defaultAssetResolver: AssetResolver = (url) => url;
@@ -62,11 +116,7 @@ const toFontFamily = (fontFamily?: string) => {
         return undefined;
     }
 
-    if (fontFamily === 'Alimama ShuHeiTi') {
-        return `${quoteFontFamily(fontFamily)}, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif`;
-    }
-
-    if (fontFamily === 'Heiti SC') {
+    if (fontFamily === 'Alimama ShuHeiTi' || fontFamily === 'Heiti SC') {
         return `${quoteFontFamily(fontFamily)}, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif`;
     }
 
@@ -77,6 +127,9 @@ const toGradientValue = (fill: Extract<Fill, { type: 'gradient' }>) =>
     `linear-gradient(${toCssGradientAngle(fill.rotation)}, ${fill.colors
         .map((stop) => `${stop.color} ${stop.position * 100}%`)
         .join(', ')})`;
+
+const getColorFillValue = (fill: Fill | undefined) =>
+    fill?.type === 'color' ? fill.color : undefined;
 
 const getFillStyle = (
     fill: Fill | undefined,
@@ -121,6 +174,126 @@ const getFillStyle = (
     };
 };
 
+const getStrokeStyle = (
+    stroke: Fill | undefined,
+    strokeWidth: number | undefined
+): CSSProperties => {
+    if (!stroke || strokeWidth === undefined) {
+        return {};
+    }
+
+    if (stroke.type === 'color') {
+        return {
+            borderColor: stroke.color,
+            borderStyle: 'solid',
+            borderWidth: px(strokeWidth)
+        };
+    }
+
+    if (stroke.type === 'gradient') {
+        return {
+            borderImage: `${toGradientValue(stroke)} 1`,
+            borderStyle: 'solid',
+            borderWidth: px(strokeWidth)
+        };
+    }
+
+    return {};
+};
+
+const toCornerRadiusValue = (
+    cornerRadius: FrameNode['cornerRadius']
+): string | undefined => {
+    if (cornerRadius === undefined) {
+        return undefined;
+    }
+
+    if (typeof cornerRadius === 'number') {
+        return px(cornerRadius);
+    }
+
+    return cornerRadius.map(px).join(' ');
+};
+
+const toPaddingValue = (padding: Spacing | undefined): string | undefined => {
+    if (padding === undefined) {
+        return undefined;
+    }
+
+    if (typeof padding === 'number') {
+        return px(padding);
+    }
+
+    return padding.map(px).join(' ');
+};
+
+const toJustifyContent = (
+    justifyContent: JustifyContent | undefined
+): CSSProperties['justifyContent'] => {
+    if (justifyContent === 'end') {
+        return 'flex-end';
+    }
+
+    if (justifyContent === 'space_between') {
+        return 'space-between';
+    }
+
+    if (justifyContent === 'start') {
+        return 'flex-start';
+    }
+
+    return justifyContent;
+};
+
+const toAlignItems = (
+    alignItems: AlignItems | undefined
+): CSSProperties['alignItems'] => {
+    if (alignItems === 'end') {
+        return 'flex-end';
+    }
+
+    if (alignItems === 'start') {
+        return 'flex-start';
+    }
+
+    return alignItems;
+};
+
+const getEffectStyle = (node: RenderNode): CSSProperties => {
+    if (node.effect?.type !== 'shadow') {
+        return {};
+    }
+
+    const offsetX = node.effect.offset?.x ?? 0;
+    const offsetY = node.effect.offset?.y ?? 0;
+    const blur = node.effect.blur ?? 0;
+    const inset = node.effect.shadowType === 'inner' ? 'inset ' : '';
+
+    return {
+        boxShadow: `${inset}${px(offsetX)} ${px(offsetY)} ${px(blur)} ${node.effect.color}`
+    };
+};
+
+const getVisualStyle = (
+    node: RenderNode,
+    resolveAsset: AssetResolver,
+    target: 'shape' | 'text'
+): CSSProperties => ({
+    ...getFillStyle(node.fill, resolveAsset, target),
+    ...getStrokeStyle(node.stroke, node.strokeWidth),
+    ...getEffectStyle(node),
+    borderRadius: toCornerRadiusValue(node.cornerRadius)
+});
+
+const getNumericDimension = (value: Dimension | undefined) =>
+    typeof value === 'number' ? value : 0;
+
+const getNodeWidth = (node: RenderNode) =>
+    'width' in node ? getNumericDimension(node.width) : 0;
+
+const getNodeHeight = (node: RenderNode) =>
+    'height' in node ? getNumericDimension(node.height) : 0;
+
 const getTopLevelBounds = (nodes: RenderNode[]): Bounds => {
     if (nodes.length === 0) {
         return { x: 0, y: 0, width: 0, height: 0 };
@@ -128,14 +301,8 @@ const getTopLevelBounds = (nodes: RenderNode[]): Bounds => {
 
     const minX = Math.min(...nodes.map((node) => node.x));
     const minY = Math.min(...nodes.map((node) => node.y));
-    const maxX = Math.max(
-        ...nodes.map((node) => node.x + ('width' in node ? node.width : 0))
-    );
-    const maxY = Math.max(
-        ...nodes.map(
-            (node) => node.y + ('height' in node ? (node.height ?? 0) : 0)
-        )
-    );
+    const maxX = Math.max(...nodes.map((node) => node.x + getNodeWidth(node)));
+    const maxY = Math.max(...nodes.map((node) => node.y + getNodeHeight(node)));
 
     return {
         x: minX,
@@ -145,24 +312,137 @@ const getTopLevelBounds = (nodes: RenderNode[]): Bounds => {
     };
 };
 
-const getNodePositionStyle = (
-    node: RenderNode,
-    bounds: Bounds | undefined
-): CSSProperties => ({
-    position: 'absolute',
-    left: px(bounds ? node.x - bounds.x : node.x),
-    top: px(bounds ? node.y - bounds.y : node.y)
-});
+const applyDimensionStyle = ({
+    dimension,
+    axis,
+    parentLayout,
+    style
+}: {
+    dimension: Dimension | undefined;
+    axis: 'height' | 'width';
+    parentLayout: ParentLayout;
+    style: CSSProperties;
+}) => {
+    if (dimension === undefined || dimension === 'hug_contents') {
+        return;
+    }
 
-const getSizedNodeStyle = (
-    node: FrameNode | RectangleNode,
-    bounds: Bounds | undefined
-): CSSProperties => ({
-    ...getNodePositionStyle(node, bounds),
-    width: px(node.width),
-    height: px(node.height),
-    boxSizing: 'border-box'
-});
+    if (typeof dimension === 'number') {
+        style[axis] = px(dimension);
+        return;
+    }
+
+    if (axis === 'width') {
+        if (parentLayout === 'horizontal') {
+            style.flex = '1 1 0';
+            style.minWidth = 0;
+            return;
+        }
+
+        style.width = '100%';
+        return;
+    }
+
+    if (parentLayout === 'vertical') {
+        style.flex = '1 1 0';
+        style.minHeight = 0;
+        return;
+    }
+
+    style.height = '100%';
+};
+
+const getNodePlacementStyle = (
+    node: RenderNode,
+    bounds: Bounds | undefined,
+    parentLayout: ParentLayout
+): CSSProperties => {
+    if (parentLayout !== 'absolute') {
+        return { position: 'relative' };
+    }
+
+    return {
+        position: 'absolute',
+        left: px(bounds ? node.x - bounds.x : node.x),
+        top: px(bounds ? node.y - bounds.y : node.y)
+    };
+};
+
+const getNodeBoxStyle = ({
+    height,
+    node,
+    parentLayout,
+    topLevelBounds,
+    width
+}: {
+    node: RenderNode;
+    width?: Dimension;
+    height?: Dimension;
+    parentLayout: ParentLayout;
+    topLevelBounds?: Bounds;
+}): CSSProperties => {
+    const style: CSSProperties = {
+        ...getNodePlacementStyle(node, topLevelBounds, parentLayout),
+        boxSizing: 'border-box',
+        transform:
+            node.rotation === undefined
+                ? undefined
+                : toCssNodeRotation(node.rotation),
+        transformOrigin: node.rotation === undefined ? undefined : 'top left'
+    };
+
+    applyDimensionStyle({
+        dimension: width,
+        axis: 'width',
+        parentLayout,
+        style
+    });
+    applyDimensionStyle({
+        dimension: height,
+        axis: 'height',
+        parentLayout,
+        style
+    });
+
+    return style;
+};
+
+const getFlowLayout = (
+    layout: LayoutDirection | undefined
+): Exclude<LayoutDirection, 'none'> | undefined =>
+    layout === 'horizontal' || layout === 'vertical' ? layout : undefined;
+
+const LUCIDE_ICONS: Record<string, LucideIcon> = {
+    'align-center-horizontal': AlignCenterHorizontal,
+    'align-center-vertical': AlignCenterVertical,
+    'align-end-horizontal': AlignEndHorizontal,
+    'align-end-vertical': AlignEndVertical,
+    'align-start-horizontal': AlignStartHorizontal,
+    'align-start-vertical': AlignStartVertical,
+    'arrow-down-from-line': ArrowDownFromLine,
+    'arrow-right-from-line': ArrowRightFromLine,
+    bot: Bot,
+    check: Check,
+    'chevron-down': ChevronDown,
+    'circle-user': CircleUser,
+    'diamond-plus': DiamondPlus,
+    download: Download,
+    eye: Eye,
+    'file-text': FileText,
+    frame: FrameIcon,
+    hand: Hand,
+    'layout-dashboard': LayoutDashboard,
+    'layout-grid': LayoutGrid,
+    minus: Minus,
+    'mouse-pointer-2': MousePointer2,
+    'panel-left': PanelLeft,
+    'panel-right': PanelRight,
+    play: Play,
+    plus: Plus,
+    'sliders-horizontal': SlidersHorizontal,
+    square: Square,
+    type: TypeIcon
+};
 
 const TextContent = ({ content }: { content: string }) => {
     const lines = content.split('\n');
@@ -181,28 +461,23 @@ const TextContent = ({ content }: { content: string }) => {
 
 const CanvasTextNode = ({
     node,
+    parentLayout,
     resolveAsset,
     topLevelBounds
-}: {
-    node: TextNode;
-    resolveAsset: AssetResolver;
-    topLevelBounds?: Bounds;
-}) => {
+}: NodeRendererProps<TextNode>) => {
     const lineHeight =
         node.lineHeight && node.fontSize
             ? px(node.lineHeight * node.fontSize)
             : undefined;
     const style: CSSProperties = {
-        ...getNodePositionStyle(node, topLevelBounds),
-        ...getFillStyle(node.fill, resolveAsset, 'text'),
-        boxSizing: 'border-box',
-        width: node.width === undefined ? undefined : px(node.width),
-        height: node.height === undefined ? undefined : px(node.height),
-        transform:
-            node.rotation === undefined
-                ? undefined
-                : toCssNodeRotation(node.rotation),
-        transformOrigin: node.rotation === undefined ? undefined : 'top left',
+        ...getNodeBoxStyle({
+            node,
+            width: node.width,
+            height: node.height,
+            parentLayout,
+            topLevelBounds
+        }),
+        ...getVisualStyle(node, resolveAsset, 'text'),
         fontFamily: toFontFamily(node.fontFamily),
         fontSize: node.fontSize === undefined ? undefined : px(node.fontSize),
         fontWeight: node.fontWeight,
@@ -230,85 +505,168 @@ const CanvasTextNode = ({
 
 const CanvasRectangleNode = ({
     node,
+    parentLayout,
     resolveAsset,
     topLevelBounds
-}: {
-    node: RectangleNode;
-    resolveAsset: AssetResolver;
-    topLevelBounds?: Bounds;
-}) => (
+}: NodeRendererProps<RectangleNode>) => (
     <div
         className="editor-document-node editor-document-rectangle"
         data-design-node-id={node.id}
         data-design-node-name={node.name}
         style={{
-            ...getSizedNodeStyle(node, topLevelBounds),
-            ...getFillStyle(node.fill, resolveAsset, 'shape')
+            ...getNodeBoxStyle({
+                node,
+                width: node.width,
+                height: node.height,
+                parentLayout,
+                topLevelBounds
+            }),
+            ...getVisualStyle(node, resolveAsset, 'shape')
         }}
     />
 );
 
-const CanvasFrameNode = ({
+const CanvasEllipseNode = ({
     node,
+    parentLayout,
     resolveAsset,
     topLevelBounds
-}: {
-    node: FrameNode;
-    resolveAsset: AssetResolver;
-    topLevelBounds?: Bounds;
-}) => (
+}: NodeRendererProps<EllipseNode>) => (
     <div
-        className="editor-document-node editor-document-frame"
+        className="editor-document-node editor-document-ellipse"
         data-design-node-id={node.id}
         data-design-node-name={node.name}
         style={{
-            ...getSizedNodeStyle(node, topLevelBounds),
-            ...getFillStyle(node.fill, resolveAsset, 'shape'),
-            overflow: node.clip ? 'hidden' : undefined
+            ...getNodeBoxStyle({
+                node,
+                width: node.width,
+                height: node.height,
+                parentLayout,
+                topLevelBounds
+            }),
+            ...getVisualStyle(node, resolveAsset, 'shape'),
+            borderRadius: '50%'
         }}
-    >
-        {node.children.map((child) => (
-            <CanvasRenderNode
-                key={child.id}
-                node={child}
-                resolveAsset={resolveAsset}
-            />
-        ))}
-    </div>
+    />
 );
+
+const CanvasIconNode = ({
+    node,
+    parentLayout,
+    topLevelBounds
+}: NodeRendererProps<IconNode>) => {
+    const Icon =
+        node.library === 'lucide' ? LUCIDE_ICONS[node.icon] : undefined;
+    const color = getColorFillValue(node.fill) ?? 'currentColor';
+    const style: CSSProperties = {
+        ...getNodeBoxStyle({
+            node,
+            width: node.width,
+            height: node.height,
+            parentLayout,
+            topLevelBounds
+        }),
+        color,
+        display: 'grid',
+        lineHeight: 0,
+        placeItems: 'center'
+    };
+
+    return (
+        <div
+            className="editor-document-node editor-document-icon"
+            data-design-icon-name={node.icon}
+            data-design-node-id={node.id}
+            data-design-node-name={node.name}
+            style={style}
+        >
+            {Icon ? (
+                <Icon
+                    aria-hidden="true"
+                    color={color}
+                    size="100%"
+                    strokeWidth={2}
+                    style={{ display: 'block' }}
+                />
+            ) : null}
+        </div>
+    );
+};
+
+const CanvasFrameNode = ({
+    node,
+    nodeRenderers,
+    parentLayout,
+    resolveAsset,
+    topLevelBounds
+}: NodeRendererProps<FrameNode>) => {
+    const flowLayout = getFlowLayout(node.layout);
+    const childParentLayout: ParentLayout = flowLayout ?? 'absolute';
+    const style: CSSProperties = {
+        ...getNodeBoxStyle({
+            node,
+            width: node.width,
+            height: node.height,
+            parentLayout,
+            topLevelBounds
+        }),
+        ...getVisualStyle(node, resolveAsset, 'shape'),
+        alignItems: toAlignItems(node.alignItems),
+        display: flowLayout ? 'flex' : undefined,
+        flexDirection:
+            flowLayout === undefined
+                ? undefined
+                : flowLayout === 'vertical'
+                  ? 'column'
+                  : 'row',
+        gap: node.gap === undefined ? undefined : px(node.gap),
+        justifyContent: toJustifyContent(node.justifyContent),
+        overflow: node.clip ? 'hidden' : undefined,
+        padding: toPaddingValue(node.padding)
+    };
+
+    return (
+        <div
+            className="editor-document-node editor-document-frame"
+            data-design-node-id={node.id}
+            data-design-node-name={node.name}
+            style={style}
+        >
+            {node.children.map((child) => (
+                <CanvasRenderNode
+                    key={child.id}
+                    node={child}
+                    nodeRenderers={nodeRenderers}
+                    parentLayout={childParentLayout}
+                    resolveAsset={resolveAsset}
+                />
+            ))}
+        </div>
+    );
+};
+
+const defaultNodeRenderers: NodeRendererRegistry = {
+    ellipse: CanvasEllipseNode as NodeRenderer,
+    frame: CanvasFrameNode as NodeRenderer,
+    icon: CanvasIconNode as NodeRenderer,
+    rectangle: CanvasRectangleNode as NodeRenderer,
+    text: CanvasTextNode as NodeRenderer
+};
 
 const CanvasRenderNode = ({
     node,
+    nodeRenderers,
+    parentLayout,
     resolveAsset,
     topLevelBounds
-}: {
-    node: RenderNode;
-    resolveAsset: AssetResolver;
-    topLevelBounds?: Bounds;
-}) => {
-    if (node.type === 'frame') {
-        return (
-            <CanvasFrameNode
-                node={node}
-                resolveAsset={resolveAsset}
-                topLevelBounds={topLevelBounds}
-            />
-        );
-    }
-
-    if (node.type === 'rectangle') {
-        return (
-            <CanvasRectangleNode
-                node={node}
-                resolveAsset={resolveAsset}
-                topLevelBounds={topLevelBounds}
-            />
-        );
-    }
+}: NodeRendererProps) => {
+    const Renderer = nodeRenderers[node.type];
 
     return (
-        <CanvasTextNode
+        <Renderer
             node={node}
+            nodeRenderers={nodeRenderers}
+            parentLayout={parentLayout}
             resolveAsset={resolveAsset}
             topLevelBounds={topLevelBounds}
         />
@@ -318,9 +676,14 @@ const CanvasRenderNode = ({
 export const CanvasDocumentRenderer = ({
     className,
     document,
+    nodeRenderers,
     resolveAsset = defaultAssetResolver
 }: CanvasDocumentRendererProps) => {
     const bounds = getTopLevelBounds(document.children);
+    const rendererRegistry = {
+        ...defaultNodeRenderers,
+        ...nodeRenderers
+    };
 
     return (
         <div
@@ -337,6 +700,8 @@ export const CanvasDocumentRenderer = ({
                 <CanvasRenderNode
                     key={node.id}
                     node={node}
+                    nodeRenderers={rendererRegistry}
+                    parentLayout="absolute"
                     resolveAsset={resolveAsset}
                     topLevelBounds={bounds}
                 />

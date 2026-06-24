@@ -8,17 +8,24 @@ export { createDefaultDocumentKernel, createDocumentKernel } from './kernel';
 export { parseDesignDocument } from './parser';
 export { createRenderTree } from './renderTree';
 export type {
+    AlignItems,
     ColorFill,
+    CornerRadius,
     CreateDocumentKernelOptions,
     DesignDocument,
     DesignNode,
+    Dimension,
     DocumentDiagnostic,
     DocumentDiagnosticCode,
     DocumentKernel,
+    EllipseNode,
     Fill,
     FillParserPlugin,
     FrameNode,
+    IconNode,
     ImageFill,
+    JustifyContent,
+    LayoutDirection,
     LinearGradientFill,
     NodeParserPlugin,
     ParserContext,
@@ -28,5 +35,7 @@ export type {
     RenderNode,
     RenderTreeContext,
     RenderTreePlugin,
+    ShadowEffect,
+    Spacing,
     TextNode
 } from './types';

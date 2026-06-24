@@ -36,6 +36,18 @@ const readNumber = (value: unknown): number | undefined =>
 const readBoolean = (value: unknown): boolean | undefined =>
     typeof value === 'boolean' ? value : undefined;
 
+const readDimension: ParserContext['readDimension'] = (value) => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+
+    if (value === 'fill_container' || value === 'hug_contents') {
+        return value;
+    }
+
+    return undefined;
+};
+
 const readStringUnion = <T extends string>(
     value: unknown,
     allowed: readonly T[]
@@ -70,6 +82,7 @@ const createParserContext = ({
         readString,
         readNumber,
         readBoolean,
+        readDimension,
         readStringUnion,
         addDiagnostic,
         parseFill: (value, path) =>

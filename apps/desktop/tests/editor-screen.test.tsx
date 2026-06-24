@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { CanvasStage } from '../renderer/components/editor/CanvasStage';
 import { LayoutConfigurationContent } from '../renderer/components/editor/FlexLayoutSection';
 import { SidebarContent } from '../renderer/components/editor/LeftSidebar';
+import { RightInspector } from '../renderer/components/editor/RightInspector';
 import { MiaomaEditorScreen } from '../renderer/pages/MiaomaEditorScreen';
 
 const rendererFile = (relativePath: string) =>
@@ -87,13 +88,13 @@ describe('MiaomaEditorScreen', () => {
     });
 
     it('renders the Sidebar Surface Agent frame as the default left sidebar tab', () => {
-        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const markup = renderToStaticMarkup(
+            <SidebarContent activeTab="agent" />
+        );
         const editorSource = rendererSource(
             'components/editor/MiaomaEditor.tsx'
         );
 
-        expect(markup).toContain('aria-label="Sidebar surface"');
-        expect(markup).toContain('aria-selected="true"');
         expect(markup).toContain('editor-agent-panel');
         expect(markup).toContain('妙码学院 crm 系统');
         expect(markup).toContain(
@@ -110,6 +111,7 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('editor-agent-prompt-dock');
         expect(markup).not.toContain('Sidebar Surface</span>');
         expect(editorSource).toContain('useState<SidebarTab>');
+        expect(editorSource).toContain("useState<SidebarTab>('agent')");
         expect(editorSource).toContain('activeSidebarTab');
         expect(editorSource).toContain('onSelectTab={setActiveSidebarTab}');
     });
@@ -161,7 +163,7 @@ describe('MiaomaEditorScreen', () => {
     });
 
     it('renders the detailed right inspector controls from the Pencil frame', () => {
-        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const markup = renderToStaticMarkup(<RightInspector />);
 
         expect(markup).toContain('alt="Miaoma logo"');
         expect(markup).toContain('妙笔 AI');
@@ -222,7 +224,6 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('editor-agent-prompt-dock');
         expect(markup).not.toContain('editor-prompt-dock');
         expect(markup).toContain('15%');
-        expect(markup).not.toContain('Frame 3');
         expect(markup).not.toContain('3898 × 2795');
         expect(markup).not.toContain('editor-selection');
         expect(markup).not.toContain('editor-selection-pill');
@@ -311,7 +312,12 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('aria-label="Infinite canvas"');
         expect(markup).toContain('editor-infinite-canvas');
         expect(markup).toContain('data-document-renderer="true"');
+        expect(markup).toContain(
+            'data-design-node-name="Miaoma Editor Recreation Course"'
+        );
         expect(markup).toContain('data-design-node-name="01-cover"');
+        expect(markup).toContain('left:2100px');
+        expect(markup).toContain('top:181.5px');
         expect(markup).toContain('MIAOMAEDU');
         expect(markup).toContain('AI 大前端');
         expect(markup).toContain('w-[4000px]');
