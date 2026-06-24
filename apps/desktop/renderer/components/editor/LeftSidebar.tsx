@@ -5,7 +5,6 @@
   */
 
 import { ChevronDown, Eye } from 'lucide-react';
-import { useState } from 'react';
 
 import {
     CONTENT_LAYER_ROWS,
@@ -144,29 +143,30 @@ const SidebarLayersPanel = () => (
 export const SidebarContent = ({ activeTab }: { activeTab: SidebarTab }) =>
     activeTab === 'agent' ? <SidebarAgentPanel /> : <SidebarLayersPanel />;
 
-export const LeftSidebar = () => {
-    const [activeTab, setActiveTab] = useState<SidebarTab>('agent');
-
-    return (
-        <aside
-            className="editor-sidebar h-full min-w-0 overflow-hidden"
-            data-region="left-sidebar"
-        >
-            <header className="editor-sidebar-toolbar flex h-[var(--editor-header-height)] w-[var(--editor-sidebar-width)] min-w-0 items-center pr-5 [padding-left:calc(var(--editor-system-traffic-light-space)+20px)] [-webkit-app-region:drag]">
-                <div className="editor-toolbar-actions flex items-center gap-2 [-webkit-app-region:no-drag]">
-                    {SIDEBAR_ACTIONS.map((action) => (
-                        <EditorIconButton key={action.label} {...action} />
-                    ))}
-                </div>
-            </header>
-
-            <section
-                aria-label="Sidebar surface"
-                className="editor-sidebar-surface grid h-[calc(100%-var(--editor-header-height))] min-h-0 w-[var(--editor-sidebar-width)] grid-rows-[30px_minmax(0,1fr)] overflow-hidden rounded-3xl"
-            >
-                <SidebarTabs activeTab={activeTab} onSelectTab={setActiveTab} />
-                <SidebarContent activeTab={activeTab} />
-            </section>
-        </aside>
-    );
+type LeftSidebarProps = {
+    activeTab: SidebarTab;
+    onSelectTab: (tab: SidebarTab) => void;
 };
+
+export const LeftSidebar = ({ activeTab, onSelectTab }: LeftSidebarProps) => (
+    <aside
+        className="editor-sidebar h-full min-w-0 overflow-hidden"
+        data-region="left-sidebar"
+    >
+        <header className="editor-sidebar-toolbar flex h-[var(--editor-header-height)] w-[var(--editor-sidebar-width)] min-w-0 items-center pr-5 [padding-left:calc(var(--editor-system-traffic-light-space)+20px)] [-webkit-app-region:drag]">
+            <div className="editor-toolbar-actions flex items-center gap-2 [-webkit-app-region:no-drag]">
+                {SIDEBAR_ACTIONS.map((action) => (
+                    <EditorIconButton key={action.label} {...action} />
+                ))}
+            </div>
+        </header>
+
+        <section
+            aria-label="Sidebar surface"
+            className="editor-sidebar-surface grid h-[calc(100%-var(--editor-header-height))] min-h-0 w-[var(--editor-sidebar-width)] grid-rows-[30px_minmax(0,1fr)] overflow-hidden rounded-3xl"
+        >
+            <SidebarTabs activeTab={activeTab} onSelectTab={onSelectTab} />
+            <SidebarContent activeTab={activeTab} />
+        </section>
+    </aside>
+);

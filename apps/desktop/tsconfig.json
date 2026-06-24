@@ -13,6 +13,7 @@
         "jsx": "react-jsx",
         "baseUrl": ".",
         "paths": {
+            "@miaoma-design-ai/document": ["../../packages/document/src/index.ts"],
             "@/renderer/*": ["./renderer/*"]
         },
         "types": ["./miaoma.env.d.ts"]

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
+import { CanvasStage } from '../renderer/components/editor/CanvasStage';
 import { LayoutConfigurationContent } from '../renderer/components/editor/FlexLayoutSection';
 import { SidebarContent } from '../renderer/components/editor/LeftSidebar';
 import { MiaomaEditorScreen } from '../renderer/pages/MiaomaEditorScreen';
@@ -55,6 +56,17 @@ describe('MiaomaEditorScreen', () => {
         );
     });
 
+    it('expands the native window drag region across the main top header', () => {
+        const editorSource = rendererSource(
+            'components/editor/MiaomaEditor.tsx'
+        );
+
+        expect(editorSource).toContain('editor-main-header');
+        expect(editorSource).toContain('[-webkit-app-region:drag]');
+        expect(editorSource).toContain('editor-agent-control');
+        expect(editorSource).toContain('[-webkit-app-region:no-drag]');
+    });
+
     it('keeps the left layer tree hierarchy from the Pencil frame', () => {
         const markup = renderToStaticMarkup(
             <SidebarContent activeTab="layers" />
@@ -76,8 +88,8 @@ describe('MiaomaEditorScreen', () => {
 
     it('renders the Sidebar Surface Agent frame as the default left sidebar tab', () => {
         const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
-        const leftSidebarSource = rendererSource(
-            'components/editor/LeftSidebar.tsx'
+        const editorSource = rendererSource(
+            'components/editor/MiaomaEditor.tsx'
         );
 
         expect(markup).toContain('aria-label="Sidebar surface"');
@@ -97,8 +109,9 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('GPT 5.5');
         expect(markup).toContain('editor-agent-prompt-dock');
         expect(markup).not.toContain('Sidebar Surface</span>');
-        expect(leftSidebarSource).toContain('useState<SidebarTab>');
-        expect(leftSidebarSource).toContain('onClick={() => onSelectTab');
+        expect(editorSource).toContain('useState<SidebarTab>');
+        expect(editorSource).toContain('activeSidebarTab');
+        expect(editorSource).toContain('onSelectTab={setActiveSidebarTab}');
     });
 
     it('matches the Left Sidebar Agent frame typography and sizing details', () => {
@@ -108,6 +121,9 @@ describe('MiaomaEditorScreen', () => {
         const agentPanelSource = rendererSource(
             'components/editor/SidebarAgentPanel.tsx'
         );
+        const promptDockSource = rendererSource(
+            'components/editor/PromptDock.tsx'
+        );
         const styles = rendererSource('index.css');
 
         expect(leftSidebarSource).toContain('grid-rows-[30px_minmax(0,1fr)]');
@@ -116,11 +132,11 @@ describe('MiaomaEditorScreen', () => {
         expect(agentPanelSource).toContain('font-cn');
         expect(agentPanelSource).toContain('text-[12px]/[normal]');
         expect(agentPanelSource).toContain('text-[12.5px]/[19px]');
-        expect(agentPanelSource).toContain('editor-agent-prompt-dock');
-        expect(agentPanelSource).toContain('h-[104px]');
-        expect(agentPanelSource).toContain('w-[277px]');
-        expect(agentPanelSource).toContain('text-[14px]/[normal]');
-        expect(agentPanelSource).toContain('font-light');
+        expect(promptDockSource).toContain('editor-agent-prompt-dock');
+        expect(promptDockSource).toContain('h-[104px]');
+        expect(promptDockSource).toContain('w-[277px]');
+        expect(promptDockSource).toContain('text-[14px]/[normal]');
+        expect(promptDockSource).toContain('text-xs text-[#5e5f67]');
     });
 
     it('keeps overflowing sidebar tab content scrollable on the y axis', () => {
@@ -194,30 +210,79 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('Export layer');
     });
 
-    it('renders the canvas selection and prompt dock details', () => {
+    it('hides the canvas prompt dock while the Agent sidebar tab is active', () => {
         const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const canvasStageSource = rendererSource(
+            'components/editor/CanvasStage.tsx'
+        );
+        const promptDockSource = rendererSource(
+            'components/editor/PromptDock.tsx'
+        );
 
-        expect(markup).toContain('Frame 3');
-        expect(markup).toContain('3898 × 2795');
+        expect(markup).toContain('editor-agent-prompt-dock');
+        expect(markup).not.toContain('editor-prompt-dock');
+        expect(markup).toContain('15%');
+        expect(markup).not.toContain('Frame 3');
+        expect(markup).not.toContain('3898 × 2795');
+        expect(markup).not.toContain('editor-selection');
+        expect(markup).not.toContain('editor-selection-pill');
+        expect(canvasStageSource).toContain("activeSidebarTab === 'layers'");
+        expect(promptDockSource).toContain('h-[101px]');
+        expect(promptDockSource).toContain('grid-rows-[35px_24px]');
+        expect(promptDockSource).toContain('h-[35px]');
+        expect(promptDockSource).toContain('h-[24px]');
+        expect(promptDockSource).toContain('w-[507px]');
+        expect(promptDockSource).toContain('shadow-[0_6px_24px_0_#00000012]');
+    });
+
+    it('shows the canvas prompt dock when the Layers sidebar tab is active', () => {
+        const markup = renderToStaticMarkup(
+            <CanvasStage activeSidebarTab="layers" />
+        );
+        const promptDockStart = markup.indexOf('editor-prompt-dock');
+        const promptDockEnd = markup.indexOf('</section>', promptDockStart);
+
+        expect(promptDockStart).toBeGreaterThan(-1);
+        expect(promptDockEnd).toBeGreaterThan(promptDockStart);
         expect(markup).toContain('aria-label="Prompt"');
         expect(markup).toContain('editor-prompt-input');
         expect(markup).toContain('placeholder="Design anything..."');
         expect(markup).toContain('<textarea');
         expect(markup).toContain('⚡ 6x');
         expect(markup).toContain('GPT 5.5');
-        expect(markup).toContain('15%');
+        expect(markup.slice(promptDockStart, promptDockEnd)).not.toContain(
+            'Frame 3'
+        );
+        expect(markup.slice(promptDockStart, promptDockEnd)).not.toContain(
+            'editor-selection-pill'
+        );
     });
 
-    it('places the frame prompt pill inside the prompt dock', () => {
-        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
-        const promptDockStart = markup.indexOf('editor-prompt-dock');
-        const promptDockEnd = markup.indexOf('</section>', promptDockStart);
-        const framePill = markup.indexOf('editor-selection-pill');
+    it('reuses one PromptDock component for canvas and agent prompt docks', () => {
+        const canvasStageSource = rendererSource(
+            'components/editor/CanvasStage.tsx'
+        );
+        const agentPanelSource = rendererSource(
+            'components/editor/SidebarAgentPanel.tsx'
+        );
+        const promptDockSource = rendererSource(
+            'components/editor/PromptDock.tsx'
+        );
 
-        expect(promptDockStart).toBeGreaterThan(-1);
-        expect(promptDockEnd).toBeGreaterThan(promptDockStart);
-        expect(framePill).toBeGreaterThan(promptDockStart);
-        expect(framePill).toBeLessThan(promptDockEnd);
+        expect(
+            existsSync(rendererFile('components/editor/PromptDock.tsx'))
+        ).toBe(true);
+        expect(canvasStageSource).toContain('import { PromptDock }');
+        expect(canvasStageSource).toContain('<PromptDock variant="canvas" />');
+        expect(canvasStageSource).not.toContain('const PromptDock');
+        expect(agentPanelSource).toContain('import { PromptDock }');
+        expect(agentPanelSource).toContain('<PromptDock variant="agent" />');
+        expect(agentPanelSource).not.toContain('const AgentPromptDock');
+        expect(promptDockSource).toContain(
+            "type PromptDockVariant = 'agent' | 'canvas'"
+        );
+        expect(promptDockSource).toContain('editor-prompt-dock');
+        expect(promptDockSource).toContain('editor-agent-prompt-dock');
     });
 
     it('matches the updated Sidebar Body and selected layer styling hooks', () => {
@@ -245,6 +310,10 @@ describe('MiaomaEditorScreen', () => {
 
         expect(markup).toContain('aria-label="Infinite canvas"');
         expect(markup).toContain('editor-infinite-canvas');
+        expect(markup).toContain('data-document-renderer="true"');
+        expect(markup).toContain('data-design-node-name="01-cover"');
+        expect(markup).toContain('MIAOMAEDU');
+        expect(markup).toContain('AI 大前端');
         expect(markup).toContain('w-[4000px]');
         expect(markup).toContain('h-[3000px]');
     });
@@ -256,6 +325,7 @@ describe('MiaomaEditorScreen', () => {
             'components/editor/LeftSidebar.tsx',
             'components/editor/SidebarAgentPanel.tsx',
             'components/editor/CanvasStage.tsx',
+            'components/document/CanvasDocumentRenderer.tsx',
             'components/editor/RightInspector.tsx',
             'components/editor/FlexLayoutSection.tsx',
             'components/editor/FillControl.tsx',
