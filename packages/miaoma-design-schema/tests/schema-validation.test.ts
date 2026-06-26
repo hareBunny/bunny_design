@@ -74,7 +74,7 @@ describe('miaoma design schema validation', () => {
         });
     });
 
-    it('keeps nested frame layout undefined when the source fixture omits it', () => {
+    it('normalizes flow-like nested frames to horizontal layout when children rely on auto positioning', () => {
         const result = strictValidateDesignDocument(
             readFixture(editorSchemaPath)
         );
@@ -90,7 +90,7 @@ describe('miaoma design schema validation', () => {
             name: 'Main Title Region'
         });
         expect(target.children.length).toBeGreaterThan(0);
-        expect(target.layout).toBeUndefined();
+        expect(target.layout).toBe('horizontal');
     });
 
     it('reports disabled fills and unsupported node types', () => {

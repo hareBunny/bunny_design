@@ -32,6 +32,7 @@ import {
     readString,
     readStringUnion
 } from './guards';
+import { normalizeDesignDocument } from './normalize';
 
 const readNumberTuple = (value: unknown): number[] | undefined => {
     if (!Array.isArray(value)) {
@@ -489,7 +490,7 @@ export const strictValidateDesignDocument = (
 
     return {
         success: true,
-        document,
+        document: normalizeDesignDocument(document),
         diagnostics: []
     };
 };

@@ -53,5 +53,7 @@ dist/
 /tmp
 **/*/docker/postgresql_data
 **/*/generated
+.superpowers
 
+docs
 sample

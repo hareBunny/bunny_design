@@ -194,6 +194,18 @@ describe('CanvasDocumentRenderer', () => {
         expect(markup).toContain('flex-direction:column');
         expect(markup).toContain('gap:6px');
         expect(markup).toContain('padding:8px 6px');
+        const mainTitleRegionStyle = markup.match(
+            /data-design-node-name="Main Title Region" style="([^"]+)"/
+        )?.[1];
+        const documentTitleStyle = markup.match(
+            /data-design-node-name="Document Title" style="([^"]+)"/
+        )?.[1];
+
+        expect(mainTitleRegionStyle).toContain('display:flex');
+        expect(mainTitleRegionStyle).toContain('justify-content:space-between');
+        expect(mainTitleRegionStyle).toContain('align-items:center');
+        expect(mainTitleRegionStyle).toContain('padding:0px 24px');
+        expect(documentTitleStyle).toContain('position:relative');
         expect(markup).toContain('data-design-node-name="Agents Icon"');
         expect(markup).toContain('data-design-icon-name="bot"');
         expect(markup).toContain('data-design-node-name="Close Dot"');
