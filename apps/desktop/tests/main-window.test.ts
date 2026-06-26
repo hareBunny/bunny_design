@@ -19,7 +19,7 @@ describe('main window options', () => {
         expect(source).toMatch(/width:\s*1280/);
         expect(source).toMatch(/height:\s*800/);
         expect(source).toMatch(/minWidth:\s*1280/);
-        expect(source).toMatch(/minHeight:\s*720/);
+        expect(source).toMatch(/minHeight:\s*800/);
         expect(source).toMatch(/frame:\s*false/);
         expect(source).toMatch(/titleBarStyle:\s*'hidden'/);
         expect(source).toMatch(/autoHideMenuBar:\s*true/);

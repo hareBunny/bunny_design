@@ -7,7 +7,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { ChevronDown, Eye, FileText, Frame, Square, Type } from 'lucide-react';
 
-import type { DesignNode } from '@miaoma-design-ai/document';
+import type { MiaomaDesignNode } from '@miaoma-design-ai/miaoma-design-schema';
 
 import { SIDEBAR_ACTIONS, SIDEBAR_TABS } from '../../constants/editor';
 import { CANVAS_SAMPLE_DESIGN_DOCUMENT } from '../../fixtures/canvasSampleDocument';
@@ -19,7 +19,7 @@ import { SidebarAgentPanel } from './SidebarAgentPanel';
 
 const DEFAULT_SELECTED_LAYER_ID = 'u6EuTN';
 
-const NODE_TYPE_ICONS: Record<DesignNode['type'], LucideIcon> = {
+const NODE_TYPE_ICONS: Record<MiaomaDesignNode['type'], LucideIcon> = {
     ellipse: Square,
     frame: Frame,
     icon: Square,
@@ -27,9 +27,9 @@ const NODE_TYPE_ICONS: Record<DesignNode['type'], LucideIcon> = {
     text: Type
 };
 
-const toLayerLabel = (node: DesignNode) => node.name ?? node.id;
+const toLayerLabel = (node: MiaomaDesignNode) => node.name ?? node.id;
 
-const toLayerIcon = (node: DesignNode) => {
+const toLayerIcon = (node: MiaomaDesignNode) => {
     if (node.type === 'text') {
         const label = toLayerLabel(node).toLowerCase();
 
@@ -39,9 +39,10 @@ const toLayerIcon = (node: DesignNode) => {
     return NODE_TYPE_ICONS[node.type];
 };
 
-const flattenLayerRows = (nodes: DesignNode[], depth = 0): LayerRow[] =>
+const flattenLayerRows = (nodes: MiaomaDesignNode[], depth = 0): LayerRow[] =>
     nodes.flatMap((node) => {
-        const expanded = node.type === 'frame' && node.children.length > 0;
+        const children = node.type === 'frame' ? (node.children ?? []) : [];
+        const expanded = node.type === 'frame' && children.length > 0;
         const currentRow: LayerRow = {
             id: node.id,
             label: toLayerLabel(node),
@@ -52,11 +53,11 @@ const flattenLayerRows = (nodes: DesignNode[], depth = 0): LayerRow[] =>
             selected: node.id === DEFAULT_SELECTED_LAYER_ID
         };
 
-        if (node.type !== 'frame' || node.children.length === 0) {
+        if (node.type !== 'frame' || children.length === 0) {
             return [currentRow];
         }
 
-        return [currentRow, ...flattenLayerRows(node.children, depth + 1)];
+        return [currentRow, ...flattenLayerRows(children, depth + 1)];
     });
 
 const CANVAS_LAYER_ROWS = flattenLayerRows(

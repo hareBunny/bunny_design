@@ -10,9 +10,15 @@
       "clip": true,
       "width": 1920,
       "height": 1205,
-      "fill": "#f3f4f6",
+      "fill": {
+        "type": "color",
+        "color": "#f3f4f6"
+      },
       "cornerRadius": 24,
-      "stroke": "#e6e6e6ff",
+      "stroke": {
+        "type": "color",
+        "color": "#e6e6e6ff"
+      },
       "strokeWidth": 1,
       "strokeAlignment": "inner",
       "layout": "none",
@@ -26,7 +32,10 @@
           "clip": true,
           "width": 1620,
           "height": 1205,
-          "fill": "#f6f6f6ff",
+          "fill": {
+            "type": "color",
+            "color": "#f6f6f6ff"
+          },
           "cornerRadius": 24,
           "effect": {
             "type": "shadow",
@@ -69,7 +78,10 @@
                       "type": "text",
                       "id": "X05dUP",
                       "name": "Document Title",
-                      "fill": "#1A1A1A",
+                      "fill": {
+                        "type": "color",
+                        "color": "#1A1A1A"
+                      },
                       "content": "miaoma-magicut.miaomadesign — Edited",
                       "fontFamily": "Inter",
                       "fontSize": 13,
@@ -89,9 +101,15 @@
                           "type": "frame",
                           "id": "TNy1r",
                           "name": "Agents Control",
-                          "fill": "#FFFFFF",
+                          "fill": {
+                            "type": "color",
+                            "color": "#FFFFFF"
+                          },
                           "cornerRadius": 999,
-                          "stroke": "#E5E7EB",
+                          "stroke": {
+                            "type": "color",
+                            "color": "#E5E7EB"
+                          },
                           "strokeWidth": 1,
                           "gap": 6,
                           "padding": [
@@ -108,13 +126,19 @@
                               "height": 14,
                               "icon": "bot",
                               "library": "lucide",
-                              "fill": "#6B7280"
+                              "fill": {
+                                "type": "color",
+                                "color": "#6B7280"
+                              }
                             },
                             {
                               "type": "text",
                               "id": "ykWDS",
                               "name": "Agents Label",
-                              "fill": "#4B5563",
+                              "fill": {
+                                "type": "color",
+                                "color": "#4B5563"
+                              },
                               "content": "Agents",
                               "fontFamily": "Inter",
                               "fontSize": 12,
@@ -128,7 +152,10 @@
                               "height": 12,
                               "icon": "chevron-down",
                               "library": "lucide",
-                              "fill": "#9CA3AF"
+                              "fill": {
+                                "type": "color",
+                                "color": "#9CA3AF"
+                              }
                             }
                           ]
                         }
@@ -155,7 +182,10 @@
                   "y": 4,
                   "name": "Tool Rail",
                   "width": 44,
-                  "fill": "#FFFFFF",
+                  "fill": {
+                    "type": "color",
+                    "color": "#FFFFFF"
+                  },
                   "cornerRadius": 16,
                   "effect": {
                     "type": "shadow",
@@ -180,9 +210,15 @@
                       "name": "Tool Pointer Button",
                       "width": "fill_container",
                       "height": 32,
-                      "fill": "#f6f6f6ff",
+                      "fill": {
+                        "type": "color",
+                        "color": "#f6f6f6ff"
+                      },
                       "cornerRadius": 10,
-                      "stroke": "#eaebedff",
+                      "stroke": {
+                        "type": "color",
+                        "color": "#eaebedff"
+                      },
                       "strokeWidth": 1,
                       "strokeAlignment": "inner",
                       "effect": {
@@ -206,7 +242,10 @@
                           "height": 16,
                           "icon": "mouse-pointer-2",
                           "library": "lucide",
-                          "fill": "#252525"
+                          "fill": {
+                            "type": "color",
+                            "color": "#252525"
+                          }
                         }
                       ]
                     },
@@ -227,7 +266,10 @@
                           "height": 16,
                           "icon": "square",
                           "library": "lucide",
-                          "fill": "#242424"
+                          "fill": {
+                            "type": "color",
+                            "color": "#242424"
+                          }
                         }
                       ]
                     },
@@ -248,7 +290,10 @@
                           "height": 16,
                           "icon": "chevron-down",
                           "library": "lucide",
-                          "fill": "#242424"
+                          "fill": {
+                            "type": "color",
+                            "color": "#242424"
+                          }
                         }
                       ]
                     },
@@ -269,7 +314,10 @@
                           "height": 16,
                           "icon": "type",
                           "library": "lucide",
-                          "fill": "#242424"
+                          "fill": {
+                            "type": "color",
+                            "color": "#242424"
+                          }
                         }
                       ]
                     },
@@ -290,7 +338,10 @@
                           "height": 16,
                           "icon": "frame",
                           "library": "lucide",
-                          "fill": "#242424"
+                          "fill": {
+                            "type": "color",
+                            "color": "#242424"
+                          }
                         }
                       ]
                     },
@@ -311,7 +362,10 @@
                           "height": 16,
                           "icon": "hand",
                           "library": "lucide",
-                          "fill": "#242424"
+                          "fill": {
+                            "type": "color",
+                            "color": "#242424"
+                          }
                         }
                       ]
                     }
@@ -325,9 +379,15 @@
                   "name": "Zoom Control",
                   "width": 143,
                   "height": 40,
-                  "fill": "#FFFFFF",
+                  "fill": {
+                    "type": "color",
+                    "color": "#FFFFFF"
+                  },
                   "cornerRadius": 14,
-                  "stroke": "#ECECEE",
+                  "stroke": {
+                    "type": "color",
+                    "color": "#ECECEE"
+                  },
                   "strokeWidth": 1,
                   "effect": {
                     "type": "shadow",
@@ -350,7 +410,10 @@
                       "type": "text",
                       "id": "rTp1o",
                       "name": "Zoom Minus",
-                      "fill": "#666971",
+                      "fill": {
+                        "type": "color",
+                        "color": "#666971"
+                      },
                       "content": "−",
                       "fontFamily": "Inter",
                       "fontSize": 24,
@@ -360,7 +423,10 @@
                       "type": "text",
                       "id": "UTsoJ",
                       "name": "Zoom Percentage",
-                      "fill": "#575A62",
+                      "fill": {
+                        "type": "color",
+                        "color": "#575A62"
+                      },
                       "content": "15%",
                       "fontFamily": "Inter",
                       "fontSize": 14,
@@ -370,7 +436,10 @@
                       "type": "text",
                       "id": "sjQUr",
                       "name": "Zoom Plus",
-                      "fill": "#666971",
+                      "fill": {
+                        "type": "color",
+                        "color": "#666971"
+                      },
                       "content": "+",
                       "fontFamily": "Inter",
                       "fontSize": 20,
@@ -385,7 +454,10 @@
                   "x": 674,
                   "y": 1134,
                   "name": "Canvas Scrollbar Track",
-                  "fill": "#BDBEC3",
+                  "fill": {
+                    "type": "color",
+                    "color": "#BDBEC3"
+                  },
                   "width": 276,
                   "height": 6
                 },
@@ -397,9 +469,15 @@
                   "name": "Prompt Dock Course",
                   "width": 507,
                   "height": 101,
-                  "fill": "#FFFFFF",
+                  "fill": {
+                    "type": "color",
+                    "color": "#FFFFFF"
+                  },
                   "cornerRadius": 10,
-                  "stroke": "#ECECEE",
+                  "stroke": {
+                    "type": "color",
+                    "color": "#ECECEE"
+                  },
                   "strokeWidth": 1,
                   "effect": {
                     "type": "shadow",
@@ -419,7 +497,10 @@
                       "type": "text",
                       "id": "b6gm7",
                       "name": "Prompt Placeholder",
-                      "fill": "#6C6C72",
+                      "fill": {
+                        "type": "color",
+                        "color": "#6C6C72"
+                      },
                       "textGrowth": "fixed-width-height",
                       "width": 137,
                       "height": 35,
@@ -448,7 +529,10 @@
                               "type": "text",
                               "id": "mX4GN",
                               "name": "Prompt Boost",
-                              "fill": "#FF8B1F",
+                              "fill": {
+                                "type": "color",
+                                "color": "#FF8B1F"
+                              },
                               "content": "⚡ 6x",
                               "fontFamily": "Inter",
                               "fontSize": 14,
@@ -474,7 +558,10 @@
                                   "type": "text",
                                   "id": "Hu3gV",
                                   "name": "Prompt Model",
-                                  "fill": "#5E5F67",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#5E5F67"
+                                  },
                                   "content": "GPT 5.5",
                                   "fontFamily": "Inter",
                                   "fontSize": 14,
@@ -487,7 +574,10 @@
                                   "height": 14,
                                   "icon": "chevron-down",
                                   "library": "lucide",
-                                  "fill": "#5d5e66ff"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#5d5e66ff"
+                                  }
                                 }
                               ]
                             },
@@ -497,7 +587,10 @@
                               "name": "Prompt Send Button",
                               "width": 22,
                               "height": 22,
-                              "fill": "#F1F2F4",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F1F2F4"
+                              },
                               "cornerRadius": 11,
                               "justifyContent": "center",
                               "alignItems": "center",
@@ -506,7 +599,10 @@
                                   "type": "text",
                                   "id": "H7btE",
                                   "name": "Prompt Send Glyph",
-                                  "fill": "#B7B8BF",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#B7B8BF"
+                                  },
                                   "content": "↑",
                                   "fontFamily": "Inter",
                                   "fontSize": 14,
@@ -528,7 +624,10 @@
               "x": 1,
               "y": 49,
               "name": "Chrome Bottom Divider",
-              "fill": "#EDEDED",
+              "fill": {
+                "type": "color",
+                "color": "#EDEDED"
+              },
               "width": 1351,
               "height": 1
             },
@@ -538,7 +637,10 @@
               "x": 1351,
               "y": 2,
               "name": "Right Divider",
-              "fill": "#EAEAEA",
+              "fill": {
+                "type": "color",
+                "color": "#EAEAEA"
+              },
               "width": 1,
               "height": 1205
             },
@@ -551,7 +653,10 @@
               "clip": true,
               "width": 268,
               "height": 1205,
-              "fill": "#ffffff",
+              "fill": {
+                "type": "color",
+                "color": "#ffffff"
+              },
               "layout": "none",
               "children": [
                 {
@@ -563,7 +668,10 @@
                   "clip": true,
                   "width": 268,
                   "height": 1205,
-                  "fill": "#FFFFFF",
+                  "fill": {
+                    "type": "color",
+                    "color": "#FFFFFF"
+                  },
                   "layout": "vertical",
                   "children": [
                     {
@@ -602,7 +710,10 @@
                             {
                               "type": "text",
                               "id": "bZKuX",
-                              "fill": "#000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#000000"
+                              },
                               "content": "妙笔 AI\nmiaomadesign",
                               "fontFamily": "Inter",
                               "fontSize": 11,
@@ -628,7 +739,10 @@
                               "height": 16,
                               "icon": "circle-user",
                               "library": "lucide",
-                              "fill": "#222222"
+                              "fill": {
+                                "type": "color",
+                                "color": "#222222"
+                              }
                             },
                             {
                               "type": "icon",
@@ -638,7 +752,10 @@
                               "height": 16,
                               "icon": "play",
                               "library": "lucide",
-                              "fill": "#222222"
+                              "fill": {
+                                "type": "color",
+                                "color": "#222222"
+                              }
                             }
                           ]
                         }
@@ -648,7 +765,10 @@
                       "type": "rectangle",
                       "id": "LJvRa",
                       "name": "Header Divider",
-                      "fill": "#E8E8E8",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E8E8E8"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -690,13 +810,19 @@
                                   "height": 14,
                                   "icon": "frame",
                                   "library": "lucide",
-                                  "fill": "#111111"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#111111"
+                                  }
                                 },
                                 {
                                   "type": "text",
                                   "id": "b61Aqa",
                                   "name": "Frame 3 Title",
-                                  "fill": "#111111",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#111111"
+                                  },
                                   "content": "Miaoma Editor Recr",
                                   "fontFamily": "Inter",
                                   "fontSize": 13,
@@ -723,7 +849,10 @@
                                   "height": 13,
                                   "icon": "panel-right",
                                   "library": "lucide",
-                                  "fill": "#777777"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#777777"
+                                  }
                                 }
                               ]
                             }
@@ -755,13 +884,19 @@
                                   "height": 15,
                                   "icon": "diamond-plus",
                                   "library": "lucide",
-                                  "fill": "#111111"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#111111"
+                                  }
                                 },
                                 {
                                   "type": "text",
                                   "id": "JWX59",
                                   "name": "Create Component Text",
-                                  "fill": "#111111",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#111111"
+                                  },
                                   "content": "Create Component",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -777,7 +912,10 @@
                       "type": "rectangle",
                       "id": "l9Tph",
                       "name": "Selected Block Divider",
-                      "fill": "#E8E8E8",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E8E8E8"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -806,7 +944,10 @@
                               "type": "text",
                               "id": "Pm4Hg",
                               "name": "Context Label",
-                              "fill": "#111111",
+                              "fill": {
+                                "type": "color",
+                                "color": "#111111"
+                              },
                               "content": "Context",
                               "fontFamily": "Inter",
                               "fontSize": 12,
@@ -822,7 +963,10 @@
                           "height": 14,
                           "icon": "chevron-down",
                           "library": "lucide",
-                          "fill": "#7A7A7A"
+                          "fill": {
+                            "type": "color",
+                            "color": "#7A7A7A"
+                          }
                         }
                       ]
                     },
@@ -830,7 +974,10 @@
                       "type": "rectangle",
                       "id": "TUes7",
                       "name": "Context Divider",
-                      "fill": "#E9E9E9",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E9E9E9"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -869,7 +1016,10 @@
                                   "type": "text",
                                   "id": "USewV",
                                   "name": "Alignment Title",
-                                  "fill": "#333333",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#333333"
+                                  },
                                   "content": "Alignment",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -895,9 +1045,15 @@
                               "name": "Align Left Button",
                               "width": 30,
                               "height": 30,
-                              "fill": "#F7F7F7",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F7F7F7"
+                              },
                               "cornerRadius": 5,
-                              "stroke": "#E4E4E4",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E4E4E4"
+                              },
                               "strokeWidth": 1,
                               "justifyContent": "center",
                               "alignItems": "center",
@@ -910,7 +1066,10 @@
                                   "height": 15,
                                   "icon": "align-start-horizontal",
                                   "library": "lucide",
-                                  "fill": "#9CA3AF"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#9CA3AF"
+                                  }
                                 }
                               ]
                             },
@@ -920,9 +1079,15 @@
                               "name": "Align Center Button",
                               "width": 30,
                               "height": 30,
-                              "fill": "#F7F7F7",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F7F7F7"
+                              },
                               "cornerRadius": 5,
-                              "stroke": "#E4E4E4",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E4E4E4"
+                              },
                               "strokeWidth": 1,
                               "justifyContent": "center",
                               "alignItems": "center",
@@ -935,7 +1100,10 @@
                                   "height": 15,
                                   "icon": "align-center-horizontal",
                                   "library": "lucide",
-                                  "fill": "#9CA3AF"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#9CA3AF"
+                                  }
                                 }
                               ]
                             },
@@ -945,9 +1113,15 @@
                               "name": "Align Right Button",
                               "width": 30,
                               "height": 30,
-                              "fill": "#F7F7F7",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F7F7F7"
+                              },
                               "cornerRadius": 5,
-                              "stroke": "#E4E4E4",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E4E4E4"
+                              },
                               "strokeWidth": 1,
                               "justifyContent": "center",
                               "alignItems": "center",
@@ -960,7 +1134,10 @@
                                   "height": 15,
                                   "icon": "align-end-horizontal",
                                   "library": "lucide",
-                                  "fill": "#9CA3AF"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#9CA3AF"
+                                  }
                                 }
                               ]
                             },
@@ -970,9 +1147,15 @@
                               "name": "Align Top Button",
                               "width": 30,
                               "height": 30,
-                              "fill": "#F7F7F7",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F7F7F7"
+                              },
                               "cornerRadius": 5,
-                              "stroke": "#E4E4E4",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E4E4E4"
+                              },
                               "strokeWidth": 1,
                               "justifyContent": "center",
                               "alignItems": "center",
@@ -985,7 +1168,10 @@
                                   "height": 15,
                                   "icon": "align-start-vertical",
                                   "library": "lucide",
-                                  "fill": "#9CA3AF"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#9CA3AF"
+                                  }
                                 }
                               ]
                             },
@@ -995,9 +1181,15 @@
                               "name": "Align Middle Button",
                               "width": 30,
                               "height": 30,
-                              "fill": "#F7F7F7",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F7F7F7"
+                              },
                               "cornerRadius": 5,
-                              "stroke": "#E4E4E4",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E4E4E4"
+                              },
                               "strokeWidth": 1,
                               "justifyContent": "center",
                               "alignItems": "center",
@@ -1010,7 +1202,10 @@
                                   "height": 15,
                                   "icon": "align-center-vertical",
                                   "library": "lucide",
-                                  "fill": "#9CA3AF"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#9CA3AF"
+                                  }
                                 }
                               ]
                             },
@@ -1020,9 +1215,15 @@
                               "name": "Align Bottom Button",
                               "width": 30,
                               "height": 30,
-                              "fill": "#F7F7F7",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F7F7F7"
+                              },
                               "cornerRadius": 5,
-                              "stroke": "#E4E4E4",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E4E4E4"
+                              },
                               "strokeWidth": 1,
                               "justifyContent": "center",
                               "alignItems": "center",
@@ -1035,7 +1236,10 @@
                                   "height": 15,
                                   "icon": "align-end-vertical",
                                   "library": "lucide",
-                                  "fill": "#9CA3AF"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#9CA3AF"
+                                  }
                                 }
                               ]
                             }
@@ -1047,7 +1251,10 @@
                       "type": "rectangle",
                       "id": "wkdfg",
                       "name": "Alignment Divider",
-                      "fill": "#E9E9E9",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E9E9E9"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -1082,7 +1289,10 @@
                                   "type": "text",
                                   "id": "qZttf",
                                   "name": "Position Label",
-                                  "fill": "#333333",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#333333"
+                                  },
                                   "content": "Position",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -1096,7 +1306,10 @@
                               "name": "Position Spacer",
                               "width": 14,
                               "height": 14,
-                              "fill": "#00000000"
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              }
                             }
                           ]
                         },
@@ -1114,9 +1327,15 @@
                               "name": "X Control",
                               "width": 115,
                               "height": 32,
-                              "fill": "#F8F8F8",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F8F8F8"
+                              },
                               "cornerRadius": 8,
-                              "stroke": "#E3E3E3",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E3E3E3"
+                              },
                               "strokeWidth": 1,
                               "gap": 4,
                               "padding": [
@@ -1129,7 +1348,10 @@
                                   "type": "text",
                                   "id": "e7Ei6J",
                                   "name": "X Control Label",
-                                  "fill": "#8A8A8A",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#8A8A8A"
+                                  },
                                   "content": "X",
                                   "fontFamily": "Inter",
                                   "fontSize": 11,
@@ -1139,7 +1361,10 @@
                                   "type": "text",
                                   "id": "FIHdf",
                                   "name": "X Control Value",
-                                  "fill": "#262626",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#262626"
+                                  },
                                   "content": "0",
                                   "fontFamily": "IBM Plex Mono",
                                   "fontSize": 12,
@@ -1153,9 +1378,15 @@
                               "name": "Y Control",
                               "width": 115,
                               "height": 32,
-                              "fill": "#F8F8F8",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F8F8F8"
+                              },
                               "cornerRadius": 8,
-                              "stroke": "#E3E3E3",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E3E3E3"
+                              },
                               "strokeWidth": 1,
                               "gap": 4,
                               "padding": [
@@ -1168,7 +1399,10 @@
                                   "type": "text",
                                   "id": "BSaoo",
                                   "name": "Y Control Label",
-                                  "fill": "#8A8A8A",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#8A8A8A"
+                                  },
                                   "content": "Y",
                                   "fontFamily": "Inter",
                                   "fontSize": 11,
@@ -1178,7 +1412,10 @@
                                   "type": "text",
                                   "id": "V90DKV",
                                   "name": "Y Control Value",
-                                  "fill": "#262626",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#262626"
+                                  },
                                   "content": "0",
                                   "fontFamily": "IBM Plex Mono",
                                   "fontSize": 12,
@@ -1203,9 +1440,15 @@
                               "name": "R Control",
                               "width": 115,
                               "height": 32,
-                              "fill": "#F8F8F8",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F8F8F8"
+                              },
                               "cornerRadius": 8,
-                              "stroke": "#E3E3E3",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E3E3E3"
+                              },
                               "strokeWidth": 1,
                               "gap": 4,
                               "padding": [
@@ -1218,7 +1461,10 @@
                                   "type": "text",
                                   "id": "MaA50",
                                   "name": "R Control Label",
-                                  "fill": "#8A8A8A",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#8A8A8A"
+                                  },
                                   "content": "R",
                                   "fontFamily": "Inter",
                                   "fontSize": 11,
@@ -1228,7 +1474,10 @@
                                   "type": "text",
                                   "id": "nqAf1",
                                   "name": "R Control Value",
-                                  "fill": "#262626",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#262626"
+                                  },
                                   "content": "0",
                                   "fontFamily": "IBM Plex Mono",
                                   "fontSize": 12,
@@ -1244,7 +1493,10 @@
                       "type": "rectangle",
                       "id": "p8cHj",
                       "name": "Position Divider",
-                      "fill": "#E9E9E9",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E9E9E9"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -1279,7 +1531,10 @@
                                   "type": "text",
                                   "id": "WajOo",
                                   "name": "Layout Label",
-                                  "fill": "#333333",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#333333"
+                                  },
                                   "content": "Layout",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -1295,7 +1550,10 @@
                               "height": 14,
                               "icon": "layout-dashboard",
                               "library": "lucide",
-                              "fill": "#888888"
+                              "fill": {
+                                "type": "color",
+                                "color": "#888888"
+                              }
                             }
                           ]
                         },
@@ -1305,7 +1563,10 @@
                           "name": "Layout Mode Control",
                           "width": "fill_container",
                           "height": 34,
-                          "fill": "#F2F2F2",
+                          "fill": {
+                            "type": "color",
+                            "color": "#F2F2F2"
+                          },
                           "cornerRadius": 8,
                           "padding": 1,
                           "alignItems": "center",
@@ -1316,7 +1577,10 @@
                               "name": "Horizontal Layout Button",
                               "width": "fill_container",
                               "height": "fill_container",
-                              "fill": "#FFFFFF",
+                              "fill": {
+                                "type": "color",
+                                "color": "#FFFFFF"
+                              },
                               "cornerRadius": 8,
                               "justifyContent": "center",
                               "alignItems": "center",
@@ -1329,7 +1593,10 @@
                                   "height": 15,
                                   "icon": "layout-grid",
                                   "library": "lucide",
-                                  "fill": "#4A4A4A"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#4A4A4A"
+                                  }
                                 }
                               ]
                             },
@@ -1339,7 +1606,10 @@
                               "name": "Vertical Layout Button",
                               "width": "fill_container",
                               "height": "fill_container",
-                              "fill": "#F2F2F2",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F2F2F2"
+                              },
                               "justifyContent": "center",
                               "alignItems": "center",
                               "children": [
@@ -1351,7 +1621,10 @@
                                   "height": 15,
                                   "icon": "arrow-down-from-line",
                                   "library": "lucide",
-                                  "fill": "#5A5A5A"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#5A5A5A"
+                                  }
                                 }
                               ]
                             },
@@ -1361,7 +1634,10 @@
                               "name": "Horizontal Direction Button",
                               "width": "fill_container",
                               "height": "fill_container",
-                              "fill": "#F2F2F2",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F2F2F2"
+                              },
                               "cornerRadius": [
                                 0,
                                 9,
@@ -1379,7 +1655,10 @@
                                   "height": 15,
                                   "icon": "arrow-right-from-line",
                                   "library": "lucide",
-                                  "fill": "#5A5A5A"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#5A5A5A"
+                                  }
                                 }
                               ]
                             }
@@ -1406,9 +1685,15 @@
                                   "name": "Width Control",
                                   "width": 116,
                                   "height": 32,
-                                  "fill": "#F8F8F8",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#F8F8F8"
+                                  },
                                   "cornerRadius": 8,
-                                  "stroke": "#E3E3E3",
+                                  "stroke": {
+                                    "type": "color",
+                                    "color": "#E3E3E3"
+                                  },
                                   "strokeWidth": 1,
                                   "gap": 8,
                                   "padding": [
@@ -1421,7 +1706,10 @@
                                       "type": "text",
                                       "id": "RIOkw",
                                       "name": "Width Label",
-                                      "fill": "#8A8A8A",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#8A8A8A"
+                                      },
                                       "content": "W",
                                       "fontFamily": "Inter",
                                       "fontSize": 11,
@@ -1431,7 +1719,10 @@
                                       "type": "text",
                                       "id": "l9j7I",
                                       "name": "Width Value",
-                                      "fill": "#262626",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#262626"
+                                      },
                                       "content": "1920",
                                       "fontFamily": "IBM Plex Mono",
                                       "fontSize": 12,
@@ -1445,9 +1736,15 @@
                                   "name": "Height Control",
                                   "width": 116,
                                   "height": 32,
-                                  "fill": "#F8F8F8",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#F8F8F8"
+                                  },
                                   "cornerRadius": 8,
-                                  "stroke": "#E3E3E3",
+                                  "stroke": {
+                                    "type": "color",
+                                    "color": "#E3E3E3"
+                                  },
                                   "strokeWidth": 1,
                                   "gap": 8,
                                   "padding": [
@@ -1460,7 +1757,10 @@
                                       "type": "text",
                                       "id": "WjtS2",
                                       "name": "Height Label",
-                                      "fill": "#8A8A8A",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#8A8A8A"
+                                      },
                                       "content": "H",
                                       "fontFamily": "Inter",
                                       "fontSize": 11,
@@ -1470,7 +1770,10 @@
                                       "type": "text",
                                       "id": "ISR81",
                                       "name": "Height Value",
-                                      "fill": "#262626",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#262626"
+                                      },
                                       "content": "1205",
                                       "fontFamily": "IBM Plex Mono",
                                       "fontSize": 12,
@@ -1503,9 +1806,15 @@
                                       "name": "Fill Width Box",
                                       "width": 14,
                                       "height": 14,
-                                      "fill": "#FFFFFF",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#FFFFFF"
+                                      },
                                       "cornerRadius": 3,
-                                      "stroke": "#D1D5DB",
+                                      "stroke": {
+                                        "type": "color",
+                                        "color": "#D1D5DB"
+                                      },
                                       "strokeWidth": 1,
                                       "justifyContent": "center",
                                       "alignItems": "center"
@@ -1514,7 +1823,10 @@
                                       "type": "text",
                                       "id": "aGbdV",
                                       "name": "Fill Width Label",
-                                      "fill": "#333333",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#333333"
+                                      },
                                       "content": "Fill Width",
                                       "fontFamily": "Inter",
                                       "fontSize": 11,
@@ -1537,9 +1849,15 @@
                                       "name": "Fill Height Box",
                                       "width": 14,
                                       "height": 14,
-                                      "fill": "#FFFFFF",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#FFFFFF"
+                                      },
                                       "cornerRadius": 3,
-                                      "stroke": "#D1D5DB",
+                                      "stroke": {
+                                        "type": "color",
+                                        "color": "#D1D5DB"
+                                      },
                                       "strokeWidth": 1,
                                       "justifyContent": "center",
                                       "alignItems": "center"
@@ -1548,7 +1866,10 @@
                                       "type": "text",
                                       "id": "f9wQD",
                                       "name": "Fill Height Label",
-                                      "fill": "#333333",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#333333"
+                                      },
                                       "content": "Fill Height",
                                       "fontFamily": "Inter",
                                       "fontSize": 11,
@@ -1581,9 +1902,15 @@
                                       "name": "Clip Content Box",
                                       "width": 14,
                                       "height": 14,
-                                      "fill": "#111111",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#111111"
+                                      },
                                       "cornerRadius": 3,
-                                      "stroke": "#111111",
+                                      "stroke": {
+                                        "type": "color",
+                                        "color": "#111111"
+                                      },
                                       "strokeWidth": 1,
                                       "justifyContent": "center",
                                       "alignItems": "center",
@@ -1596,7 +1923,10 @@
                                           "height": 10,
                                           "icon": "check",
                                           "library": "lucide",
-                                          "fill": "#FFFFFF"
+                                          "fill": {
+                                            "type": "color",
+                                            "color": "#FFFFFF"
+                                          }
                                         }
                                       ]
                                     },
@@ -1604,7 +1934,10 @@
                                       "type": "text",
                                       "id": "s17xsI",
                                       "name": "Clip Content Label",
-                                      "fill": "#333333",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#333333"
+                                      },
                                       "content": "Clip Content",
                                       "fontFamily": "Inter",
                                       "fontSize": 11,
@@ -1622,7 +1955,10 @@
                       "type": "rectangle",
                       "id": "PPY75",
                       "name": "Layout Divider",
-                      "fill": "#E9E9E9",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E9E9E9"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -1657,7 +1993,10 @@
                                   "type": "text",
                                   "id": "Lfzo8",
                                   "name": "Appearance Label",
-                                  "fill": "#333333",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#333333"
+                                  },
                                   "content": "Appearance",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -1671,7 +2010,10 @@
                               "name": "Appearance Spacer",
                               "width": 14,
                               "height": 14,
-                              "fill": "#00000000"
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              }
                             }
                           ]
                         },
@@ -1689,9 +2031,15 @@
                               "name": "Opacity Control",
                               "width": 116,
                               "height": 32,
-                              "fill": "#F8F8F8",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F8F8F8"
+                              },
                               "cornerRadius": 8,
-                              "stroke": "#E3E3E3",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E3E3E3"
+                              },
                               "strokeWidth": 1,
                               "gap": 4,
                               "padding": [
@@ -1704,7 +2052,10 @@
                                   "type": "text",
                                   "id": "sSv0i",
                                   "name": "Opacity Value",
-                                  "fill": "#262626",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#262626"
+                                  },
                                   "content": "% 100",
                                   "fontFamily": "IBM Plex Mono",
                                   "fontSize": 11,
@@ -1718,9 +2069,15 @@
                               "name": "Radius Control",
                               "width": 116,
                               "height": 32,
-                              "fill": "#F8F8F8",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F8F8F8"
+                              },
                               "cornerRadius": 8,
-                              "stroke": "#E3E3E3",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E3E3E3"
+                              },
                               "strokeWidth": 1,
                               "gap": 6,
                               "padding": [
@@ -1737,13 +2094,19 @@
                                   "height": 14,
                                   "icon": "square",
                                   "library": "lucide",
-                                  "fill": "#8A8A8A"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#8A8A8A"
+                                  }
                                 },
                                 {
                                   "type": "text",
                                   "id": "I4gySv",
                                   "name": "Radius Value",
-                                  "fill": "#262626",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#262626"
+                                  },
                                   "content": "24",
                                   "fontFamily": "IBM Plex Mono",
                                   "fontSize": 12,
@@ -1759,7 +2122,10 @@
                       "type": "rectangle",
                       "id": "xtay8",
                       "name": "Appearance Divider",
-                      "fill": "#E9E9E9",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E9E9E9"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -1794,7 +2160,10 @@
                                   "type": "text",
                                   "id": "Rx6Vm",
                                   "name": "Fill Label",
-                                  "fill": "#333333",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#333333"
+                                  },
                                   "content": "Fill",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -1810,7 +2179,10 @@
                               "height": 14,
                               "icon": "plus",
                               "library": "lucide",
-                              "fill": "#888888"
+                              "fill": {
+                                "type": "color",
+                                "color": "#888888"
+                              }
                             }
                           ]
                         },
@@ -1830,7 +2202,10 @@
                               "clip": true,
                               "width": 221,
                               "height": 34,
-                              "fill": "#FFFFFF",
+                              "fill": {
+                                "type": "color",
+                                "color": "#FFFFFF"
+                              },
                               "children": [
                                 {
                                   "type": "frame",
@@ -1838,14 +2213,20 @@
                                   "name": "Fill Color Control",
                                   "width": 144,
                                   "height": 32,
-                                  "fill": "#F8F8F8",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#F8F8F8"
+                                  },
                                   "cornerRadius": [
                                     8,
                                     0,
                                     0,
                                     8
                                   ],
-                                  "stroke": "#E3E3E3",
+                                  "stroke": {
+                                    "type": "color",
+                                    "color": "#E3E3E3"
+                                  },
                                   "strokeWidth": 1,
                                   "gap": 8,
                                   "padding": [
@@ -1859,17 +2240,26 @@
                                       "cornerRadius": 3,
                                       "id": "bBKge",
                                       "name": "Fill Swatch",
-                                      "fill": "#F3F4F6",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#F3F4F6"
+                                      },
                                       "width": 14,
                                       "height": 14,
-                                      "stroke": "#D1D5DB",
+                                      "stroke": {
+                                        "type": "color",
+                                        "color": "#D1D5DB"
+                                      },
                                       "strokeWidth": 1
                                     },
                                     {
                                       "type": "text",
                                       "id": "F9nJYZ",
                                       "name": "Fill Hex",
-                                      "fill": "#2B2B2B",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#2B2B2B"
+                                      },
                                       "content": "#f3f4f6",
                                       "fontFamily": "IBM Plex Mono",
                                       "fontSize": 11,
@@ -1883,14 +2273,20 @@
                                   "name": "Fill Opacity Control",
                                   "width": 73,
                                   "height": 32,
-                                  "fill": "#F8F8F8",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#F8F8F8"
+                                  },
                                   "cornerRadius": [
                                     0,
                                     8,
                                     8,
                                     0
                                   ],
-                                  "stroke": "#E3E3E3",
+                                  "stroke": {
+                                    "type": "color",
+                                    "color": "#E3E3E3"
+                                  },
                                   "strokeWidth": 1,
                                   "gap": 4,
                                   "padding": [
@@ -1904,7 +2300,10 @@
                                       "type": "text",
                                       "id": "kLv4W",
                                       "name": "Fill Opacity Value",
-                                      "fill": "#262626",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#262626"
+                                      },
                                       "content": "100%",
                                       "fontFamily": "IBM Plex Mono",
                                       "fontSize": 12,
@@ -1922,7 +2321,10 @@
                               "height": 14,
                               "icon": "minus",
                               "library": "lucide",
-                              "fill": "#8A8A8A"
+                              "fill": {
+                                "type": "color",
+                                "color": "#8A8A8A"
+                              }
                             }
                           ]
                         }
@@ -1932,7 +2334,10 @@
                       "type": "rectangle",
                       "id": "pydwX",
                       "name": "Fill Divider",
-                      "fill": "#E9E9E9",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E9E9E9"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -1971,7 +2376,10 @@
                                   "type": "text",
                                   "id": "LNbHi",
                                   "name": "Stroke Title",
-                                  "fill": "#333333",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#333333"
+                                  },
                                   "content": "Stroke",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -1987,7 +2395,10 @@
                               "height": 14,
                               "icon": "plus",
                               "library": "lucide",
-                              "fill": "#888888"
+                              "fill": {
+                                "type": "color",
+                                "color": "#888888"
+                              }
                             }
                           ]
                         }
@@ -1997,7 +2408,10 @@
                       "type": "rectangle",
                       "id": "NVeo9",
                       "name": "Stroke Divider",
-                      "fill": "#E9E9E9",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E9E9E9"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -2036,7 +2450,10 @@
                                   "type": "text",
                                   "id": "X95iRZ",
                                   "name": "Effects Title",
-                                  "fill": "#333333",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#333333"
+                                  },
                                   "content": "Effects",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -2052,7 +2469,10 @@
                               "height": 14,
                               "icon": "plus",
                               "library": "lucide",
-                              "fill": "#888888"
+                              "fill": {
+                                "type": "color",
+                                "color": "#888888"
+                              }
                             }
                           ]
                         }
@@ -2062,7 +2482,10 @@
                       "type": "rectangle",
                       "id": "XhJii",
                       "name": "Effects Divider",
-                      "fill": "#E9E9E9",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E9E9E9"
+                      },
                       "width": "fill_container",
                       "height": 1
                     },
@@ -2101,7 +2524,10 @@
                                   "type": "text",
                                   "id": "P51FU",
                                   "name": "Export Title",
-                                  "fill": "#333333",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#333333"
+                                  },
                                   "content": "Export",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -2126,9 +2552,15 @@
                               "name": "Scale Dropdown",
                               "width": 116,
                               "height": 32,
-                              "fill": "#F8F8F8",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F8F8F8"
+                              },
                               "cornerRadius": 8,
-                              "stroke": "#E3E3E3",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E3E3E3"
+                              },
                               "strokeWidth": 1,
                               "padding": [
                                 0,
@@ -2141,7 +2573,10 @@
                                   "type": "text",
                                   "id": "DgoJf",
                                   "name": "Scale Dropdown Value",
-                                  "fill": "#262626",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#262626"
+                                  },
                                   "content": "2x",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -2155,7 +2590,10 @@
                                   "height": 12,
                                   "icon": "chevron-down",
                                   "library": "lucide",
-                                  "fill": "#7A7A7A"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#7A7A7A"
+                                  }
                                 }
                               ]
                             },
@@ -2165,9 +2603,15 @@
                               "name": "Format Dropdown",
                               "width": 116,
                               "height": 32,
-                              "fill": "#F8F8F8",
+                              "fill": {
+                                "type": "color",
+                                "color": "#F8F8F8"
+                              },
                               "cornerRadius": 8,
-                              "stroke": "#E3E3E3",
+                              "stroke": {
+                                "type": "color",
+                                "color": "#E3E3E3"
+                              },
                               "strokeWidth": 1,
                               "padding": [
                                 0,
@@ -2180,7 +2624,10 @@
                                   "type": "text",
                                   "id": "Z3xK32",
                                   "name": "Format Dropdown Value",
-                                  "fill": "#262626",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#262626"
+                                  },
                                   "content": "PNG",
                                   "fontFamily": "Inter",
                                   "fontSize": 12,
@@ -2194,7 +2641,10 @@
                                   "height": 12,
                                   "icon": "chevron-down",
                                   "library": "lucide",
-                                  "fill": "#7A7A7A"
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#7A7A7A"
+                                  }
                                 }
                               ]
                             }
@@ -2206,7 +2656,10 @@
                           "name": "Export Layer Button",
                           "width": "fill_container",
                           "height": 30,
-                          "fill": "#111111",
+                          "fill": {
+                            "type": "color",
+                            "color": "#111111"
+                          },
                           "cornerRadius": 8,
                           "gap": 8,
                           "justifyContent": "center",
@@ -2220,13 +2673,19 @@
                               "height": 14,
                               "icon": "download",
                               "library": "lucide",
-                              "fill": "#FFFFFF"
+                              "fill": {
+                                "type": "color",
+                                "color": "#FFFFFF"
+                              }
                             },
                             {
                               "type": "text",
                               "id": "I6NAXj",
                               "name": "Export Label",
-                              "fill": "#FFFFFF",
+                              "fill": {
+                                "type": "color",
+                                "color": "#FFFFFF"
+                              },
                               "content": "Export layer",
                               "fontFamily": "Inter",
                               "fontSize": 12,
@@ -2240,7 +2699,10 @@
                       "type": "rectangle",
                       "id": "DgzQt",
                       "name": "Export Divider",
-                      "fill": "#E9E9E9",
+                      "fill": {
+                        "type": "color",
+                        "color": "#E9E9E9"
+                      },
                       "width": "fill_container",
                       "height": 1
                     }
@@ -2284,30 +2746,48 @@
                       "type": "ellipse",
                       "id": "YZdGX",
                       "name": "Close Dot",
-                      "fill": "#FF5F57",
+                      "fill": {
+                        "type": "color",
+                        "color": "#FF5F57"
+                      },
                       "width": 12,
                       "height": 12,
-                      "stroke": "#E0443E",
+                      "stroke": {
+                        "type": "color",
+                        "color": "#E0443E"
+                      },
                       "strokeWidth": 1
                     },
                     {
                       "type": "ellipse",
                       "id": "GWP7J",
                       "name": "Minimize Dot",
-                      "fill": "#FEBB2E",
+                      "fill": {
+                        "type": "color",
+                        "color": "#FEBB2E"
+                      },
                       "width": 12,
                       "height": 12,
-                      "stroke": "#DF9A1F",
+                      "stroke": {
+                        "type": "color",
+                        "color": "#DF9A1F"
+                      },
                       "strokeWidth": 1
                     },
                     {
                       "type": "ellipse",
                       "id": "b9CtrO",
                       "name": "Zoom Dot",
-                      "fill": "#28C840",
+                      "fill": {
+                        "type": "color",
+                        "color": "#28C840"
+                      },
                       "width": 12,
                       "height": 12,
-                      "stroke": "#1FAE38",
+                      "stroke": {
+                        "type": "color",
+                        "color": "#1FAE38"
+                      },
                       "strokeWidth": 1
                     }
                   ]
@@ -2336,7 +2816,10 @@
                           "height": 16,
                           "icon": "panel-left",
                           "library": "lucide",
-                          "fill": "#6B7280"
+                          "fill": {
+                            "type": "color",
+                            "color": "#6B7280"
+                          }
                         }
                       ]
                     },
@@ -2357,7 +2840,10 @@
                           "height": 16,
                           "icon": "plus",
                           "library": "lucide",
-                          "fill": "#6B7280"
+                          "fill": {
+                            "type": "color",
+                            "color": "#6B7280"
+                          }
                         }
                       ]
                     }
@@ -2408,7 +2894,10 @@
                               "type": "text",
                               "id": "czuwL",
                               "name": "Agent Label",
-                              "fill": "#6B7280",
+                              "fill": {
+                                "type": "color",
+                                "color": "#6B7280"
+                              },
                               "content": "Agent",
                               "fontFamily": "Inter",
                               "fontSize": 13,
@@ -2420,7 +2909,10 @@
                           "type": "frame",
                           "id": "N6FGQ",
                           "name": "Tab Layers",
-                          "fill": "#e9e9e9ff",
+                          "fill": {
+                            "type": "color",
+                            "color": "#e9e9e9ff"
+                          },
                           "cornerRadius": 6,
                           "gap": 8,
                           "padding": [
@@ -2433,7 +2925,10 @@
                               "type": "text",
                               "id": "DNmx0",
                               "name": "Layers Label",
-                              "fill": "#111827",
+                              "fill": {
+                                "type": "color",
+                                "color": "#111827"
+                              },
                               "content": "Layers",
                               "fontFamily": "Inter",
                               "fontSize": 14,
@@ -2483,14 +2978,20 @@
                               "name": "Layer Row Content",
                               "width": "fill_container",
                               "height": 30,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "alignItems": "center",
                               "children": [
                                 {
                                   "type": "rectangle",
                                   "id": "E3JDCa",
                                   "name": "Content Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 30
                                 },
@@ -2517,7 +3018,10 @@
                                       "height": 14,
                                       "icon": "chevron-down",
                                       "library": "lucide",
-                                      "fill": "#94A3B8"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#94A3B8"
+                                      }
                                     },
                                     {
                                       "type": "icon",
@@ -2527,13 +3031,19 @@
                                       "height": 16,
                                       "icon": "frame",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "n8QuV",
                                       "name": "Content Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Content",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -2550,7 +3060,10 @@
                               "name": "Layer Row Right Divider",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -2558,7 +3071,10 @@
                                   "type": "rectangle",
                                   "id": "u2Uwl",
                                   "name": "Right Divider Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -2592,13 +3108,19 @@
                                       "height": 16,
                                       "icon": "minus",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "KKJW6",
                                       "name": "Right Divider Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Right Divider",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -2615,7 +3137,10 @@
                               "name": "Layer Row Right Inspector",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -2623,7 +3148,10 @@
                                   "type": "rectangle",
                                   "id": "pMTiW",
                                   "name": "Right Inspector Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -2657,13 +3185,19 @@
                                       "height": 16,
                                       "icon": "sliders-horizontal",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "q667j3",
                                       "name": "Right Inspector Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Right Inspector",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -2680,7 +3214,10 @@
                               "name": "Layer Row Chrome Bottom Divider",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -2688,7 +3225,10 @@
                                   "type": "rectangle",
                                   "id": "DJq2r",
                                   "name": "Chrome Bottom Divider Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -2722,13 +3262,19 @@
                                       "height": 16,
                                       "icon": "minus",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "zoxqd",
                                       "name": "Chrome Bottom Divider Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Chrome Bottom Divider",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -2745,7 +3291,10 @@
                               "name": "Layer Row Canvas Stage",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -2753,7 +3302,10 @@
                                   "type": "rectangle",
                                   "id": "CBW8Z",
                                   "name": "Canvas Stage Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -2787,13 +3339,19 @@
                                       "height": 16,
                                       "icon": "square",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "tJTVx",
                                       "name": "Canvas Stage Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Canvas Stage",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -2810,7 +3368,10 @@
                               "name": "Layer Row Window Chrome",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -2818,7 +3379,10 @@
                                   "type": "rectangle",
                                   "id": "x32WVz",
                                   "name": "Window Chrome Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -2852,13 +3416,19 @@
                                       "height": 16,
                                       "icon": "frame",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "smTDL",
                                       "name": "Window Chrome Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Window Chrome",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -2875,7 +3445,10 @@
                               "name": "Layer Row Main Right Region",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -2883,7 +3456,10 @@
                                   "type": "rectangle",
                                   "id": "BQ1VE",
                                   "name": "Main Right Region Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -2917,13 +3493,19 @@
                                       "height": 16,
                                       "icon": "panel-right",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "jdHtd",
                                       "name": "Main Right Region Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Main Right Region",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -2940,7 +3522,10 @@
                               "name": "Layer Row Main Title Region",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -2948,7 +3533,10 @@
                                   "type": "rectangle",
                                   "id": "A4yRe",
                                   "name": "Main Title Region Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -2982,13 +3570,19 @@
                                       "height": 16,
                                       "icon": "type",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "GMY4d",
                                       "name": "Main Title Region Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Main Title Region",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -3005,7 +3599,10 @@
                               "name": "Layer Row Document Title",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -3013,7 +3610,10 @@
                                   "type": "rectangle",
                                   "id": "S0aWM",
                                   "name": "Document Title Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -3047,13 +3647,19 @@
                                       "height": 16,
                                       "icon": "file-text",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "wKIXA",
                                       "name": "Document Title Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Document Title",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -3080,7 +3686,10 @@
                               "name": "Layer Row Miaoma Editor Recreation",
                               "width": "fill_container",
                               "height": 30,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -3088,7 +3697,10 @@
                                   "type": "rectangle",
                                   "id": "pKYKL",
                                   "name": "Miaoma Editor Recreation Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 30
                                 },
@@ -3115,7 +3727,10 @@
                                       "height": 14,
                                       "icon": "chevron-down",
                                       "library": "lucide",
-                                      "fill": "#94A3B8"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#94A3B8"
+                                      }
                                     },
                                     {
                                       "type": "icon",
@@ -3125,13 +3740,19 @@
                                       "height": 16,
                                       "icon": "frame",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "yGgY5",
                                       "name": "Miaoma Editor Recreation Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Miaoma Editor Recreation",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -3148,7 +3769,10 @@
                               "name": "Layer Row Left Sidebar",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -3156,7 +3780,10 @@
                                   "type": "rectangle",
                                   "id": "h3zy0",
                                   "name": "Left Sidebar Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -3190,13 +3817,19 @@
                                       "height": 16,
                                       "icon": "panel-left",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "HepOw",
                                       "name": "Left Sidebar Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Left Sidebar",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -3213,7 +3846,10 @@
                               "name": "Layer Row Sidebar Surface",
                               "width": 283,
                               "height": 36,
-                              "fill": "#D9DADD",
+                              "fill": {
+                                "type": "color",
+                                "color": "#D9DADD"
+                              },
                               "cornerRadius": 10,
                               "alignItems": "center",
                               "children": [
@@ -3247,13 +3883,19 @@
                                       "height": 16,
                                       "icon": "square",
                                       "library": "lucide",
-                                      "fill": "#374151"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#374151"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "mY8MT",
                                       "name": "Sidebar Surface Label",
-                                      "fill": "#111827",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#111827"
+                                      },
                                       "content": "Sidebar Surface",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -3268,9 +3910,15 @@
                                   "name": "Sidebar Surface Visibility Button",
                                   "width": 46,
                                   "height": 34,
-                                  "fill": "#FFFFFF",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#FFFFFF"
+                                  },
                                   "cornerRadius": 9,
-                                  "stroke": "#E5E7EB",
+                                  "stroke": {
+                                    "type": "color",
+                                    "color": "#E5E7EB"
+                                  },
                                   "strokeWidth": 1,
                                   "effect": {
                                     "type": "shadow",
@@ -3293,7 +3941,10 @@
                                       "height": 16,
                                       "icon": "eye",
                                       "library": "lucide",
-                                      "fill": "#6B7280"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#6B7280"
+                                      }
                                     }
                                   ]
                                 }
@@ -3305,7 +3956,10 @@
                               "name": "Layer Row Sidebar Tabs Section",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -3313,7 +3967,10 @@
                                   "type": "rectangle",
                                   "id": "DILyC",
                                   "name": "Sidebar Tabs Section Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -3347,13 +4004,19 @@
                                       "height": 16,
                                       "icon": "frame",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "X26YD",
                                       "name": "Sidebar Tabs Section Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Sidebar Tabs Section",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",
@@ -3370,7 +4033,10 @@
                               "name": "Layer Row Sidebar Body",
                               "width": "fill_container",
                               "height": 28,
-                              "fill": "#00000000",
+                              "fill": {
+                                "type": "color",
+                                "color": "#00000000"
+                              },
                               "cornerRadius": 8,
                               "alignItems": "center",
                               "children": [
@@ -3378,7 +4044,10 @@
                                   "type": "rectangle",
                                   "id": "vq09K",
                                   "name": "Sidebar Body Rail",
-                                  "fill": "#00000000",
+                                  "fill": {
+                                    "type": "color",
+                                    "color": "#00000000"
+                                  },
                                   "width": 3,
                                   "height": 28
                                 },
@@ -3412,13 +4081,19 @@
                                       "height": 16,
                                       "icon": "frame",
                                       "library": "lucide",
-                                      "fill": "#64748B"
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#64748B"
+                                      }
                                     },
                                     {
                                       "type": "text",
                                       "id": "zX3Dh",
                                       "name": "Sidebar Body Label",
-                                      "fill": "#1F2937",
+                                      "fill": {
+                                        "type": "color",
+                                        "color": "#1F2937"
+                                      },
                                       "content": "Sidebar Body",
                                       "lineHeight": 1,
                                       "fontFamily": "Inter",

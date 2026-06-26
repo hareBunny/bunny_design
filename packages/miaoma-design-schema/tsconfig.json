@@ -7,5 +7,10 @@
         "moduleResolution": "bundler",
         "types": ["vitest/globals"]
     },
-    "include": ["src/**/*", "tests/**/*", "vitest.config.ts", "tsdown.config.ts"]
+    "include": [
+        "src/**/*",
+        "tests/**/*",
+        "vitest.config.ts",
+        "tsdown.config.ts"
+    ]
 }

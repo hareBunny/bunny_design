@@ -5,20 +5,37 @@
   */
 
 import {
-    createRenderTree,
-    parseDesignDocument
-} from '@miaoma-design-ai/document';
+    type MiaomaDesignDocument,
+    type MiaomaFrameNode,
+    strictValidateDesignDocument
+} from '@miaoma-design-ai/miaoma-design-schema';
 
 import designSchemaDocument from '../../../../miaoma-design-design-schema.json';
 
 import { COVER_DOCUMENT_FIXTURE } from './coverDocument';
 
 const SAMPLE_DOCUMENT_GAP = 180;
-const designSchemaRoot = designSchemaDocument.children[0];
-const coverRoot = COVER_DOCUMENT_FIXTURE.children[0];
+const validatedDesignSchemaDocument =
+    strictValidateDesignDocument(designSchemaDocument);
 
-export const CANVAS_SAMPLE_DOCUMENT_FIXTURE = {
-    version: designSchemaDocument.version,
+if (!validatedDesignSchemaDocument.success) {
+    throw new Error(
+        JSON.stringify(validatedDesignSchemaDocument.diagnostics, null, 2)
+    );
+}
+
+const designSchemaRoot = validatedDesignSchemaDocument.document
+    .children[0] as MiaomaFrameNode;
+const coverRoot = COVER_DOCUMENT_FIXTURE.children[0] as MiaomaFrameNode;
+const designSchemaRootWidth =
+    typeof designSchemaRoot.width === 'number' ? designSchemaRoot.width : 0;
+const designSchemaRootHeight =
+    typeof designSchemaRoot.height === 'number' ? designSchemaRoot.height : 0;
+const coverRootHeight =
+    typeof coverRoot.height === 'number' ? coverRoot.height : 0;
+
+export const CANVAS_SAMPLE_DESIGN_DOCUMENT: MiaomaDesignDocument = {
+    version: validatedDesignSchemaDocument.document.version,
     fileToken: 'canvas-sample-document',
     children: [
         {
@@ -28,19 +45,8 @@ export const CANVAS_SAMPLE_DOCUMENT_FIXTURE = {
         },
         {
             ...coverRoot,
-            x: Number(designSchemaRoot.width) + SAMPLE_DOCUMENT_GAP,
-            y: (Number(designSchemaRoot.height) - coverRoot.height) / 2
+            x: designSchemaRootWidth + SAMPLE_DOCUMENT_GAP,
+            y: (designSchemaRootHeight - coverRootHeight) / 2
         }
     ]
-} as const;
-
-export const PARSED_CANVAS_SAMPLE_DOCUMENT = parseDesignDocument(
-    CANVAS_SAMPLE_DOCUMENT_FIXTURE
-);
-
-export const CANVAS_SAMPLE_DESIGN_DOCUMENT =
-    PARSED_CANVAS_SAMPLE_DOCUMENT.document;
-
-export const CANVAS_SAMPLE_RENDER_TREE = createRenderTree(
-    CANVAS_SAMPLE_DESIGN_DOCUMENT
-);
+};

@@ -1,5 +1,5 @@
 {
-    "name": "@miaoma-design-ai/document",
+    "name": "@miaoma-design-ai/miaoma-design-schema",
     "private": true,
     "version": "1.0.0",
     "type": "module",
@@ -17,6 +17,8 @@
     "scripts": {
         "build": "tsdown",
         "lint": "eslint .",
+        "format": "prettier --ignore-path ../../.prettierignore --write . && eslint --fix .",
+        "format:check": "prettier --ignore-path ../../.prettierignore --check . && eslint .",
         "test": "vitest",
         "test:run": "vitest run"
     },

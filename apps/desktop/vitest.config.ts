@@ -11,9 +11,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
     resolve: {
         alias: {
-            '@miaoma-design-ai/document': path.resolve(
+            '@miaoma-design-ai/miaoma-design-schema': path.resolve(
                 __dirname,
-                '../../packages/document/src'
+                '../../packages/miaoma-design-schema/src'
             )
         }
     },

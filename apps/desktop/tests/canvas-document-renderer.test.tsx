@@ -10,9 +10,9 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import {
-    createRenderTree,
-    parseDesignDocument
-} from '@miaoma-design-ai/document';
+    type MiaomaDesignDocument,
+    strictValidateDesignDocument
+} from '@miaoma-design-ai/miaoma-design-schema';
 
 import { CanvasDocumentRenderer } from '../renderer/components/document/CanvasDocumentRenderer';
 
@@ -23,7 +23,7 @@ const designSchemaPath = fileURLToPath(
 const readDesignSchemaFixture = () =>
     JSON.parse(readFileSync(designSchemaPath, 'utf8')) as unknown;
 
-const coverDocument = {
+const coverDocument: MiaomaDesignDocument = {
     version: '2.14',
     children: [
         {
@@ -38,7 +38,6 @@ const coverDocument = {
             fill: {
                 type: 'gradient',
                 gradientType: 'linear',
-                enabled: true,
                 rotation: -450,
                 colors: [
                     { color: '#293975ff', position: 0 },
@@ -54,7 +53,7 @@ const coverDocument = {
                     y: 24.8623046875,
                     name: 'MIAOMAEDU',
                     rotation: -89.87383497578344,
-                    fill: '#ffffffff',
+                    fill: { type: 'color', color: '#ffffffff' },
                     content: 'MIAOMAEDU',
                     textAlign: 'center',
                     fontFamily: 'Alimama ShuHeiTi',
@@ -67,7 +66,7 @@ const coverDocument = {
                     x: 32.15478515625,
                     y: 150.8623046875,
                     name: 'AI 大前端 全栈架构师训练营',
-                    fill: '#ffffffff',
+                    fill: { type: 'color', color: '#ffffffff' },
                     textGrowth: 'fixed-width',
                     width: 416,
                     content: 'AI 大前端\n全栈架构师训练营',
@@ -83,7 +82,6 @@ const coverDocument = {
                     name: '小鹅通水印组合 1',
                     fill: {
                         type: 'image',
-                        enabled: true,
                         url: 'image-import.png',
                         mode: 'fill'
                     },
@@ -99,7 +97,6 @@ const coverDocument = {
                     fill: {
                         type: 'gradient',
                         gradientType: 'linear',
-                        enabled: true,
                         rotation: -450,
                         colors: [
                             { color: '#324380ff', position: 0 },
@@ -117,7 +114,7 @@ const coverDocument = {
                     x: 32.15478515625,
                     y: 291.8623046875,
                     name: '课程说明',
-                    fill: '#dadff1ff',
+                    fill: { type: 'color', color: '#dadff1ff' },
                     content:
                         '2026 课程体系焕新，前端深度融合 AI 原生开发范式，直击生成式 UI、\n端侧 AI 推理等核心技术，打造全栈 + AI 的架构级能力闭环',
                     lineHeight: 1.2000000476837158,
@@ -131,7 +128,7 @@ const coverDocument = {
                     x: 32.15478515625,
                     y: 646.8623046875,
                     name: '主讲讲师：合一',
-                    fill: '#ffffffcc',
+                    fill: { type: 'color', color: '#ffffffcc' },
                     content: '主讲讲师：合一',
                     fontFamily: 'Heiti SC',
                     fontSize: 20,
@@ -144,11 +141,9 @@ const coverDocument = {
 
 describe('CanvasDocumentRenderer', () => {
     it('renders the 01-cover render tree with Pencil-like geometry and fills', () => {
-        const parsed = parseDesignDocument(coverDocument);
-        const renderTree = createRenderTree(parsed.document);
         const markup = renderToStaticMarkup(
             <CanvasDocumentRenderer
-                document={renderTree}
+                document={coverDocument}
                 resolveAsset={(url) => `/assets/${url}`}
             />
         );
@@ -171,16 +166,21 @@ describe('CanvasDocumentRenderer', () => {
     });
 
     it('renders the complete Miaoma design schema with layout nodes, icons, and shape styles', () => {
-        const parsed = parseDesignDocument(readDesignSchemaFixture());
-        const renderTree = createRenderTree(parsed.document);
+        const result = strictValidateDesignDocument(readDesignSchemaFixture());
+
+        expect(result.success).toBe(true);
+        if (!result.success) {
+            throw new Error(JSON.stringify(result.diagnostics, null, 2));
+        }
+
         const markup = renderToStaticMarkup(
             <CanvasDocumentRenderer
-                document={renderTree}
+                document={result.document}
                 resolveAsset={(url) => `/resolved/${url}`}
             />
         );
 
-        expect(parsed.diagnostics).toEqual([]);
+        expect(result.diagnostics).toEqual([]);
         expect(markup.match(/data-design-node-id=/g)).toHaveLength(297);
         expect(markup).toContain(
             'data-design-node-name="Miaoma Editor Recreation Course"'

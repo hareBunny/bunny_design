@@ -14,9 +14,9 @@ export default defineConfig({
     plugins: [react(), tailwindcss()],
     resolve: {
         alias: {
-            '@miaoma-design-ai/document': path.resolve(
+            '@miaoma-design-ai/miaoma-design-schema': path.resolve(
                 __dirname,
-                '../../packages/document/src'
+                '../../packages/miaoma-design-schema/src'
             ),
             '@/renderer': path.resolve(__dirname, 'renderer')
         }

@@ -4,25 +4,15 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import {
-    createRenderTree,
-    parseDesignDocument
-} from '@miaoma-design-ai/document';
-
 import faviconUrl from '../../assets/brand/favicon@152.png';
 import coverImageUrl from '../../assets/dSqyy.png';
 import { TOOL_BUTTONS } from '../../constants/editor';
-import { CANVAS_SAMPLE_DOCUMENT_FIXTURE } from '../../fixtures/canvasSampleDocument';
+import { CANVAS_SAMPLE_DESIGN_DOCUMENT } from '../../fixtures/canvasSampleDocument';
 import type { SidebarTab } from '../../types/editor';
 import { CanvasDocumentRenderer } from '../document/CanvasDocumentRenderer';
 
 import { EditorIconButton } from './EditorIconButton';
 import { PromptDock } from './PromptDock';
-
-const parsedCanvasDocument = parseDesignDocument(
-    CANVAS_SAMPLE_DOCUMENT_FIXTURE
-);
-const canvasRenderTree = createRenderTree(parsedCanvasDocument.document);
 const canvasAssets: Record<string, string> = {
     'favicon%40167.png': faviconUrl,
     'image-import.png': coverImageUrl
@@ -71,7 +61,7 @@ const InfiniteCanvas = () => (
     >
         <CanvasDocumentRenderer
             className="absolute top-1/2 left-1/2 z-[12] origin-center -translate-x-1/2 -translate-y-1/2 scale-[0.45]"
-            document={canvasRenderTree}
+            document={CANVAS_SAMPLE_DESIGN_DOCUMENT}
             resolveAsset={resolveCanvasAsset}
         />
     </div>

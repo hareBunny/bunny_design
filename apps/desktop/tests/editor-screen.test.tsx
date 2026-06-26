@@ -224,9 +224,35 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('aria-label="Fill opacity"');
         expect(markup).toContain('Stroke');
         expect(markup).toContain('Effects');
+        expect(markup).toContain('data-schema-group="position"');
+        expect(markup).toContain('data-schema-path="x"');
+        expect(markup).toContain('data-schema-path="y"');
+        expect(markup).toContain('data-schema-path="rotation"');
+        expect(markup).toContain('data-schema-group="layout"');
+        expect(markup).toContain('data-schema-path="width"');
+        expect(markup).toContain('data-schema-path="height"');
+        expect(markup).toContain('data-schema-path="clip"');
+        expect(markup).toContain('data-schema-path="cornerRadius"');
+        expect(markup).toContain('data-schema-path="fill"');
+        expect(markup).toContain('data-schema-path="stroke"');
+        expect(markup).toContain('data-schema-path="effect"');
+        expect(markup).not.toContain('data-schema-path="opacity"');
         expect(markup).toContain('2x');
         expect(markup).toContain('PNG');
         expect(markup).toContain('Export layer');
+    });
+
+    it('declares the schema workspace dependency for the renderer', () => {
+        const packageJson = JSON.parse(
+            readFileSync(
+                fileURLToPath(new URL('../package.json', import.meta.url)),
+                'utf8'
+            )
+        );
+
+        expect(
+            packageJson.dependencies['@miaoma-design-ai/miaoma-design-schema']
+        ).toBe('workspace:*');
     });
 
     it('hides the canvas prompt dock while the Agent sidebar tab is active', () => {

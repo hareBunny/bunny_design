@@ -4,7 +4,9 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-export const COVER_DOCUMENT_FIXTURE = {
+import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schema';
+
+export const COVER_DOCUMENT_FIXTURE: MiaomaDesignDocument = {
     version: '2.14',
     children: [
         {
@@ -19,11 +21,7 @@ export const COVER_DOCUMENT_FIXTURE = {
             fill: {
                 type: 'gradient',
                 gradientType: 'linear',
-                enabled: true,
                 rotation: -450,
-                size: {
-                    height: 0.9999999999999999
-                },
                 colors: [
                     {
                         color: '#293975ff',
@@ -33,11 +31,7 @@ export const COVER_DOCUMENT_FIXTURE = {
                         color: '#5f73b6ff',
                         position: 1
                     }
-                ],
-                center: {
-                    x: 0.49999999999999994,
-                    y: 0.49999997023610016
-                }
+                ]
             },
             layout: 'none',
             children: [
@@ -48,7 +42,7 @@ export const COVER_DOCUMENT_FIXTURE = {
                     y: 24.8623046875,
                     name: 'MIAOMAEDU',
                     rotation: -89.87383497578344,
-                    fill: '#ffffffff',
+                    fill: { type: 'color', color: '#ffffffff' },
                     content: 'MIAOMAEDU',
                     textAlign: 'center',
                     fontFamily: 'Alimama ShuHeiTi',
@@ -61,7 +55,7 @@ export const COVER_DOCUMENT_FIXTURE = {
                     x: 32.15478515625,
                     y: 150.8623046875,
                     name: 'AI 大前端 全栈架构师训练营',
-                    fill: '#ffffffff',
+                    fill: { type: 'color', color: '#ffffffff' },
                     textGrowth: 'fixed-width',
                     width: 416,
                     content: 'AI 大前端\n全栈架构师训练营',
@@ -77,7 +71,6 @@ export const COVER_DOCUMENT_FIXTURE = {
                     name: '小鹅通水印组合 1',
                     fill: {
                         type: 'image',
-                        enabled: true,
                         url: 'image-import.png',
                         mode: 'fill'
                     },
@@ -93,11 +86,7 @@ export const COVER_DOCUMENT_FIXTURE = {
                     fill: {
                         type: 'gradient',
                         gradientType: 'linear',
-                        enabled: true,
                         rotation: -450,
-                        size: {
-                            height: 1
-                        },
                         colors: [
                             {
                                 color: '#324380ff',
@@ -120,7 +109,7 @@ export const COVER_DOCUMENT_FIXTURE = {
                     x: 32.15478515625,
                     y: 291.8623046875,
                     name: '2026 课程体系焕新，前端深度融合 AI 原生开发范式，直击生成式 UI、 端侧 AI 推理等核心技术，打造全栈 + AI 的架构级能力闭环',
-                    fill: '#dadff1ff',
+                    fill: { type: 'color', color: '#dadff1ff' },
                     content:
                         '2026 课程体系焕新，前端深度融合 AI 原生开发范式，直击生成式 UI、\n端侧 AI 推理等核心技术，打造全栈 + AI 的架构级能力闭环',
                     lineHeight: 1.2000000476837158,
@@ -134,7 +123,7 @@ export const COVER_DOCUMENT_FIXTURE = {
                     x: 32.15478515625,
                     y: 646.8623046875,
                     name: '主讲讲师：合一',
-                    fill: '#ffffffcc',
+                    fill: { type: 'color', color: '#ffffffcc' },
                     content: '主讲讲师：合一',
                     fontFamily: 'Heiti SC',
                     fontSize: 20,
@@ -144,4 +133,4 @@ export const COVER_DOCUMENT_FIXTURE = {
         }
     ],
     fileToken: '449b0cbb-b04e-4309-848b-e80d204dbc24'
-} as const;
+};

@@ -18,6 +18,7 @@
         "start:server": "pnpm --filter @miaoma-design-ai/server start",
         "lint": "pnpm -r --if-present run lint",
         "format": "pnpm -r --if-present run format",
+        "format:check": "pnpm -r --if-present run format:check",
         "spellcheck": "cspell lint --dot --gitignore --color --cache --show-suggestions \"(packages|apps)/**/*.@(html|js|cjs|mjs|ts|tsx|css|scss|md)\"",
         "test": "pnpm -r --if-present run test",
         "test:run": "pnpm -r --if-present run test:run",

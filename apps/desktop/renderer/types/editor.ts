@@ -6,7 +6,7 @@
 
 import type { LucideIcon } from 'lucide-react';
 
-import type { DesignNode } from '@miaoma-design-ai/document';
+import type { MiaomaDesignNode } from '@miaoma-design-ai/miaoma-design-schema';
 
 export type LayerDepth = number;
 export type SidebarTab = 'agent' | 'layers';
@@ -35,7 +35,7 @@ export type LayerRow = {
     label: string;
     icon: LucideIcon;
     depth: LayerDepth;
-    nodeType?: DesignNode['type'];
+    nodeType?: MiaomaDesignNode['type'];
     expanded?: boolean;
     selected?: boolean;
     visible?: boolean;

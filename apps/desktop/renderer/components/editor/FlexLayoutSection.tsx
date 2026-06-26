@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { classNames } from '../../utils/classNames';
 
 import { InspectorCheckbox } from './InspectorCheckbox';
+import { FRAME_INSPECTOR_PROPERTIES } from './inspectorSchema';
 import { InspectorValueInput } from './InspectorValueInput';
 
 export type LayoutMode = 'grid' | 'vertical' | 'right';
@@ -311,8 +312,20 @@ const DimensionsControls = () => (
     <div className="editor-flex-dimensions-section grid gap-2">
         <LayoutSubsectionHeader title="Dimensions" />
         <div className="grid grid-cols-2 gap-2">
-            <InspectorValueInput ariaLabel="Width" label="W" value="404" />
-            <InspectorValueInput ariaLabel="Height" label="H" value="1205" />
+            <div data-schema-path={FRAME_INSPECTOR_PROPERTIES.width.path}>
+                <InspectorValueInput
+                    ariaLabel="Width"
+                    label={FRAME_INSPECTOR_PROPERTIES.width.label}
+                    value="404"
+                />
+            </div>
+            <div data-schema-path={FRAME_INSPECTOR_PROPERTIES.height.path}>
+                <InspectorValueInput
+                    ariaLabel="Height"
+                    label={FRAME_INSPECTOR_PROPERTIES.height.label}
+                    value="1205"
+                />
+            </div>
         </div>
         <div className="grid gap-1.5">
             <CheckboxPairRow
@@ -325,7 +338,10 @@ const DimensionsControls = () => (
                 rightLabel="Hug Height"
                 rowClassName="h-[22px]"
             />
-            <div className="flex h-[22px] items-center">
+            <div
+                className="flex h-[22px] items-center"
+                data-schema-path={FRAME_INSPECTOR_PROPERTIES.clip.path}
+            >
                 <InspectorCheckbox label="Clip Content" />
             </div>
         </div>
@@ -401,7 +417,10 @@ export const FlexLayoutSection = () => {
     };
 
     return (
-        <section className="editor-inspector-section editor-inspector-section--layout grid gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2">
+        <section
+            className="editor-inspector-section editor-inspector-section--layout grid gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2"
+            data-schema-group="layout"
+        >
             <header className="editor-flex-layout-header flex h-6 items-center justify-between gap-2 bg-white">
                 <span className="text-[12px] leading-none font-semibold text-[#2b2b2b]">
                     {isFlexLayout ? 'Flex Layout' : 'Layout'}

@@ -1,2 +1,9 @@
 # 忽略模板文件
 **/*.hbs
+
+# 忽略依赖和构建产物
+**/node_modules
+**/.vite
+**/build
+**/dist
+**/coverage

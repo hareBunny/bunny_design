@@ -20,6 +20,10 @@ import { ALIGNMENT_BUTTONS } from '../../constants/editor';
 import { EditorIconButton } from './EditorIconButton';
 import { FillControl } from './FillControl';
 import { FlexLayoutSection } from './FlexLayoutSection';
+import {
+    FRAME_INSPECTOR_PROPERTIES,
+    getFrameInspectorGroup
+} from './inspectorSchema';
 import { InspectorValueInput } from './InspectorValueInput';
 import { TopHeader } from './TopHeader';
 
@@ -86,40 +90,98 @@ const AlignmentSection = () => (
     </section>
 );
 
-const PositionSection = () => (
-    <section className="editor-inspector-section grid gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2">
-        <InspectorSectionHeader title="Position" />
-        <div className="editor-control-grid grid grid-cols-2 gap-2">
-            <InspectorValueInput ariaLabel="X position" label="X" value="0" />
-            <InspectorValueInput ariaLabel="Y position" label="Y" value="0" />
-            <InspectorValueInput ariaLabel="Rotation" label="R" value="0" />
-        </div>
-    </section>
-);
+const PositionSection = () => {
+    const positionGroup = getFrameInspectorGroup('position');
+    const { x, y, rotation } = FRAME_INSPECTOR_PROPERTIES;
 
-const AppearanceSection = () => (
-    <section className="editor-inspector-section grid gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2">
-        <InspectorSectionHeader title="Appearance" />
-        <div className="editor-control-grid grid grid-cols-2 gap-2">
-            <InspectorValueInput ariaLabel="Opacity" unit="%" value="100" />
-            <InspectorValueInput
-                ariaLabel="Corner radius"
-                startIcon={Square}
-                value="24"
-            />
-        </div>
-    </section>
-);
+    return (
+        <section
+            className="editor-inspector-section grid gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2"
+            data-schema-group={positionGroup.id}
+        >
+            <InspectorSectionHeader title={positionGroup.label} />
+            <div className="editor-control-grid grid grid-cols-2 gap-2">
+                <div data-schema-path={x.path}>
+                    <InspectorValueInput
+                        ariaLabel="X position"
+                        label={x.label}
+                        value="0"
+                    />
+                </div>
+                <div data-schema-path={y.path}>
+                    <InspectorValueInput
+                        ariaLabel="Y position"
+                        label={y.label}
+                        value="0"
+                    />
+                </div>
+                <div data-schema-path={rotation.path}>
+                    <InspectorValueInput
+                        ariaLabel="Rotation"
+                        label={rotation.label}
+                        unit={rotation.unit}
+                        value="0"
+                    />
+                </div>
+            </div>
+        </section>
+    );
+};
 
-const FillSection = () => (
-    <section className="editor-inspector-section grid gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2">
-        <InspectorSectionHeader title="Fill" actionIcon={Plus} />
-        <FillControl />
-    </section>
-);
+const AppearanceSection = () => {
+    const appearanceGroup = getFrameInspectorGroup('appearance');
+    const { cornerRadius } = FRAME_INSPECTOR_PROPERTIES;
 
-const CompactSection = ({ title }: { title: string }) => (
-    <section className="editor-inspector-section editor-inspector-section--compact grid h-[38px] gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2">
+    return (
+        <section
+            className="editor-inspector-section grid gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2"
+            data-schema-group={appearanceGroup.id}
+        >
+            <InspectorSectionHeader title={appearanceGroup.label} />
+            <div className="editor-control-grid grid grid-cols-2 gap-2">
+                <InspectorValueInput ariaLabel="Opacity" unit="%" value="100" />
+                <div data-schema-path={cornerRadius.path}>
+                    <InspectorValueInput
+                        ariaLabel="Corner radius"
+                        startIcon={Square}
+                        value="24"
+                    />
+                </div>
+            </div>
+        </section>
+    );
+};
+
+const FillSection = () => {
+    const fillGroup = getFrameInspectorGroup('fill');
+    const { fill } = FRAME_INSPECTOR_PROPERTIES;
+
+    return (
+        <section
+            className="editor-inspector-section grid gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2"
+            data-schema-group={fillGroup.id}
+            data-schema-path={fill.path}
+        >
+            <InspectorSectionHeader title={fillGroup.label} actionIcon={Plus} />
+            <FillControl />
+        </section>
+    );
+};
+
+const CompactSection = ({
+    title,
+    schemaGroup,
+    schemaPath
+}: {
+    title: string;
+    schemaGroup?: string;
+    schemaPath?: string;
+}) => (
+    <section
+        className="editor-inspector-section editor-inspector-section--compact grid h-[38px] gap-1.5 border-b border-[#e9e9e9] px-3.5 py-2"
+        data-schema-group={schemaGroup}
+        data-schema-path={schemaPath}
+    >
         <InspectorSectionHeader title={title} actionIcon={Plus} />
     </section>
 );
@@ -161,8 +223,16 @@ export const RightInspector = () => (
             <FlexLayoutSection />
             <AppearanceSection />
             <FillSection />
-            <CompactSection title="Stroke" />
-            <CompactSection title="Effects" />
+            <CompactSection
+                schemaGroup="stroke"
+                schemaPath={FRAME_INSPECTOR_PROPERTIES.stroke.path}
+                title={getFrameInspectorGroup('stroke').label}
+            />
+            <CompactSection
+                schemaGroup="effects"
+                schemaPath={FRAME_INSPECTOR_PROPERTIES.effect.path}
+                title={getFrameInspectorGroup('effects').label}
+            />
             <ExportSection />
         </div>
     </aside>

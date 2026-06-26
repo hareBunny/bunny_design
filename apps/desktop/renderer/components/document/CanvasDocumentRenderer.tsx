@@ -39,20 +39,20 @@ import {
 import type { CSSProperties, ReactElement } from 'react';
 
 import type {
-    AlignItems,
-    Dimension,
-    EllipseNode,
-    Fill,
-    FrameNode,
-    IconNode,
-    JustifyContent,
-    LayoutDirection,
-    RectangleNode,
-    RenderDocument,
-    RenderNode,
-    Spacing,
-    TextNode
-} from '@miaoma-design-ai/document';
+    MiaomaAlignItems as AlignItems,
+    MiaomaDesignDocument as DesignDocument,
+    MiaomaDesignNode as DesignNode,
+    MiaomaDimension as Dimension,
+    MiaomaEllipseNode as EllipseNode,
+    MiaomaFill as Fill,
+    MiaomaFrameNode as FrameNode,
+    MiaomaIconNode as IconNode,
+    MiaomaJustifyContent as JustifyContent,
+    MiaomaLayoutDirection as LayoutDirection,
+    MiaomaRectangleNode as RectangleNode,
+    MiaomaSpacing as Spacing,
+    MiaomaTextNode as TextNode
+} from '@miaoma-design-ai/miaoma-design-schema';
 
 type AssetResolver = (url: string) => string;
 
@@ -65,7 +65,7 @@ type Bounds = {
 
 type ParentLayout = 'absolute' | Exclude<LayoutDirection, 'none'>;
 
-type NodeRendererProps<TNode extends RenderNode = RenderNode> = {
+type NodeRendererProps<TNode extends DesignNode = DesignNode> = {
     node: TNode;
     nodeRenderers: NodeRendererRegistry;
     parentLayout: ParentLayout;
@@ -75,10 +75,10 @@ type NodeRendererProps<TNode extends RenderNode = RenderNode> = {
 
 type NodeRenderer = (props: NodeRendererProps) => ReactElement;
 
-type NodeRendererRegistry = Record<RenderNode['type'], NodeRenderer>;
+type NodeRendererRegistry = Record<DesignNode['type'], NodeRenderer>;
 
 type CanvasDocumentRendererProps = {
-    document: RenderDocument;
+    document: DesignDocument;
     resolveAsset?: AssetResolver;
     className?: string;
     nodeRenderers?: Partial<NodeRendererRegistry>;
@@ -259,7 +259,7 @@ const toAlignItems = (
     return alignItems;
 };
 
-const getEffectStyle = (node: RenderNode): CSSProperties => {
+const getEffectStyle = (node: DesignNode): CSSProperties => {
     if (node.effect?.type !== 'shadow') {
         return {};
     }
@@ -275,7 +275,7 @@ const getEffectStyle = (node: RenderNode): CSSProperties => {
 };
 
 const getVisualStyle = (
-    node: RenderNode,
+    node: DesignNode,
     resolveAsset: AssetResolver,
     target: 'shape' | 'text'
 ): CSSProperties => ({
@@ -288,21 +288,25 @@ const getVisualStyle = (
 const getNumericDimension = (value: Dimension | undefined) =>
     typeof value === 'number' ? value : 0;
 
-const getNodeWidth = (node: RenderNode) =>
+const getNodeWidth = (node: DesignNode) =>
     'width' in node ? getNumericDimension(node.width) : 0;
 
-const getNodeHeight = (node: RenderNode) =>
+const getNodeHeight = (node: DesignNode) =>
     'height' in node ? getNumericDimension(node.height) : 0;
 
-const getTopLevelBounds = (nodes: RenderNode[]): Bounds => {
+const getTopLevelBounds = (nodes: DesignNode[]): Bounds => {
     if (nodes.length === 0) {
         return { x: 0, y: 0, width: 0, height: 0 };
     }
 
-    const minX = Math.min(...nodes.map((node) => node.x));
-    const minY = Math.min(...nodes.map((node) => node.y));
-    const maxX = Math.max(...nodes.map((node) => node.x + getNodeWidth(node)));
-    const maxY = Math.max(...nodes.map((node) => node.y + getNodeHeight(node)));
+    const minX = Math.min(...nodes.map((node) => node.x ?? 0));
+    const minY = Math.min(...nodes.map((node) => node.y ?? 0));
+    const maxX = Math.max(
+        ...nodes.map((node) => (node.x ?? 0) + getNodeWidth(node))
+    );
+    const maxY = Math.max(
+        ...nodes.map((node) => (node.y ?? 0) + getNodeHeight(node))
+    );
 
     return {
         x: minX,
@@ -353,7 +357,7 @@ const applyDimensionStyle = ({
 };
 
 const getNodePlacementStyle = (
-    node: RenderNode,
+    node: DesignNode,
     bounds: Bounds | undefined,
     parentLayout: ParentLayout
 ): CSSProperties => {
@@ -361,10 +365,13 @@ const getNodePlacementStyle = (
         return { position: 'relative' };
     }
 
+    const x = node.x ?? 0;
+    const y = node.y ?? 0;
+
     return {
         position: 'absolute',
-        left: px(bounds ? node.x - bounds.x : node.x),
-        top: px(bounds ? node.y - bounds.y : node.y)
+        left: px(bounds ? x - bounds.x : x),
+        top: px(bounds ? y - bounds.y : y)
     };
 };
 
@@ -375,7 +382,7 @@ const getNodeBoxStyle = ({
     topLevelBounds,
     width
 }: {
-    node: RenderNode;
+    node: DesignNode;
     width?: Dimension;
     height?: Dimension;
     parentLayout: ParentLayout;
@@ -602,6 +609,7 @@ const CanvasFrameNode = ({
 }: NodeRendererProps<FrameNode>) => {
     const flowLayout = getFlowLayout(node.layout);
     const childParentLayout: ParentLayout = flowLayout ?? 'absolute';
+    const children = node.children ?? [];
     const style: CSSProperties = {
         ...getNodeBoxStyle({
             node,
@@ -632,7 +640,7 @@ const CanvasFrameNode = ({
             data-design-node-name={node.name}
             style={style}
         >
-            {node.children.map((child) => (
+            {children.map((child) => (
                 <CanvasRenderNode
                     key={child.id}
                     node={child}
