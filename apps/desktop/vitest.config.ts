@@ -11,6 +11,10 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
     resolve: {
         alias: {
+            '@miaoma-design-ai/miaoma-canvas-ruler': path.resolve(
+                __dirname,
+                '../../packages/miaoma-canvas-ruler/src'
+            ),
             '@miaoma-design-ai/miaoma-design-schema': path.resolve(
                 __dirname,
                 '../../packages/miaoma-design-schema/src'

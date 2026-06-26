@@ -9,10 +9,11 @@ import coverImageUrl from '../../assets/dSqyy.png';
 import { TOOL_BUTTONS } from '../../constants/editor';
 import { CANVAS_SAMPLE_DESIGN_DOCUMENT } from '../../fixtures/canvasSampleDocument';
 import type { SidebarTab } from '../../types/editor';
-import { CanvasDocumentRenderer } from '../document/CanvasDocumentRenderer';
 
+import { CanvasViewportShell } from './CanvasViewportShell';
 import { EditorIconButton } from './EditorIconButton';
 import { PromptDock } from './PromptDock';
+
 const canvasAssets: Record<string, string> = {
     'favicon%40167.png': faviconUrl,
     'image-import.png': coverImageUrl
@@ -30,43 +31,6 @@ const ToolRail = () => (
     </nav>
 );
 
-const ZoomControl = () => (
-    <div
-        className="editor-zoom-control absolute right-8 bottom-3.5 z-20 grid h-10 w-[143px] grid-cols-[28px_1fr_28px] items-center rounded-[14px] border border-[#ececee] bg-white px-[18px] text-[14px] font-medium text-[#575a62] shadow-[0_4px_18px_#00000010]"
-        aria-label="Zoom controls"
-    >
-        <button
-            aria-label="Zoom out"
-            className="grid h-7 w-7 cursor-default place-items-center border-0 bg-transparent p-0 text-[22px] leading-none text-[#666971]"
-            type="button"
-        >
-            −
-        </button>
-        <span className="text-center">15%</span>
-        <button
-            aria-label="Zoom in"
-            className="grid h-7 w-7 cursor-default place-items-center border-0 bg-transparent p-0 text-[22px] leading-none text-[#666971]"
-            type="button"
-        >
-            +
-        </button>
-    </div>
-);
-
-const InfiniteCanvas = () => (
-    <div
-        aria-label="Infinite canvas"
-        className="editor-infinite-canvas absolute top-1/2 left-1/2 h-[3000px] w-[4000px] -translate-x-1/2 -translate-y-1/2 bg-[#f6f6f6]"
-        role="region"
-    >
-        <CanvasDocumentRenderer
-            className="absolute top-1/2 left-1/2 z-[12] origin-center -translate-x-1/2 -translate-y-1/2 scale-[0.45]"
-            document={CANVAS_SAMPLE_DESIGN_DOCUMENT}
-            resolveAsset={resolveCanvasAsset}
-        />
-    </div>
-);
-
 type CanvasStageProps = {
     activeSidebarTab: SidebarTab;
 };
@@ -76,10 +40,16 @@ export const CanvasStage = ({ activeSidebarTab }: CanvasStageProps) => (
         className="editor-canvas-stage relative col-start-1 row-start-2 min-h-0 min-w-0 overflow-hidden bg-[#f6f6f6]"
         data-region="canvas-stage"
     >
-        <InfiniteCanvas />
+        <CanvasViewportShell
+            document={CANVAS_SAMPLE_DESIGN_DOCUMENT}
+            overlay={
+                activeSidebarTab === 'layers' ? (
+                    <PromptDock variant="canvas" />
+                ) : null
+            }
+            resolveAsset={resolveCanvasAsset}
+        />
         <ToolRail />
-        {activeSidebarTab === 'layers' ? <PromptDock variant="canvas" /> : null}
-        <ZoomControl />
         <div
             aria-hidden="true"
             className="editor-canvas-scrollbar absolute bottom-1.5 left-[min(49.85%,calc(100%_-_300px))] z-20 h-1.5 w-[276px] rounded-[3px] bg-[#bdbec3]"

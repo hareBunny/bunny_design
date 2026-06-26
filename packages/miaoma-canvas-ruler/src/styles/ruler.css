@@ -1,0 +1,97 @@
+/*
+- Copyright (c) 2026 妙码学院 @Heyi
+- All rights reserved.
+- 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
+  */
+
+.miaoma-canvas-ruler,
+.miaoma-canvas-ruler-corner {
+    position: relative;
+    overflow: hidden;
+    background: #f3f4f6;
+    border-color: #e5e7eb;
+    color: #6b7280;
+}
+
+.miaoma-canvas-ruler[data-canvas-ruler-axis='horizontal'] {
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.miaoma-canvas-ruler[data-canvas-ruler-axis='vertical'] {
+    border-right: 1px solid #e5e7eb;
+}
+
+.miaoma-canvas-ruler__tick {
+    position: absolute;
+    font-size: 9px;
+    line-height: 1;
+}
+
+.miaoma-canvas-ruler[data-canvas-ruler-axis='horizontal']
+    .miaoma-canvas-ruler__tick {
+    top: 0;
+    bottom: 0;
+    width: 1px;
+}
+
+.miaoma-canvas-ruler[data-canvas-ruler-axis='vertical']
+    .miaoma-canvas-ruler__tick {
+    left: 0;
+    right: 0;
+    height: 1px;
+}
+
+.miaoma-canvas-ruler__tick-mark {
+    position: absolute;
+    background: currentColor;
+    opacity: 0.72;
+}
+
+.miaoma-canvas-ruler[data-canvas-ruler-axis='horizontal']
+    .miaoma-canvas-ruler__tick-mark {
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    height: 4px;
+}
+
+.miaoma-canvas-ruler[data-canvas-ruler-axis='horizontal']
+    .miaoma-canvas-ruler__tick[data-ruler-tick-level='major']
+    .miaoma-canvas-ruler__tick-mark {
+    height: 8px;
+}
+
+.miaoma-canvas-ruler[data-canvas-ruler-axis='vertical']
+    .miaoma-canvas-ruler__tick-mark {
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 1px;
+}
+
+.miaoma-canvas-ruler[data-canvas-ruler-axis='vertical']
+    .miaoma-canvas-ruler__tick[data-ruler-tick-level='major']
+    .miaoma-canvas-ruler__tick-mark {
+    width: 8px;
+}
+
+.miaoma-canvas-ruler__label {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    font-size: 9px;
+    letter-spacing: 0;
+}
+
+.miaoma-canvas-ruler__label--horizontal {
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.miaoma-canvas-ruler__label--vertical {
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: center center;
+}

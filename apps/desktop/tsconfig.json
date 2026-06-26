@@ -13,6 +13,9 @@
         "jsx": "react-jsx",
         "baseUrl": ".",
         "paths": {
+            "@miaoma-design-ai/miaoma-canvas-ruler": [
+                "../../packages/miaoma-canvas-ruler/src/index.ts"
+            ],
             "@miaoma-design-ai/miaoma-design-schema": [
                 "../../packages/miaoma-design-schema/src/index.ts"
             ],

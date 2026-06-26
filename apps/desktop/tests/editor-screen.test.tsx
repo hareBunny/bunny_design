@@ -255,6 +255,19 @@ describe('MiaomaEditorScreen', () => {
         ).toBe('workspace:*');
     });
 
+    it('declares the ruler workspace dependency for the renderer', () => {
+        const packageJson = JSON.parse(
+            readFileSync(
+                fileURLToPath(new URL('../package.json', import.meta.url)),
+                'utf8'
+            )
+        );
+
+        expect(
+            packageJson.dependencies['@miaoma-design-ai/miaoma-canvas-ruler']
+        ).toBe('workspace:*');
+    });
+
     it('hides the canvas prompt dock while the Agent sidebar tab is active', () => {
         const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
         const canvasStageSource = rendererSource(
@@ -266,7 +279,7 @@ describe('MiaomaEditorScreen', () => {
 
         expect(markup).toContain('editor-agent-prompt-dock');
         expect(markup).not.toContain('editor-prompt-dock');
-        expect(markup).toContain('15%');
+        expect(markup).toContain('100%');
         expect(markup).not.toContain('3898 × 2795');
         expect(markup).not.toContain('editor-selection');
         expect(markup).not.toContain('editor-selection-pill');
@@ -351,20 +364,31 @@ describe('MiaomaEditorScreen', () => {
 
     it('renders Canvas Stage as an infinite canvas surface', () => {
         const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const canvasStageSource = rendererSource(
+            'components/editor/CanvasStage.tsx'
+        );
+        const viewportShellSource = rendererSource(
+            'components/editor/CanvasViewportShell.tsx'
+        );
 
-        expect(markup).toContain('aria-label="Infinite canvas"');
-        expect(markup).toContain('editor-infinite-canvas');
+        expect(markup).toContain('data-region="canvas-viewport"');
+        expect(markup).toContain('aria-label="Horizontal ruler"');
+        expect(markup).toContain('aria-label="Vertical ruler"');
+        expect(markup).toContain('data-canvas-ruler-corner="true"');
         expect(markup).toContain('data-document-renderer="true"');
         expect(markup).toContain(
             'data-design-node-name="Miaoma Editor Recreation Course"'
         );
         expect(markup).toContain('data-design-node-name="01-cover"');
-        expect(markup).toContain('left:2100px');
-        expect(markup).toContain('top:181.5px');
         expect(markup).toContain('MIAOMAEDU');
         expect(markup).toContain('AI 大前端');
-        expect(markup).toContain('w-[4000px]');
-        expect(markup).toContain('h-[3000px]');
+        expect(markup).toContain('100%');
+        expect(markup).not.toContain('w-[4000px]');
+        expect(markup).not.toContain('h-[3000px]');
+        expect(canvasStageSource).toContain('CanvasViewportShell');
+        expect(viewportShellSource).toContain('CanvasRuler');
+        expect(viewportShellSource).toContain('CanvasRulerCorner');
+        expect(viewportShellSource).toContain('onWheel={handleWheel}');
     });
 
     it('keeps the editor implementation split by responsibility', () => {
@@ -374,6 +398,8 @@ describe('MiaomaEditorScreen', () => {
             'components/editor/LeftSidebar.tsx',
             'components/editor/SidebarAgentPanel.tsx',
             'components/editor/CanvasStage.tsx',
+            'components/editor/CanvasViewportShell.tsx',
+            'components/editor/CanvasZoomControl.tsx',
             'components/document/CanvasDocumentRenderer.tsx',
             'components/editor/RightInspector.tsx',
             'components/editor/FlexLayoutSection.tsx',
