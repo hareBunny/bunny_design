@@ -46,10 +46,24 @@ describe('MiaomaEditorScreen', () => {
 
     it('keeps sidebar actions without custom window control lights', () => {
         const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const leftSidebarSource = rendererSource(
+            'components/editor/LeftSidebar.tsx'
+        );
+        const editorIconButtonSource = rendererSource(
+            'components/editor/EditorIconButton.tsx'
+        );
 
         expect(markup).toContain('Toggle sidebar');
         expect(markup).toContain('Create item');
         expect(markup).not.toContain('editor-traffic-light');
+        expect(leftSidebarSource).toContain('variant="toolbar"');
+        expect(editorIconButtonSource).toContain('editor-icon-button--toolbar');
+        expect(editorIconButtonSource).toContain('rounded-[8px]');
+        expect(editorIconButtonSource).toContain('border-[#e5e7eb]');
+        expect(editorIconButtonSource).toContain('bg-[#f7f8fa]');
+        expect(editorIconButtonSource).toContain(
+            'shadow-[0_1px_4px_#1118270d]'
+        );
     });
 
     it('reserves left toolbar space for system traffic lights', () => {
@@ -411,6 +425,9 @@ describe('MiaomaEditorScreen', () => {
         const canvasStageSource = rendererSource(
             'components/editor/CanvasStage.tsx'
         );
+        const canvasToolRailSource = rendererSource(
+            'components/editor/CanvasToolRail.tsx'
+        );
         const viewportShellSource = rendererSource(
             'components/editor/CanvasViewportShell.tsx'
         );
@@ -426,12 +443,21 @@ describe('MiaomaEditorScreen', () => {
         ).toBe(true);
         expect(canvasStageSource).toContain('import { PromptDock }');
         expect(canvasStageSource).toContain('<PromptDock variant="canvas" />');
-        expect(canvasStageSource).toContain(
+        expect(canvasToolRailSource).toContain(
             'top-[calc(var(--editor-ruler-thickness)+10px)]'
         );
-        expect(canvasStageSource).toContain(
+        expect(canvasToolRailSource).toContain(
             'left-[calc(var(--editor-ruler-thickness)+10px)]'
         );
+        expect(canvasToolRailSource).toContain('Shapes expand menu');
+        expect(canvasToolRailSource).toContain('border-transparent');
+        expect(canvasToolRailSource).toContain('editor-tool-button--active');
+        expect(canvasToolRailSource).toContain('rounded-[8px]');
+        expect(canvasToolRailSource).toContain('border-[#e5e7eb]');
+        expect(canvasToolRailSource).toContain('bg-[#f7f8fa]');
+        expect(canvasToolRailSource).toContain('shadow-[0_1px_4px_#1118270d]');
+        expect(canvasToolRailSource).toContain('hover:bg-[#f7f8fa]');
+        expect(canvasToolRailSource).toContain('p-[6px]');
         expect(viewportShellSource).toContain('pointer-events-none');
         expect(canvasStageSource).not.toContain('const PromptDock');
         expect(agentPanelSource).toContain('import { PromptDock }');
@@ -520,6 +546,7 @@ describe('MiaomaEditorScreen', () => {
             'components/editor/LeftSidebar.tsx',
             'components/editor/SidebarAgentPanel.tsx',
             'components/editor/CanvasStage.tsx',
+            'components/editor/CanvasToolRail.tsx',
             'components/editor/CanvasViewportShell.tsx',
             'components/editor/CanvasZoomControl.tsx',
             'components/document/CanvasDocumentRenderer.tsx',

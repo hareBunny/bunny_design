@@ -20,6 +20,8 @@ export type EditorIconButtonConfig = {
     onClick?: () => void;
 };
 
+export type EditorIconButtonVariant = 'default' | 'toolbar';
+
 export type InspectorValueInputProps = {
     value: string;
     ariaLabel: string;

@@ -250,6 +250,81 @@ class TestResizeObserver {
 }
 
 describe('RightInspectorFormBridge', () => {
+    it('opens the shapes expand menu from the canvas toolbar and updates active tools', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            render(<MiaomaEditor />);
+            const pointerToolButton = screen.getByRole('button', {
+                name: 'Pointer tool'
+            });
+            const expandToolButton = screen.getByRole('button', {
+                name: 'More shape tools'
+            });
+
+            expect(
+                document
+                    .querySelector('[data-region="canvas-tool-rail"]')
+                    ?.getAttribute('data-active-tool')
+            ).toBe('pointer');
+            expect(pointerToolButton.className).toContain('border-[#e5e7eb]');
+            expect(pointerToolButton.className).toContain('bg-[#f7f8fa]');
+            expect(pointerToolButton.className).toContain(
+                'shadow-[0_1px_4px_#1118270d]'
+            );
+            expect(expandToolButton.className).toContain('border-transparent');
+            expect(expandToolButton.className).toContain('bg-transparent');
+
+            await user.click(expandToolButton);
+
+            const menu = screen.getByRole('menu', {
+                name: 'Shapes expand menu'
+            });
+
+            expect(menu).not.toBeNull();
+            expect(
+                within(menu).getByRole('menuitem', { name: 'Rectangle' })
+            ).not.toBeNull();
+            expect(
+                within(menu).getByRole('menuitem', { name: 'Ellipse' })
+            ).not.toBeNull();
+            expect(
+                within(menu).getByRole('menuitem', { name: 'Polygon' })
+            ).not.toBeNull();
+            expect(
+                within(menu).getByRole('menuitem', { name: 'Icon' })
+            ).not.toBeNull();
+            expect(expandToolButton.className).toContain('border-[#f0f2f5]');
+            expect(expandToolButton.className).toContain('bg-[#f7f8fa]');
+
+            await user.click(
+                within(menu).getByRole('menuitem', { name: 'Ellipse' })
+            );
+
+            expect(
+                screen.queryByRole('menu', { name: 'Shapes expand menu' })
+            ).toBeNull();
+            expect(
+                document
+                    .querySelector('[data-region="canvas-tool-rail"]')
+                    ?.getAttribute('data-active-tool')
+            ).toBe('ellipse');
+
+            await user.click(screen.getByRole('button', { name: 'Text tool' }));
+
+            expect(
+                document
+                    .querySelector('[data-region="canvas-tool-rail"]')
+                    ?.getAttribute('data-active-tool')
+            ).toBe('text');
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
     it('keeps the right inspector header while hiding the body on empty canvas selection', async () => {
         const originalResizeObserver = globalThis.ResizeObserver;
 

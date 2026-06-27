@@ -11,12 +11,9 @@ import {
     AlignEndVertical,
     AlignStartHorizontal,
     AlignStartVertical,
-    ChevronDown,
     FileText,
     Frame,
-    Hand,
     Minus,
-    MousePointer2,
     PanelLeft,
     PanelRight,
     Plus,
@@ -134,15 +131,6 @@ export const AGENT_TIMELINE_ITEMS: AgentTimelineItem[] = [
         text: '已把右侧 Design Goodies 属性栏按图重做，包含顶部动作区、选中对象块、Context、Alignment、Position、Layout、Appearance、Fill、Stroke、Effects、Export 各分组的结构和细节。'
     },
     { id: 'designed-secondary', type: 'status', label: 'Designed' }
-];
-
-export const TOOL_BUTTONS: EditorIconButtonConfig[] = [
-    { icon: MousePointer2, label: 'Pointer tool', active: true },
-    { icon: Square, label: 'Rectangle tool' },
-    { icon: ChevronDown, label: 'More shape tools', compact: true },
-    { icon: Type, label: 'Text tool' },
-    { icon: Frame, label: 'Frame tool' },
-    { icon: Hand, label: 'Hand tool' }
 ];
 
 export const ALIGNMENT_BUTTONS: EditorIconButtonConfig[] = [

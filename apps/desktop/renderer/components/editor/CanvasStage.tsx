@@ -8,14 +8,13 @@ import { editorDocumentToRenderable } from '@miaoma-design-ai/miaoma-editor-core
 
 import faviconUrl from '../../assets/brand/favicon@152.png';
 import coverImageUrl from '../../assets/dSqyy.png';
-import { TOOL_BUTTONS } from '../../constants/editor';
 import type { SidebarTab } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
 
 import { useEditorSession } from './state/useEditorSession';
 import { useEditorSnapshot } from './state/useEditorSnapshot';
+import { CanvasToolRail } from './CanvasToolRail';
 import { CanvasViewportShell } from './CanvasViewportShell';
-import { EditorIconButton } from './EditorIconButton';
 import { PromptDock } from './PromptDock';
 
 const canvasAssets: Record<string, string> = {
@@ -23,17 +22,6 @@ const canvasAssets: Record<string, string> = {
     'image-import.png': coverImageUrl
 };
 const resolveCanvasAsset = (url: string) => canvasAssets[url] ?? url;
-
-const ToolRail = () => (
-    <nav
-        aria-label="Canvas tools"
-        className="editor-tool-rail absolute top-[calc(var(--editor-ruler-thickness)+10px)] left-[calc(var(--editor-ruler-thickness)+10px)] z-20 grid w-11 gap-1.5 rounded-2xl bg-white px-2 py-1.5 shadow-[0_3px_18px_#00000014]"
-    >
-        {TOOL_BUTTONS.map((tool) => (
-            <EditorIconButton key={tool.label} {...tool} />
-        ))}
-    </nav>
-);
 
 type CanvasStageProps = {
     activeSidebarTab: SidebarTab;
@@ -92,7 +80,7 @@ const CanvasStageInner = ({
                 resolveAsset={resolveCanvasAsset}
                 selectedNodeId={snapshot.selection.selectedNodeId}
             />
-            <ToolRail />
+            <CanvasToolRail />
             <div
                 aria-hidden="true"
                 className="editor-canvas-scrollbar absolute bottom-1.5 left-[min(49.85%,calc(100%_-_300px))] z-20 h-1.5 w-[276px] rounded-[3px] bg-[#bdbec3]"

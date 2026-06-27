@@ -110,7 +110,11 @@ const LeftSidebarContent = ({
             <header className="editor-sidebar-toolbar flex h-[var(--editor-header-height)] w-[var(--editor-sidebar-width)] min-w-0 items-center pr-5 [padding-left:calc(var(--editor-system-traffic-light-space)+20px)] [-webkit-app-region:drag]">
                 <div className="editor-toolbar-actions flex items-center gap-2 [-webkit-app-region:no-drag]">
                     {SIDEBAR_ACTIONS.map((action) => (
-                        <EditorIconButton key={action.label} {...action} />
+                        <EditorIconButton
+                            key={action.label}
+                            variant="toolbar"
+                            {...action}
+                        />
                     ))}
                 </div>
             </header>
