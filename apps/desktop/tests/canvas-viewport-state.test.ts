@@ -13,6 +13,7 @@ import {
     resizeViewport,
     screenToWorld,
     setViewportZoom,
+    setViewportZoomFromScrollPosition,
     worldToScreen
 } from '../renderer/components/editor/viewport/viewportState';
 
@@ -46,6 +47,42 @@ describe('canvas viewport state', () => {
         expect(after.x).toBeCloseTo(before.x, 6);
         expect(after.y).toBeCloseTo(before.y, 6);
         expect(worldToScreen(next, before)).toEqual(anchor);
+    });
+
+    it('syncs pending DOM scroll before zooming around the mouse anchor', () => {
+        const initial = createCanvasViewportState({
+            viewportWidth: 1000,
+            viewportHeight: 700
+        });
+        const anchor = { x: 300, y: 220 };
+        const actualScroll = {
+            x: initial.scrollLeft + 120,
+            y: initial.scrollTop + 80
+        };
+        const syncedBeforeZoom = screenToWorld(
+            applyScrollDelta(initial, { x: 120, y: 80 }),
+            anchor
+        );
+        const zoomed = setViewportZoomFromScrollPosition(
+            initial,
+            2,
+            anchor,
+            actualScroll
+        );
+        const afterZoom = screenToWorld(zoomed, anchor);
+
+        expect(afterZoom.x).toBeCloseTo(syncedBeforeZoom.x, 6);
+        expect(afterZoom.y).toBeCloseTo(syncedBeforeZoom.y, 6);
+    });
+
+    it('clamps canvas zoom between 2% and 25600%', () => {
+        const state = createCanvasViewportState({
+            viewportWidth: 1000,
+            viewportHeight: 700
+        });
+
+        expect(setViewportZoom(state, 0.001, { x: 0, y: 0 }).zoom).toBe(0.02);
+        expect(setViewportZoom(state, 512, { x: 0, y: 0 }).zoom).toBe(256);
     });
 
     it('reflows viewport dimensions while preserving the scroll offset from the anchor', () => {

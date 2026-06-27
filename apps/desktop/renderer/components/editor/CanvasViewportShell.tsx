@@ -5,12 +5,13 @@
   */
 
 import {
+    type PointerEvent as ReactPointerEvent,
     type ReactNode,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
-    useState,
-    type WheelEvent
+    useState
 } from 'react';
 
 import {
@@ -23,6 +24,12 @@ import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schem
 import { CanvasDocumentRenderer } from '../document/CanvasDocumentRenderer';
 
 import { DEFAULT_INITIAL_ZOOM, ZOOM_PRESETS } from './viewport/constants';
+import { useShortcutWheelZoom } from './viewport/useShortcutWheelZoom';
+import {
+    measureViewportSelectionBounds,
+    type ViewportSelectionBounds,
+    ViewportSelectionOverlay
+} from './viewport/ViewportSelectionOverlay';
 import {
     applyScrollDelta,
     createCanvasViewportState,
@@ -44,6 +51,13 @@ type CanvasViewportShellProps = {
 
 const INITIAL_VIEWPORT_WIDTH = 1200;
 const INITIAL_VIEWPORT_HEIGHT = 800;
+const useIsomorphicLayoutEffect =
+    typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+const isInteractiveViewportTarget = (target: HTMLElement) =>
+    target.closest(
+        'button,input,textarea,select,[role="button"],[role="checkbox"],[role="tab"]'
+    ) !== null;
 
 export const CanvasViewportShell = ({
     document,
@@ -61,6 +75,12 @@ export const CanvasViewportShell = ({
             initialZoom: DEFAULT_INITIAL_ZOOM
         })
     );
+    const [selectionBounds, setSelectionBounds] =
+        useState<ViewportSelectionBounds | null>(null);
+    const consumeShortcutWheelScrollLock = useShortcutWheelZoom({
+        scrollRef,
+        setState
+    });
 
     useEffect(() => {
         const element = scrollRef.current;
@@ -103,9 +123,38 @@ export const CanvasViewportShell = ({
 
     const visibleWorldRect = useMemo(() => getVisibleWorldRect(state), [state]);
 
+    useIsomorphicLayoutEffect(() => {
+        const element = scrollRef.current;
+
+        if (!element || !selectedNodeId) {
+            setSelectionBounds(null);
+            return;
+        }
+
+        setSelectionBounds(
+            measureViewportSelectionBounds({
+                scrollElement: element,
+                selectedNodeId,
+                zoom: state.zoom
+            })
+        );
+    }, [
+        document,
+        selectedNodeId,
+        state.cameraX,
+        state.cameraY,
+        state.scrollLeft,
+        state.scrollTop,
+        state.zoom
+    ]);
+
     const handleScroll = () => {
         const element = scrollRef.current;
         if (!element) {
+            return;
+        }
+
+        if (consumeShortcutWheelScrollLock(element)) {
             return;
         }
 
@@ -117,24 +166,21 @@ export const CanvasViewportShell = ({
         );
     };
 
-    const handleWheel = (event: WheelEvent<HTMLDivElement>) => {
-        if (event.metaKey || event.ctrlKey) {
-            event.preventDefault();
-            const element = scrollRef.current;
-            const rect = element?.getBoundingClientRect();
-            const delta = event.deltaY < 0 ? 1.1 : 0.9;
-
-            setState((previous) =>
-                setViewportZoom(previous, previous.zoom * delta, {
-                    x: rect
-                        ? event.clientX - rect.left
-                        : previous.viewportWidth / 2,
-                    y: rect
-                        ? event.clientY - rect.top
-                        : previous.viewportHeight / 2
-                })
-            );
+    const handleViewportPointerDown = (
+        event: ReactPointerEvent<HTMLDivElement>
+    ) => {
+        if (event.button !== 0 || !(event.target instanceof HTMLElement)) {
+            return;
         }
+
+        if (
+            event.target.closest('[data-document-renderer="true"]') ||
+            isInteractiveViewportTarget(event.target)
+        ) {
+            return;
+        }
+
+        onCanvasPointerDown?.();
     };
 
     const surfaceStyle = {
@@ -173,8 +219,8 @@ export const CanvasViewportShell = ({
             <div
                 aria-label="Canvas viewport"
                 className="absolute top-[var(--editor-ruler-thickness)] right-0 bottom-0 left-[var(--editor-ruler-thickness)] overflow-scroll"
+                onPointerDown={handleViewportPointerDown}
                 onScroll={handleScroll}
-                onWheel={handleWheel}
                 ref={scrollRef}
             >
                 <div
@@ -189,10 +235,24 @@ export const CanvasViewportShell = ({
                             document={document}
                             onCanvasPointerDown={onCanvasPointerDown}
                             onNodePointerDown={onNodePointerDown}
+                            renderSelectionOverlay={false}
                             resolveAsset={resolveAsset}
                             selectedNodeId={selectedNodeId}
+                            zoom={state.zoom}
                         />
                     </div>
+                    {selectionBounds ? (
+                        <div
+                            aria-hidden="true"
+                            className="editor-viewport-selection-layer absolute inset-0 z-20 overflow-visible"
+                            data-viewport-selection-layer="true"
+                            style={{ pointerEvents: 'none' }}
+                        >
+                            <ViewportSelectionOverlay
+                                bounds={selectionBounds}
+                            />
+                        </div>
+                    ) : null}
                     {overlay ? (
                         <div className="absolute inset-0 z-30">{overlay}</div>
                     ) : null}

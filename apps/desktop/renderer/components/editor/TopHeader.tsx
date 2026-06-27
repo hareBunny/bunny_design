@@ -7,9 +7,21 @@
 import { CircleUser, Play } from 'lucide-react';
 
 import logoUrl from '../../assets/brand/favicon@152.png';
+import { classNames } from '../../utils/classNames';
 
-export const TopHeader = () => (
-    <header className="flex h-12 items-center justify-between border-b border-[#e8e8e8] px-3.5">
+type TopHeaderProps = {
+    muted?: boolean;
+};
+
+export const TopHeader = ({ muted = false }: TopHeaderProps) => (
+    <header
+        className={classNames(
+            'flex h-12 items-center justify-between border-b border-[#e8e8e8] px-3.5',
+            muted ? 'bg-[#f6f6f6] text-[#6b7280]' : 'bg-white text-[#222222]'
+        )}
+        data-region="right-inspector-header"
+        data-tone={muted ? 'muted' : 'default'}
+    >
         <div className="flex w-[105px] items-center gap-1">
             <img
                 alt="Miaoma logo"
@@ -18,11 +30,21 @@ export const TopHeader = () => (
                 src={logoUrl}
                 width={24}
             />
-            <span className="whitespace-pre-line text-[11px] leading-[1.1] font-semibold text-black">
+            <span
+                className={classNames(
+                    'whitespace-pre-line text-[11px] leading-[1.1] font-semibold',
+                    muted ? 'text-[#6b7280]' : 'text-black'
+                )}
+            >
                 妙笔 AI{'\n'}miaomadesign
             </span>
         </div>
-        <div className="flex h-6 w-[86px] items-center justify-end gap-5 text-[#222222]">
+        <div
+            className={classNames(
+                'flex h-6 w-[86px] items-center justify-end gap-5',
+                muted ? 'text-[#6b7280]' : 'text-[#222222]'
+            )}
+        >
             <CircleUser aria-label="User profile" size={16} strokeWidth={1.8} />
             <Play aria-label="Preview" size={16} strokeWidth={1.8} />
         </div>

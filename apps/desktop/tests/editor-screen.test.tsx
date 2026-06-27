@@ -81,17 +81,16 @@ describe('MiaomaEditorScreen', () => {
         );
 
         expect(markup).toContain('Miaoma Editor Recreation Course');
-        expect(markup).toContain('Window Chrome');
-        expect(markup).toContain('Prompt Dock Course');
         expect(markup).toContain('01-cover');
-        expect(markup).toContain('MIAOMAEDU');
-        expect(markup).toContain('AI 大前端 全栈架构师训练营');
         expect(markup).toContain('data-layer-node-type="frame"');
-        expect(markup).toContain('data-layer-node-type="text"');
         expect(markup).toContain('data-depth="0"');
-        expect(markup).toContain('data-depth="1"');
-        expect(markup).toContain('data-depth="2"');
-        expect(markup).toContain('data-selected="true"');
+        expect(markup).toContain('aria-expanded="false"');
+        expect(markup).not.toContain('Window Chrome');
+        expect(markup).not.toContain('Prompt Dock Course');
+        expect(markup).not.toContain('MIAOMAEDU');
+        expect(markup).not.toContain('AI 大前端 全栈架构师训练营');
+        expect(markup).not.toContain('data-depth="1"');
+        expect(markup).not.toContain('data-selected="true"');
     });
 
     it('forces light appearance for macOS and renderer color scheme', () => {
@@ -439,20 +438,34 @@ describe('MiaomaEditorScreen', () => {
         const markup = renderToStaticMarkup(
             <SidebarContent activeTab="layers" />
         );
-        const leftSidebarSource = rendererSource(
-            'components/editor/LeftSidebar.tsx'
+        const sidebarLayersPanelSource = rendererSource(
+            'components/editor/SidebarLayersPanel.tsx'
+        );
+        const sidebarLayerRowItemSource = rendererSource(
+            'components/editor/SidebarLayerRowItem.tsx'
         );
 
         expect(markup).toContain('editor-sidebar-body');
         expect(markup).toContain('px-2');
         expect(markup).toContain('pb-6');
-        expect(leftSidebarSource).toContain('h-9');
-        expect(leftSidebarSource).toContain('rounded-[10px]');
-        expect(leftSidebarSource).toContain('bg-[#d9dadd]');
-        expect(leftSidebarSource).toContain('w-[46px]');
-        expect(leftSidebarSource).toContain('h-[34px]');
-        expect(leftSidebarSource).toContain('rounded-[9px]');
-        expect(leftSidebarSource).toContain('shadow-[0_1px_4px_#00000012]');
+        expect(sidebarLayerRowItemSource).toContain('bg-[#d9dadd]');
+        expect(sidebarLayerRowItemSource).toContain(
+            'grid-cols-[3px_minmax(0,1fr)_auto]'
+        );
+        expect(sidebarLayerRowItemSource).not.toContain('h-9');
+        expect(sidebarLayerRowItemSource).not.toContain('text-[13px]');
+        expect(sidebarLayerRowItemSource).not.toContain(
+            'grid-cols-[minmax(0,1fr)_46px]'
+        );
+        expect(sidebarLayerRowItemSource).toContain('w-[46px]');
+        expect(sidebarLayerRowItemSource).toContain('h-[34px]');
+        expect(sidebarLayerRowItemSource).toContain('rounded-[9px]');
+        expect(sidebarLayerRowItemSource).toContain(
+            'shadow-[0_1px_4px_#00000012]'
+        );
+        expect(sidebarLayersPanelSource).toContain(
+            'editor-layer-group-highlight'
+        );
     });
 
     it('renders Canvas Stage as an infinite canvas surface', () => {
@@ -462,6 +475,9 @@ describe('MiaomaEditorScreen', () => {
         );
         const viewportShellSource = rendererSource(
             'components/editor/CanvasViewportShell.tsx'
+        );
+        const shortcutWheelZoomSource = rendererSource(
+            'components/editor/viewport/useShortcutWheelZoom.ts'
         );
 
         expect(markup).toContain('data-region="canvas-viewport"');
@@ -481,7 +497,9 @@ describe('MiaomaEditorScreen', () => {
         expect(canvasStageSource).toContain('CanvasViewportShell');
         expect(viewportShellSource).toContain('CanvasRuler');
         expect(viewportShellSource).toContain('CanvasRulerCorner');
-        expect(viewportShellSource).toContain('onWheel={handleWheel}');
+        expect(viewportShellSource).toContain('useShortcutWheelZoom');
+        expect(shortcutWheelZoomSource).toContain("addEventListener('wheel'");
+        expect(shortcutWheelZoomSource).toContain('passive: false');
     });
 
     it('keeps the editor implementation split by responsibility', () => {

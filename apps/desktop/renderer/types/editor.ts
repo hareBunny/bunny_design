@@ -40,7 +40,9 @@ export type LayerRow = {
     icon: LucideIcon;
     depth: LayerDepth;
     nodeType?: MiaomaDesignNode['type'];
+    hasChildren?: boolean;
     expanded?: boolean;
+    groupHighlighted?: boolean;
     selected?: boolean;
     visible?: boolean;
 };

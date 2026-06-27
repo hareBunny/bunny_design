@@ -10,6 +10,7 @@ import faviconUrl from '../../assets/brand/favicon@152.png';
 import coverImageUrl from '../../assets/dSqyy.png';
 import { TOOL_BUTTONS } from '../../constants/editor';
 import type { SidebarTab } from '../../types/editor';
+import { classNames } from '../../utils/classNames';
 
 import { useEditorSession } from './state/useEditorSession';
 import { useEditorSnapshot } from './state/useEditorSnapshot';
@@ -36,29 +37,52 @@ const ToolRail = () => (
 
 type CanvasStageProps = {
     activeSidebarTab: SidebarTab;
+    onCanvasBlankSelect?: () => void;
+    onCanvasNodeSelect?: (nodeId: string) => void;
+    spanInspectorColumn?: boolean;
 };
 
-export const CanvasStage = ({ activeSidebarTab }: CanvasStageProps) => (
-    <CanvasStageInner activeSidebarTab={activeSidebarTab} />
+export const CanvasStage = ({
+    activeSidebarTab,
+    onCanvasBlankSelect,
+    onCanvasNodeSelect,
+    spanInspectorColumn
+}: CanvasStageProps) => (
+    <CanvasStageInner
+        activeSidebarTab={activeSidebarTab}
+        onCanvasBlankSelect={onCanvasBlankSelect}
+        onCanvasNodeSelect={onCanvasNodeSelect}
+        spanInspectorColumn={spanInspectorColumn}
+    />
 );
 
-const CanvasStageInner = ({ activeSidebarTab }: CanvasStageProps) => {
+const CanvasStageInner = ({
+    activeSidebarTab,
+    onCanvasBlankSelect,
+    onCanvasNodeSelect,
+    spanInspectorColumn
+}: CanvasStageProps) => {
     const session = useEditorSession();
     const snapshot = useEditorSnapshot();
     const renderableDocument = editorDocumentToRenderable(snapshot.document);
 
     return (
         <main
-            className="editor-canvas-stage relative col-start-1 row-start-2 min-h-0 min-w-0 overflow-hidden bg-[#f6f6f6]"
+            className={classNames(
+                'editor-canvas-stage relative col-start-1 row-start-2 min-h-0 min-w-0 overflow-hidden bg-[#f6f6f6]',
+                spanInspectorColumn && 'col-span-2'
+            )}
             data-region="canvas-stage"
         >
             <CanvasViewportShell
                 document={renderableDocument}
                 onCanvasPointerDown={() => {
                     session.selectNode(null);
+                    onCanvasBlankSelect?.();
                 }}
                 onNodePointerDown={(nodeId) => {
                     session.selectNode(nodeId);
+                    onCanvasNodeSelect?.(nodeId);
                 }}
                 overlay={
                     activeSidebarTab === 'layers' ? (

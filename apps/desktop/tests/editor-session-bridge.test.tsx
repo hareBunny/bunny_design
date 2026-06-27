@@ -13,10 +13,18 @@ import {
     editorDocumentToRenderable,
     getSelectedNode
 } from '@miaoma-design-ai/miaoma-editor-core';
-import { render, screen, within } from '@testing-library/react';
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { CanvasDocumentRenderer } from '../renderer/components/document/CanvasDocumentRenderer';
+import { LeftSidebar } from '../renderer/components/editor/LeftSidebar';
+import { MiaomaEditor } from '../renderer/components/editor/MiaomaEditor';
 import { RightInspector } from '../renderer/components/editor/RightInspector';
 import { EditorSessionProvider } from '../renderer/components/editor/state/EditorSessionProvider';
 import { useEditorSession } from '../renderer/components/editor/state/useEditorSession';
@@ -92,6 +100,37 @@ const SAMPLE_EDITOR_DOCUMENT: EditorDocument = {
     ]
 };
 
+const NESTED_EDITOR_DOCUMENT: EditorDocument = {
+    version: '1.0.0',
+    children: [
+        {
+            id: 'group-1',
+            type: 'frame',
+            name: 'Group 1',
+            x: 0,
+            y: 0,
+            width: 200,
+            height: 120,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: [
+                {
+                    id: 'nested-text',
+                    type: 'text',
+                    name: 'Nested Text',
+                    x: 20,
+                    y: 20,
+                    content: 'Nested',
+                    fills: [],
+                    strokes: [],
+                    effects: []
+                }
+            ]
+        }
+    ]
+};
+
 const SelectionControls = () => {
     const session = useEditorSession();
 
@@ -127,6 +166,24 @@ const CanvasDebug = () => {
     );
 };
 
+const SidebarCanvasDebug = () => {
+    const session = useEditorSession();
+    const snapshot = useEditorSnapshot();
+
+    return (
+        <>
+            <LeftSidebar activeTab="layers" onSelectTab={() => undefined} />
+            <CanvasDocumentRenderer
+                document={editorDocumentToRenderable(snapshot.document)}
+                onNodePointerDown={(nodeId) => {
+                    session.selectNode(nodeId);
+                }}
+                selectedNodeId={snapshot.selection.selectedNodeId}
+            />
+        </>
+    );
+};
+
 const renderInspector = () =>
     render(
         <EditorSessionProvider initialDocument={SAMPLE_EDITOR_DOCUMENT}>
@@ -137,13 +194,225 @@ const renderInspector = () =>
         </EditorSessionProvider>
     );
 
+const renderLayerSelectionHarness = () =>
+    render(
+        <EditorSessionProvider initialDocument={SAMPLE_EDITOR_DOCUMENT}>
+            <SidebarCanvasDebug />
+            <SelectedNodeDebug />
+        </EditorSessionProvider>
+    );
+
+const renderNestedLayerHarness = () =>
+    render(
+        <EditorSessionProvider initialDocument={NESTED_EDITOR_DOCUMENT}>
+            <LeftSidebar activeTab="layers" onSelectTab={() => undefined} />
+            <SelectedNodeDebug />
+        </EditorSessionProvider>
+    );
+
+const NestedCanvasDebug = () => {
+    const session = useEditorSession();
+    const snapshot = useEditorSnapshot();
+
+    return (
+        <>
+            <CanvasDocumentRenderer
+                document={editorDocumentToRenderable(snapshot.document)}
+                onNodePointerDown={(nodeId) => {
+                    session.selectNode(nodeId);
+                }}
+                selectedNodeId={snapshot.selection.selectedNodeId}
+            />
+            <SelectedNodeDebug />
+        </>
+    );
+};
+
+const renderNestedCanvasHarness = () =>
+    render(
+        <EditorSessionProvider initialDocument={NESTED_EDITOR_DOCUMENT}>
+            <NestedCanvasDebug />
+        </EditorSessionProvider>
+    );
+
 const readSelectedNode = () =>
     JSON.parse(screen.getByTestId('selected-node-json').textContent ?? 'null');
 
 const readCheckboxBox = (button: HTMLElement) =>
     button.querySelector('.editor-check-box') as HTMLElement | null;
 
+class TestResizeObserver {
+    constructor() {}
+
+    observe(): void {}
+    unobserve(): void {}
+    disconnect(): void {}
+}
+
 describe('RightInspectorFormBridge', () => {
+    it('keeps the right inspector header while hiding the body on empty canvas selection', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            render(<MiaomaEditor />);
+
+            expect(
+                document.querySelector('[data-region="right-inspector"]')
+            ).not.toBeNull();
+            expect(
+                document.querySelector('[data-region="right-inspector-body"]')
+            ).not.toBeNull();
+
+            fireEvent.pointerDown(screen.getByLabelText('Canvas viewport'), {
+                bubbles: true,
+                button: 0
+            });
+
+            await waitFor(() => {
+                expect(
+                    document.querySelector('[data-region="right-inspector"]')
+                ).not.toBeNull();
+                expect(
+                    document.querySelector(
+                        '[data-region="right-inspector-body"]'
+                    )
+                ).toBeNull();
+                expect(
+                    document
+                        .querySelector('[data-region="right-inspector"]')
+                        ?.getAttribute('data-inspector-body-visible')
+                ).toBe('false');
+                expect(
+                    document
+                        .querySelector('[data-region="right-inspector-header"]')
+                        ?.className.includes('bg-[#f6f6f6]')
+                ).toBe(true);
+            });
+
+            fireEvent.pointerDown(screen.getByText('MIAOMAEDU'), {
+                bubbles: true,
+                button: 0
+            });
+
+            await waitFor(() => {
+                expect(
+                    document.querySelector('[data-region="right-inspector"]')
+                ).not.toBeNull();
+                expect(
+                    document.querySelector(
+                        '[data-region="right-inspector-body"]'
+                    )
+                ).not.toBeNull();
+                expect(
+                    document
+                        .querySelector('[data-region="right-inspector"]')
+                        ?.getAttribute('data-inspector-body-visible')
+                ).toBe('true');
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('syncs layer panel selection with the shared canvas selection', async () => {
+        const user = userEvent.setup();
+
+        renderLayerSelectionHarness();
+
+        const textLayerButton = screen.getByRole('button', {
+            name: 'Select layer Text 1'
+        });
+
+        await user.click(textLayerButton);
+
+        expect(readSelectedNode().id).toBe('text-1');
+        const selectedLayerRow = textLayerButton.closest('.editor-layer-row');
+
+        expect(selectedLayerRow?.getAttribute('data-selected')).toBe('true');
+        expect(selectedLayerRow?.className).toContain('h-[30px]');
+        expect(selectedLayerRow?.className).toContain(
+            'grid-cols-[3px_minmax(0,1fr)_auto]'
+        );
+        expect(selectedLayerRow?.className).not.toContain('h-9');
+        expect(selectedLayerRow?.className).not.toContain('text-[13px]');
+        expect(selectedLayerRow?.className).not.toContain(
+            'grid-cols-[minmax(0,1fr)_46px]'
+        );
+
+        await user.click(screen.getByText('Hello'));
+
+        expect(readSelectedNode().id).toBe('text-1');
+        expect(selectedLayerRow?.getAttribute('data-selected')).toBe('true');
+    });
+
+    it('shows one light group background around child layers when a parent group is selected', async () => {
+        const user = userEvent.setup();
+
+        renderNestedLayerHarness();
+
+        await user.click(
+            screen.getByRole('button', { name: 'Select layer Group 1' })
+        );
+
+        const nestedTextButton = screen.getByRole('button', {
+            name: 'Select layer Nested Text'
+        });
+        const nestedTextRow = nestedTextButton.closest('.editor-layer-row');
+        const groupHighlightBlock = document.querySelector(
+            '[data-layer-group-highlight-block="true"]'
+        );
+
+        expect(readSelectedNode().id).toBe('group-1');
+        expect(groupHighlightBlock).not.toBeNull();
+        expect(groupHighlightBlock?.className).toContain('bg-[#eef2f7]');
+        expect(groupHighlightBlock?.contains(nestedTextRow)).toBe(true);
+        expect(nestedTextRow?.getAttribute('data-group-highlight')).toBe(
+            'true'
+        );
+        expect(nestedTextRow?.className).not.toContain('bg-[#eef2f7]');
+    });
+
+    it('does not clear canvas selection when clicking text content', () => {
+        renderNestedCanvasHarness();
+
+        const text = screen.getByText('Nested');
+        const pointerDownEvent = new PointerEvent('pointerdown', {
+            bubbles: true,
+            button: 0,
+            cancelable: true
+        });
+
+        expect(fireEvent(text, pointerDownEvent)).toBe(false);
+        expect(readSelectedNode().id).toBe('group-1');
+        expect(pointerDownEvent.defaultPrevented).toBe(true);
+    });
+
+    it('selects canvas nodes one hierarchy level at a time', async () => {
+        const user = userEvent.setup();
+
+        renderNestedCanvasHarness();
+
+        await user.click(screen.getByText('Nested'));
+
+        expect(readSelectedNode().id).toBe('group-1');
+
+        await user.click(screen.getByText('Nested'));
+
+        expect(readSelectedNode().id).toBe('nested-text');
+    });
+
+    it('selects the deepest canvas node on double click', async () => {
+        const user = userEvent.setup();
+
+        renderNestedCanvasHarness();
+
+        await user.dblClick(screen.getByText('Nested'));
+
+        expect(readSelectedNode().id).toBe('nested-text');
+    });
+
     it('resets to the selected node and writes valid numeric edits back to the session', async () => {
         const user = userEvent.setup();
 

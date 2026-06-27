@@ -199,3 +199,17 @@ export const setViewportZoom = (
         cameraY: worldAnchor.y - anchor.y / zoom
     };
 };
+
+export const setViewportZoomFromScrollPosition = (
+    state: CanvasViewportState,
+    nextZoom: number,
+    anchor: ViewportPoint,
+    scrollPosition: ViewportPoint
+): CanvasViewportState => {
+    const syncedState = applyScrollDelta(state, {
+        x: scrollPosition.x - state.scrollLeft,
+        y: scrollPosition.y - state.scrollTop
+    });
+
+    return setViewportZoom(syncedState, nextZoom, anchor);
+};

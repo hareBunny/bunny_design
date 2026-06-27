@@ -149,6 +149,7 @@ describe('CanvasDocumentRenderer', () => {
         );
 
         expect(markup).toContain('data-document-renderer="true"');
+        expect(markup).toContain('user-select:none');
         expect(markup).toContain('data-design-node-name="01-cover"');
         expect(markup).toContain('width:595px');
         expect(markup).toContain('height:842px');
@@ -236,6 +237,105 @@ describe('CanvasDocumentRenderer', () => {
 
         expect(markup).toContain('data-design-node-selected="true"');
         expect(markup).toContain('data-design-node-id="xV5nO"');
+        expect(markup).toContain('editor-document-selection-frame');
+        expect(markup).toContain('border:3px solid #4592FF');
+        expect(markup).toContain('editor-document-selection-handle');
+        expect(markup.match(/editor-document-selection-handle/g)).toHaveLength(
+            4
+        );
+        expect(markup).toContain('data-selection-handle-position="top-left"');
+        expect(markup).toContain('transform:translate(-50%, -50%)');
+        expect(markup).toContain('data-selection-handle-position="top-right"');
+        expect(markup).toContain('transform:translate(50%, -50%)');
+        expect(markup).toContain(
+            'data-selection-handle-position="bottom-right"'
+        );
+        expect(markup).toContain('transform:translate(50%, 50%)');
+        expect(markup).toContain(
+            'data-selection-handle-position="bottom-left"'
+        );
+        expect(markup).toContain('transform:translate(-50%, 50%)');
+        expect(markup).toContain('editor-document-selection-size-label');
+        expect(markup).toContain('data-selection-size-label="true"');
+    });
+
+    it('keeps selection chrome visually stable under canvas zoom', () => {
+        const markup = renderToStaticMarkup(
+            <CanvasDocumentRenderer
+                document={coverDocument}
+                selectedNodeId="bA55W"
+                zoom={4}
+            />
+        );
+
+        expect(markup).toContain('border:0.75px solid #4592FF');
+        expect(markup).toContain('width:2.5px');
+        expect(markup).toContain('height:2.5px');
+        expect(markup).toContain('font-size:3.25px');
+        expect(markup).toContain('line-height:6px');
+    });
+
+    it('mounts selected outlines in the renderer overlay layer outside clipped nodes', () => {
+        const clippedDocument: MiaomaDesignDocument = {
+            version: '2.14',
+            children: [
+                {
+                    id: 'clipping-frame',
+                    type: 'frame',
+                    x: 0,
+                    y: 0,
+                    width: 100,
+                    height: 100,
+                    clip: true,
+                    fill: {
+                        type: 'color',
+                        color: '#ffffff'
+                    },
+                    children: [
+                        {
+                            id: 'clipped-child',
+                            type: 'rectangle',
+                            x: 80,
+                            y: 70,
+                            width: 40,
+                            height: 30,
+                            fill: {
+                                type: 'color',
+                                color: '#111111'
+                            }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const markup = renderToStaticMarkup(
+            <CanvasDocumentRenderer
+                document={clippedDocument}
+                selectedNodeId="clipped-child"
+            />
+        );
+        const selectedNodeIndex = markup.indexOf(
+            'data-design-node-id="clipped-child"'
+        );
+        const selectedNodeMarkup = markup.slice(
+            selectedNodeIndex,
+            markup.indexOf('</div>', selectedNodeIndex)
+        );
+
+        expect(markup).toContain('data-selection-overlay-layer="true"');
+        expect(markup).toContain('data-selection-node-id="clipped-child"');
+        expect(
+            markup.indexOf('data-selection-overlay-layer="true"')
+        ).toBeGreaterThan(selectedNodeIndex);
+        expect(selectedNodeMarkup).not.toContain(
+            'editor-document-selection-frame'
+        );
+        expect(markup).toContain('left:80px');
+        expect(markup).toContain('top:70px');
+        expect(markup).toContain('width:40px');
+        expect(markup).toContain('height:30px');
+        expect(markup).toContain('>40 × 30</');
     });
 
     it('maps node opacity values onto the DOM render style', () => {
