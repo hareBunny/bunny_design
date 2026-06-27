@@ -40,7 +40,7 @@ const PROMPT_DOCK_CONFIG: Record<PromptDockVariant, PromptDockConfig> = {
     },
     canvas: {
         rootClassName:
-            'editor-prompt-dock absolute bottom-3.5 left-3 z-20 grid h-[101px] w-[507px] max-w-[calc(100%_-_340px)] grid-rows-[35px_24px] gap-[18px] rounded-[10px] border border-[#ececee] bg-white px-[18px] pt-[18px] pb-1.5 shadow-[0_6px_24px_0_#00000012] max-[1280px]:w-[420px] max-[1280px]:max-w-[calc(100%_-_220px)] max-[980px]:max-w-[calc(100%_-_180px)]',
+            'editor-prompt-dock pointer-events-auto absolute bottom-3.5 left-3 z-20 grid h-[101px] w-[507px] max-w-[calc(100%_-_340px)] grid-rows-[35px_24px] gap-[18px] rounded-[10px] border border-[#ececee] bg-white px-[18px] pt-[18px] pb-1.5 shadow-[0_6px_24px_0_#00000012] max-[1280px]:w-[420px] max-[1280px]:max-w-[calc(100%_-_220px)] max-[980px]:max-w-[calc(100%_-_180px)]',
         inputClassName:
             'editor-prompt-input h-[35px] w-full min-w-0 resize-none overflow-hidden border-0 bg-transparent p-0 text-sm/[normal] font-normal text-[#6c6c72] outline-0 placeholder:text-[#6c6c72] placeholder:opacity-100',
         footerClassName:

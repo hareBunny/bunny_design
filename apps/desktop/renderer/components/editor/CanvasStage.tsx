@@ -27,7 +27,7 @@ const resolveCanvasAsset = (url: string) => canvasAssets[url] ?? url;
 const ToolRail = () => (
     <nav
         aria-label="Canvas tools"
-        className="editor-tool-rail absolute top-1 left-3 z-20 grid w-11 gap-1.5 rounded-2xl bg-white px-2 py-1.5 shadow-[0_3px_18px_#00000014]"
+        className="editor-tool-rail absolute top-[calc(var(--editor-ruler-thickness)+10px)] left-[calc(var(--editor-ruler-thickness)+10px)] z-20 grid w-11 gap-1.5 rounded-2xl bg-white px-2 py-1.5 shadow-[0_3px_18px_#00000014]"
     >
         {TOOL_BUTTONS.map((tool) => (
             <EditorIconButton key={tool.label} {...tool} />

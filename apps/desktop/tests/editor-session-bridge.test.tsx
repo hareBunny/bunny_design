@@ -356,6 +356,10 @@ describe('RightInspectorFormBridge', () => {
             screen.getByRole('button', { name: 'Select layer Group 1' })
         );
 
+        const groupButton = screen.getByRole('button', {
+            name: 'Select layer Group 1'
+        });
+        const groupRow = groupButton.closest('.editor-layer-row');
         const nestedTextButton = screen.getByRole('button', {
             name: 'Select layer Nested Text'
         });
@@ -367,6 +371,7 @@ describe('RightInspectorFormBridge', () => {
         expect(readSelectedNode().id).toBe('group-1');
         expect(groupHighlightBlock).not.toBeNull();
         expect(groupHighlightBlock?.className).toContain('bg-[#eef2f7]');
+        expect(groupHighlightBlock?.contains(groupRow)).toBe(true);
         expect(groupHighlightBlock?.contains(nestedTextRow)).toBe(true);
         expect(nestedTextRow?.getAttribute('data-group-highlight')).toBe(
             'true'

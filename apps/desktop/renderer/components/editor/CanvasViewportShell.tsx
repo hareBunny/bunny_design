@@ -254,7 +254,9 @@ export const CanvasViewportShell = ({
                         </div>
                     ) : null}
                     {overlay ? (
-                        <div className="absolute inset-0 z-30">{overlay}</div>
+                        <div className="pointer-events-none absolute inset-0 z-30">
+                            {overlay}
+                        </div>
                     ) : null}
                 </div>
             </div>

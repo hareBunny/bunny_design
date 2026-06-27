@@ -52,6 +52,34 @@ const renderLayerRows = ({
     while (rowIndex < layerRows.length) {
         const row = layerRows[rowIndex];
 
+        if (row.selected && row.hasChildren && row.expanded) {
+            const highlightedRows = [row];
+
+            rowIndex += 1;
+
+            while (layerRows[rowIndex]?.depth > row.depth) {
+                highlightedRows.push(layerRows[rowIndex]);
+                rowIndex += 1;
+            }
+
+            elements.push(
+                <div
+                    className="editor-layer-group-highlight grid gap-0.5 rounded-lg bg-[#eef2f7] py-0.5"
+                    data-layer-group-highlight-block="true"
+                    key={`group-highlight-${row.id}`}
+                >
+                    {highlightedRows.map((highlightedRow) =>
+                        renderLayerRow({
+                            row: highlightedRow,
+                            onSelectNode,
+                            onToggleLayer
+                        })
+                    )}
+                </div>
+            );
+            continue;
+        }
+
         if (!row.groupHighlighted) {
             elements.push(renderLayerRow({ row, onSelectNode, onToggleLayer }));
             rowIndex += 1;

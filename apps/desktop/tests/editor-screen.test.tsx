@@ -411,6 +411,9 @@ describe('MiaomaEditorScreen', () => {
         const canvasStageSource = rendererSource(
             'components/editor/CanvasStage.tsx'
         );
+        const viewportShellSource = rendererSource(
+            'components/editor/CanvasViewportShell.tsx'
+        );
         const agentPanelSource = rendererSource(
             'components/editor/SidebarAgentPanel.tsx'
         );
@@ -423,6 +426,13 @@ describe('MiaomaEditorScreen', () => {
         ).toBe(true);
         expect(canvasStageSource).toContain('import { PromptDock }');
         expect(canvasStageSource).toContain('<PromptDock variant="canvas" />');
+        expect(canvasStageSource).toContain(
+            'top-[calc(var(--editor-ruler-thickness)+10px)]'
+        );
+        expect(canvasStageSource).toContain(
+            'left-[calc(var(--editor-ruler-thickness)+10px)]'
+        );
+        expect(viewportShellSource).toContain('pointer-events-none');
         expect(canvasStageSource).not.toContain('const PromptDock');
         expect(agentPanelSource).toContain('import { PromptDock }');
         expect(agentPanelSource).toContain('<PromptDock variant="agent" />');
@@ -430,6 +440,7 @@ describe('MiaomaEditorScreen', () => {
         expect(promptDockSource).toContain(
             "type PromptDockVariant = 'agent' | 'canvas'"
         );
+        expect(promptDockSource).toContain('pointer-events-auto');
         expect(promptDockSource).toContain('editor-prompt-dock');
         expect(promptDockSource).toContain('editor-agent-prompt-dock');
     });
