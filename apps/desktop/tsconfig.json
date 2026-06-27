@@ -19,6 +19,9 @@
             "@miaoma-design-ai/miaoma-design-schema": [
                 "../../packages/miaoma-design-schema/src/index.ts"
             ],
+            "@miaoma-design-ai/miaoma-editor-core": [
+                "../../packages/miaoma-editor-core/src/index.ts"
+            ],
             "@/renderer/*": ["./renderer/*"]
         },
         "types": ["./miaoma.env.d.ts"]

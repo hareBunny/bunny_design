@@ -1,0 +1,424 @@
+/*
+- Copyright (c) 2026 妙码学院 @Heyi
+- All rights reserved.
+- 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
+  */
+
+// @vitest-environment jsdom
+
+import { describe, expect, it } from 'vitest';
+
+import {
+    type EditorDocument,
+    editorDocumentToRenderable,
+    getSelectedNode
+} from '@miaoma-design-ai/miaoma-editor-core';
+import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+import { CanvasDocumentRenderer } from '../renderer/components/document/CanvasDocumentRenderer';
+import { RightInspector } from '../renderer/components/editor/RightInspector';
+import { EditorSessionProvider } from '../renderer/components/editor/state/EditorSessionProvider';
+import { useEditorSession } from '../renderer/components/editor/state/useEditorSession';
+import { useEditorSnapshot } from '../renderer/components/editor/state/useEditorSnapshot';
+
+const SAMPLE_EDITOR_DOCUMENT: EditorDocument = {
+    version: '1.0.0',
+    children: [
+        {
+            id: 'frame-1',
+            type: 'frame',
+            name: 'Frame 1',
+            x: 10,
+            y: 20,
+            rotation: 0,
+            width: 120,
+            height: 80,
+            clip: true,
+            layout: 'none',
+            cornerRadius: 8,
+            fills: [
+                {
+                    id: 'fill-1',
+                    enabled: true,
+                    type: 'color',
+                    color: '#ff0000ff'
+                }
+            ],
+            strokes: [
+                {
+                    id: 'stroke-1',
+                    enabled: true,
+                    type: 'color',
+                    color: '#000000ff',
+                    width: 1,
+                    align: 'inner'
+                }
+            ],
+            effects: [
+                {
+                    id: 'effect-1',
+                    enabled: true,
+                    type: 'shadow',
+                    shadowType: 'outer',
+                    color: '#00000033',
+                    offsetX: 1,
+                    offsetY: 2,
+                    blur: 4
+                }
+            ],
+            children: []
+        },
+        {
+            id: 'text-1',
+            type: 'text',
+            name: 'Text 1',
+            x: 90,
+            y: 12,
+            rotation: 5,
+            content: 'Hello',
+            fontSize: 16,
+            fills: [
+                {
+                    id: 'fill-2',
+                    enabled: true,
+                    type: 'color',
+                    color: '#3366ffff'
+                }
+            ],
+            strokes: [],
+            effects: []
+        }
+    ]
+};
+
+const SelectionControls = () => {
+    const session = useEditorSession();
+
+    return (
+        <div>
+            <button onClick={() => session.selectNode('frame-1')} type="button">
+                Select frame
+            </button>
+            <button onClick={() => session.selectNode('text-1')} type="button">
+                Select text
+            </button>
+        </div>
+    );
+};
+
+const SelectedNodeDebug = () => {
+    const snapshot = useEditorSnapshot();
+
+    return (
+        <pre data-testid="selected-node-json">
+            {JSON.stringify(getSelectedNode(snapshot))}
+        </pre>
+    );
+};
+
+const CanvasDebug = () => {
+    const snapshot = useEditorSnapshot();
+
+    return (
+        <CanvasDocumentRenderer
+            document={editorDocumentToRenderable(snapshot.document)}
+        />
+    );
+};
+
+const renderInspector = () =>
+    render(
+        <EditorSessionProvider initialDocument={SAMPLE_EDITOR_DOCUMENT}>
+            <SelectionControls />
+            <RightInspector />
+            <SelectedNodeDebug />
+            <CanvasDebug />
+        </EditorSessionProvider>
+    );
+
+const readSelectedNode = () =>
+    JSON.parse(screen.getByTestId('selected-node-json').textContent ?? 'null');
+
+const readCheckboxBox = (button: HTMLElement) =>
+    button.querySelector('.editor-check-box') as HTMLElement | null;
+
+describe('RightInspectorFormBridge', () => {
+    it('resets to the selected node and writes valid numeric edits back to the session', async () => {
+        const user = userEvent.setup();
+
+        renderInspector();
+
+        await user.click(screen.getByRole('button', { name: 'Select frame' }));
+
+        const xInput = screen.getByLabelText('X position') as HTMLInputElement;
+
+        expect(xInput.value).toBe('10');
+
+        await user.clear(xInput);
+        await user.type(xInput, '-');
+
+        expect(xInput.value).toBe('-');
+        expect(readSelectedNode().x).toBe(10);
+
+        await user.clear(xInput);
+        await user.type(xInput, '48');
+
+        expect(readSelectedNode().x).toBe(48);
+
+        await user.click(screen.getByRole('button', { name: 'Select text' }));
+
+        expect(
+            (screen.getByLabelText('X position') as HTMLInputElement).value
+        ).toBe('90');
+        expect(readSelectedNode().id).toBe('text-1');
+    });
+
+    it('updates style arrays for the selected node through the inspector form', async () => {
+        const user = userEvent.setup();
+
+        renderInspector();
+
+        await user.click(screen.getByRole('button', { name: 'Select frame' }));
+
+        const fillRow = screen.getByTestId('style-row-fill-1');
+        const fillColorInput = within(fillRow).getByLabelText('Fill color');
+
+        await user.clear(fillColorInput);
+        await user.type(fillColorInput, '#00ff00');
+
+        expect(readSelectedNode().fills[0].color).toBe('#00ff00');
+
+        const fillOpacityInput = within(fillRow).getByLabelText('Fill opacity');
+
+        await user.clear(fillOpacityInput);
+        await user.type(fillOpacityInput, '50%');
+
+        expect(readSelectedNode().fills[0].color).toBe('#00ff0080');
+
+        await user.click(screen.getByRole('button', { name: 'Add stroke' }));
+        expect(readSelectedNode().strokes).toHaveLength(2);
+
+        const secondStrokeRow = screen.getAllByTestId(/^style-row-stroke-/)[1];
+        const secondStrokeColorInput =
+            within(secondStrokeRow).getByLabelText('Stroke color');
+
+        await user.clear(secondStrokeColorInput);
+        await user.type(secondStrokeColorInput, '#112233');
+
+        expect(readSelectedNode().strokes[1].color).toBe('#112233');
+
+        await user.click(screen.getByRole('button', { name: 'Add effect' }));
+        expect(readSelectedNode().effects).toHaveLength(2);
+
+        const effectRow = screen.getByTestId('style-row-effect-1');
+        const effectBlurInput = within(effectRow).getByLabelText('Effect blur');
+
+        await user.clear(effectBlurInput);
+        await user.type(effectBlurInput, '12');
+
+        expect(readSelectedNode().effects[0].blur).toBe(12);
+    });
+
+    it('updates the selected frame layout mode through the shared inspector form state', async () => {
+        const user = userEvent.setup();
+
+        renderInspector();
+
+        await user.click(screen.getByRole('button', { name: 'Select frame' }));
+        await user.click(
+            screen.getByRole('button', { name: 'Vertical layout' })
+        );
+
+        expect(readSelectedNode().layout).toBe('vertical');
+
+        await user.click(
+            screen.getByRole('button', { name: 'Switch to layout' })
+        );
+
+        expect(readSelectedNode().layout).toBe('none');
+    });
+
+    it('updates flex layout alignment, spacing, and padding through the shared form state', async () => {
+        const user = userEvent.setup();
+
+        renderInspector();
+
+        await user.click(screen.getByRole('button', { name: 'Select frame' }));
+        await user.click(
+            screen.getByRole('button', { name: 'Vertical layout' })
+        );
+
+        const renderedFrame = document.querySelector(
+            '[data-design-node-id="frame-1"]'
+        ) as HTMLElement | null;
+        const alignmentButton = screen.getByRole('button', {
+            name: 'Alignment middle center'
+        });
+        const gapInput = screen.getByLabelText('Gap value') as HTMLInputElement;
+        const horizontalPaddingInput = screen.getByLabelText(
+            'Horizontal padding'
+        ) as HTMLInputElement;
+        const verticalPaddingInput = screen.getByLabelText(
+            'Vertical padding'
+        ) as HTMLInputElement;
+
+        expect((alignmentButton as HTMLButtonElement).disabled).toBe(false);
+        expect(gapInput.disabled).toBe(false);
+        expect(horizontalPaddingInput.disabled).toBe(false);
+        expect(verticalPaddingInput.disabled).toBe(false);
+
+        await user.click(alignmentButton);
+
+        expect(readSelectedNode().justifyContent).toBe('center');
+        expect(readSelectedNode().alignItems).toBe('center');
+        expect(renderedFrame?.style.justifyContent).toBe('center');
+        expect(renderedFrame?.style.alignItems).toBe('center');
+
+        await user.clear(gapInput);
+        await user.type(gapInput, '16');
+
+        expect(readSelectedNode().gap).toBe(16);
+        expect(renderedFrame?.style.gap).toBe('16px');
+
+        await user.click(
+            screen.getByRole('button', { name: 'Space between gap mode' })
+        );
+
+        expect(readSelectedNode().justifyContent).toBe('space_between');
+        expect(readSelectedNode().gap).toBeUndefined();
+        expect(renderedFrame?.style.justifyContent).toBe('space-between');
+        expect(renderedFrame?.style.gap).toBe('');
+
+        await user.click(
+            screen.getByRole('button', { name: 'Space around gap mode' })
+        );
+
+        expect(readSelectedNode().justifyContent).toBe('space_around');
+        expect(readSelectedNode().gap).toBeUndefined();
+        expect(renderedFrame?.style.justifyContent).toBe('space-around');
+        expect(renderedFrame?.style.gap).toBe('');
+
+        await user.clear(horizontalPaddingInput);
+        await user.type(horizontalPaddingInput, '24');
+        await user.clear(verticalPaddingInput);
+        await user.type(verticalPaddingInput, '8');
+
+        expect(readSelectedNode().padding).toEqual([8, 24]);
+        expect(renderedFrame?.style.padding).toBe('8px 24px');
+    });
+
+    it('updates flex dimension toggles and clip checkbox with visible checked state', async () => {
+        const user = userEvent.setup();
+
+        renderInspector();
+
+        await user.click(screen.getByRole('button', { name: 'Select frame' }));
+        await user.click(
+            screen.getByRole('button', { name: 'Vertical layout' })
+        );
+
+        const renderedFrame = document.querySelector(
+            '[data-design-node-id="frame-1"]'
+        ) as HTMLElement | null;
+        const fillWidthButton = screen.getByRole('checkbox', {
+            name: 'Fill Width'
+        });
+        const hugHeightButton = screen.getByRole('checkbox', {
+            name: 'Hug Height'
+        });
+        const clipButton = screen.getByRole('checkbox', {
+            name: 'Clip Content'
+        });
+        const fillWidthBox = readCheckboxBox(fillWidthButton);
+        const hugHeightBox = readCheckboxBox(hugHeightButton);
+        const clipBox = readCheckboxBox(clipButton);
+
+        expect((fillWidthButton as HTMLButtonElement).disabled).toBe(false);
+        expect((hugHeightButton as HTMLButtonElement).disabled).toBe(false);
+        expect(clipButton.getAttribute('aria-pressed')).toBe('true');
+        expect(fillWidthButton.getAttribute('data-checked')).toBe('false');
+        expect(hugHeightButton.getAttribute('data-checked')).toBe('false');
+        expect(clipButton.getAttribute('data-checked')).toBe('true');
+        expect(fillWidthBox?.className).not.toContain(
+            'editor-check-box--checked'
+        );
+        expect(fillWidthBox?.className).toContain('h-[14px]');
+        expect(fillWidthBox?.className).toContain('w-[14px]');
+        expect(fillWidthBox?.className).toContain('rounded-[3px]');
+        expect(fillWidthBox?.className).toContain('border-[#111111]');
+        expect(fillWidthBox?.className).toContain('bg-white');
+        expect(hugHeightBox?.className).not.toContain(
+            'editor-check-box--checked'
+        );
+        expect(clipBox?.className).toContain('editor-check-box--checked');
+        expect(clipBox?.className).toContain('bg-[#111111]');
+        expect(clipBox?.className).toContain('text-white');
+        expect(clipBox?.className).not.toContain('bg-white');
+        expect(clipBox?.className).not.toContain('text-transparent');
+
+        await user.click(fillWidthButton);
+        await user.click(hugHeightButton);
+        await user.click(clipButton);
+
+        expect(fillWidthButton.getAttribute('aria-pressed')).toBe('true');
+        expect(hugHeightButton.getAttribute('aria-pressed')).toBe('true');
+        expect(clipButton.getAttribute('aria-pressed')).toBe('false');
+        expect(fillWidthButton.getAttribute('data-checked')).toBe('true');
+        expect(hugHeightButton.getAttribute('data-checked')).toBe('true');
+        expect(clipButton.getAttribute('data-checked')).toBe('false');
+        expect(fillWidthBox?.className).toContain('editor-check-box--checked');
+        expect(fillWidthBox?.className).toContain('bg-[#111111]');
+        expect(fillWidthBox?.className).toContain('text-white');
+        expect(fillWidthBox?.className).not.toContain('bg-white');
+        expect(fillWidthBox?.className).not.toContain('text-transparent');
+        expect(hugHeightBox?.className).toContain('editor-check-box--checked');
+        expect(hugHeightBox?.className).toContain('bg-[#111111]');
+        expect(hugHeightBox?.className).toContain('text-white');
+        expect(hugHeightBox?.className).not.toContain('bg-white');
+        expect(hugHeightBox?.className).not.toContain('text-transparent');
+        expect(clipBox?.className).not.toContain('editor-check-box--checked');
+        expect(clipBox?.className).toContain('bg-white');
+        expect(clipBox?.className).toContain('text-transparent');
+        expect(readSelectedNode().width).toBe('fill_container');
+        expect(readSelectedNode().height).toBe('hug_contents');
+        expect(readSelectedNode().clip).toBe(false);
+        expect(renderedFrame?.style.overflow).toBe('');
+    });
+
+    it('updates appearance controls through the shared form state and reflects on the render tree', async () => {
+        const user = userEvent.setup();
+
+        renderInspector();
+
+        await user.click(screen.getByRole('button', { name: 'Select frame' }));
+
+        const opacityInput = screen.getByLabelText(
+            'Opacity'
+        ) as HTMLInputElement;
+        const cornerRadiusInput = screen.getByLabelText(
+            'Corner radius'
+        ) as HTMLInputElement;
+        const renderedFrame = document.querySelector(
+            '[data-design-node-id="frame-1"]'
+        ) as HTMLElement | null;
+
+        expect(opacityInput.disabled).toBe(false);
+        expect(opacityInput.value).toBe('100');
+        expect(cornerRadiusInput.disabled).toBe(false);
+        expect(cornerRadiusInput.value).toBe('8');
+        expect(renderedFrame?.style.borderRadius).toBe('8px');
+
+        await user.clear(opacityInput);
+        await user.type(opacityInput, '25');
+
+        expect(readSelectedNode().opacity).toBe(25);
+        expect(renderedFrame?.style.opacity).toBe('0.25');
+
+        await user.clear(cornerRadiusInput);
+        await user.type(cornerRadiusInput, '16');
+
+        expect(readSelectedNode().cornerRadius).toBe(16);
+        expect(renderedFrame?.style.borderRadius).toBe('16px');
+    });
+});

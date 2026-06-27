@@ -8,8 +8,10 @@ import { Bot, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 import { EDITOR_DESIGN_METRICS } from '../../constants/editor';
+import { CANVAS_SAMPLE_EDITOR_DOCUMENT } from '../../fixtures/canvasSampleDocument';
 import type { SidebarTab } from '../../types/editor';
 
+import { EditorSessionProvider } from './state/EditorSessionProvider';
 import { CanvasStage } from './CanvasStage';
 import { LeftSidebar } from './LeftSidebar';
 import { RightInspector } from './RightInspector';
@@ -35,23 +37,30 @@ export const MiaomaEditor = () => {
         useState<SidebarTab>('agent');
 
     return (
-        <div
-            className="miaoma-editor-screen grid h-screen min-h-[700px] w-screen grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)] overflow-hidden"
-            data-canvas-width={EDITOR_DESIGN_METRICS.canvasWidth}
-            data-content-width={EDITOR_DESIGN_METRICS.contentWidth}
-            data-design-frame={EDITOR_DESIGN_METRICS.frameId}
-            data-inspector-width={EDITOR_DESIGN_METRICS.inspectorWidth}
-            data-sidebar-width={EDITOR_DESIGN_METRICS.sidebarWidth}
+        <EditorSessionProvider
+            initialDocument={CANVAS_SAMPLE_EDITOR_DOCUMENT}
+            initialSelectedNodeId={
+                CANVAS_SAMPLE_EDITOR_DOCUMENT.children[0]?.id
+            }
         >
-            <LeftSidebar
-                activeTab={activeSidebarTab}
-                onSelectTab={setActiveSidebarTab}
-            />
-            <section className="editor-content grid h-full min-w-0 grid-cols-[minmax(0,1fr)_var(--editor-inspector-width)] grid-rows-[var(--editor-header-height)_minmax(0,1fr)] overflow-hidden rounded-l-3xl border-l border-[#e6e6e6] bg-[#f6f6f6] shadow-[-4px_0_20px_#0000001a] max-[980px]:grid-cols-[minmax(520px,1fr)]">
-                <MainHeader />
-                <CanvasStage activeSidebarTab={activeSidebarTab} />
-                <RightInspector />
-            </section>
-        </div>
+            <div
+                className="miaoma-editor-screen grid h-screen min-h-[700px] w-screen grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)] overflow-hidden"
+                data-canvas-width={EDITOR_DESIGN_METRICS.canvasWidth}
+                data-content-width={EDITOR_DESIGN_METRICS.contentWidth}
+                data-design-frame={EDITOR_DESIGN_METRICS.frameId}
+                data-inspector-width={EDITOR_DESIGN_METRICS.inspectorWidth}
+                data-sidebar-width={EDITOR_DESIGN_METRICS.sidebarWidth}
+            >
+                <LeftSidebar
+                    activeTab={activeSidebarTab}
+                    onSelectTab={setActiveSidebarTab}
+                />
+                <section className="editor-content grid h-full min-w-0 grid-cols-[minmax(0,1fr)_var(--editor-inspector-width)] grid-rows-[var(--editor-header-height)_minmax(0,1fr)] overflow-hidden rounded-l-3xl border-l border-[#e6e6e6] bg-[#f6f6f6] shadow-[-4px_0_20px_#0000001a] max-[980px]:grid-cols-[minmax(520px,1fr)]">
+                    <MainHeader />
+                    <CanvasStage activeSidebarTab={activeSidebarTab} />
+                    <RightInspector />
+                </section>
+            </div>
+        </EditorSessionProvider>
     );
 };

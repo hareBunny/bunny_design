@@ -18,6 +18,10 @@ export default defineConfig({
             '@miaoma-design-ai/miaoma-design-schema': path.resolve(
                 __dirname,
                 '../../packages/miaoma-design-schema/src'
+            ),
+            '@miaoma-design-ai/miaoma-editor-core': path.resolve(
+                __dirname,
+                '../../packages/miaoma-editor-core/src'
             )
         }
     },

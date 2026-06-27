@@ -63,6 +63,7 @@ describe('miaoma inspector registry', () => {
                 'rotation',
                 'width',
                 'height',
+                'opacity',
                 'fill',
                 'stroke',
                 'strokeWidth',
@@ -70,7 +71,6 @@ describe('miaoma inspector registry', () => {
                 'clip'
             ])
         );
-        expect(propertyIds).not.toContain('opacity');
         expect(propertyIds).not.toContain('exportScale');
         expect(propertyIds).not.toContain('exportFormat');
         expect(
@@ -85,6 +85,13 @@ describe('miaoma inspector registry', () => {
         ).toMatchObject({
             group: 'stroke',
             path: 'strokeWidth'
+        });
+        expect(
+            properties.find((property) => property.id === 'opacity')
+        ).toMatchObject({
+            group: 'appearance',
+            path: 'opacity',
+            unit: '%'
         });
         expect(
             properties.find((property) => property.id === 'rotation')
@@ -105,6 +112,17 @@ describe('miaoma inspector registry', () => {
             properties.find((property) => property.id === 'cornerRadius')
         ).toMatchObject({
             label: 'Corner radius'
+        });
+        expect(
+            properties.find((property) => property.id === 'justifyContent')
+        ).toMatchObject({
+            enumValues: [
+                'start',
+                'center',
+                'end',
+                'space_between',
+                'space_around'
+            ]
         });
     });
 

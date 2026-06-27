@@ -116,7 +116,13 @@ export const INSPECTOR_PROPERTY_REGISTRY: MiaomaInspectorPropertyDefinition[] =
             valueKind: 'enum',
             nodeTypes: ['frame'],
             optional: true,
-            enumValues: ['start', 'center', 'end', 'space_between']
+            enumValues: [
+                'start',
+                'center',
+                'end',
+                'space_between',
+                'space_around'
+            ]
         },
         {
             id: 'alignItems',
@@ -136,6 +142,16 @@ export const INSPECTOR_PROPERTY_REGISTRY: MiaomaInspectorPropertyDefinition[] =
             valueKind: 'boolean',
             nodeTypes: ['frame'],
             optional: true
+        },
+        {
+            id: 'opacity',
+            group: 'appearance',
+            path: 'opacity',
+            label: 'Opacity',
+            valueKind: 'number',
+            nodeTypes: FRAME_AND_SHAPES,
+            optional: true,
+            unit: '%'
         },
         {
             id: 'cornerRadius',

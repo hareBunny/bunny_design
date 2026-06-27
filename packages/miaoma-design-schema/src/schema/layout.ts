@@ -15,6 +15,11 @@ export type MiaomaSpacing =
 
 export type MiaomaLayoutDirection = 'none' | 'horizontal' | 'vertical';
 
-export type MiaomaJustifyContent = 'start' | 'center' | 'end' | 'space_between';
+export type MiaomaJustifyContent =
+    | 'start'
+    | 'center'
+    | 'end'
+    | 'space_between'
+    | 'space_around';
 
 export type MiaomaAlignItems = 'start' | 'center' | 'end' | 'stretch';

@@ -16,12 +16,15 @@ export const InspectorValueInput = ({
     unit,
     size = 'default',
     className,
-    inputClassName
+    inputClassName,
+    disabled,
+    onValueChange
 }: InspectorValueInputProps) => (
     <label
         className={classNames(
             'editor-inspector-value-input flex min-w-0 items-center gap-2 overflow-hidden rounded-lg border border-[#e3e3e3] bg-[#f8f8f8] px-2 text-[#262626] [&_svg]:shrink-0 [&_svg]:text-[#9ca3af]',
             size === 'default' ? 'h-8' : 'h-6 rounded-md',
+            disabled && 'opacity-60',
             className
         )}
     >
@@ -45,7 +48,12 @@ export const InspectorValueInput = ({
                 'min-w-0 flex-1 border-0 bg-transparent p-0 font-mono text-[12px] leading-none font-medium text-[#262626] outline-none',
                 inputClassName
             )}
-            defaultValue={value}
+            disabled={disabled}
+            onChange={(event) => {
+                onValueChange?.(event.target.value);
+            }}
+            readOnly={disabled || onValueChange === undefined}
+            value={value}
         />
         {unit ? (
             <span className="editor-inspector-value-input-unit shrink-0 text-[11px] leading-none font-medium text-[#8a8a8a]">

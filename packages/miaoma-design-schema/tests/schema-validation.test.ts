@@ -82,14 +82,32 @@ describe('miaoma design schema validation', () => {
         if (!result.success) {
             throw new Error(JSON.stringify(result.diagnostics, null, 2));
         }
-        const target =
-            result.document.children[0].children[0].children[0].children[0];
+        const root = result.document.children[0];
+
+        if (root.type !== 'frame') {
+            throw new Error('Expected root editor node to be a frame.');
+        }
+
+        const toolbar = root.children?.[0];
+        if (!toolbar || toolbar.type !== 'frame') {
+            throw new Error('Expected toolbar node to be a frame.');
+        }
+
+        const header = toolbar.children?.[0];
+        if (!header || header.type !== 'frame') {
+            throw new Error('Expected header node to be a frame.');
+        }
+
+        const target = header.children?.[0];
 
         expect(target).toMatchObject({
             type: 'frame',
             name: 'Main Title Region'
         });
-        expect(target.children.length).toBeGreaterThan(0);
+        if (!target || target.type !== 'frame') {
+            throw new Error('Expected target node to be a frame.');
+        }
+        expect(target.children?.length ?? 0).toBeGreaterThan(0);
         expect(target.layout).toBe('horizontal');
     });
 
@@ -225,5 +243,34 @@ describe('miaoma design schema validation', () => {
                 })
             ])
         );
+    });
+
+    it('accepts space_around justifyContent in strict mode', () => {
+        const result = strictValidateDesignDocument({
+            version: '2.14',
+            children: [
+                {
+                    type: 'frame',
+                    id: 'frame-space-around',
+                    width: 160,
+                    height: 64,
+                    layout: 'horizontal',
+                    justifyContent: 'space_around',
+                    alignItems: 'center',
+                    children: []
+                }
+            ]
+        });
+
+        expect(result.success).toBe(true);
+        if (!result.success) {
+            throw new Error(JSON.stringify(result.diagnostics, null, 2));
+        }
+
+        expect(result.document.children[0]).toMatchObject({
+            type: 'frame',
+            justifyContent: 'space_around',
+            alignItems: 'center'
+        });
     });
 });

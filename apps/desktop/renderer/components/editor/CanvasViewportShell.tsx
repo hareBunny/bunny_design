@@ -35,6 +35,9 @@ import { CanvasZoomControl } from './CanvasZoomControl';
 
 type CanvasViewportShellProps = {
     document: MiaomaDesignDocument;
+    selectedNodeId?: string | null;
+    onNodePointerDown?: (nodeId: string) => void;
+    onCanvasPointerDown?: () => void;
     resolveAsset: (url: string) => string;
     overlay?: ReactNode;
 };
@@ -44,6 +47,9 @@ const INITIAL_VIEWPORT_HEIGHT = 800;
 
 export const CanvasViewportShell = ({
     document,
+    selectedNodeId,
+    onNodePointerDown,
+    onCanvasPointerDown,
     resolveAsset,
     overlay
 }: CanvasViewportShellProps) => {
@@ -181,7 +187,10 @@ export const CanvasViewportShell = ({
                     <div className="absolute" style={surfaceStyle}>
                         <CanvasDocumentRenderer
                             document={document}
+                            onCanvasPointerDown={onCanvasPointerDown}
+                            onNodePointerDown={onNodePointerDown}
                             resolveAsset={resolveAsset}
+                            selectedNodeId={selectedNodeId}
                         />
                     </div>
                     {overlay ? (

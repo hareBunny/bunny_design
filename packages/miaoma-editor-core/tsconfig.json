@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "esnext",
+        "strict": true,
+        "skipLibCheck": true,
+        "moduleResolution": "bundler",
+        "baseUrl": ".",
+        "paths": {
+            "@miaoma-design-ai/miaoma-design-schema": [
+                "../miaoma-design-schema/src/index.ts"
+            ]
+        },
+        "types": ["vitest/globals"]
+    },
+    "include": [
+        "src/**/*",
+        "tests/**/*",
+        "vitest.config.ts",
+        "tsdown.config.ts"
+    ]
+}

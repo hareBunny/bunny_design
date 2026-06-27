@@ -16,6 +16,8 @@ export type EditorIconButtonConfig = {
     label: string;
     active?: boolean;
     compact?: boolean;
+    disabled?: boolean;
+    onClick?: () => void;
 };
 
 export type InspectorValueInputProps = {
@@ -28,6 +30,8 @@ export type InspectorValueInputProps = {
     size?: 'default' | 'compact';
     className?: string;
     inputClassName?: string;
+    disabled?: boolean;
+    onValueChange?: (value: string) => void;
 };
 
 export type LayerRow = {

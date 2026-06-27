@@ -36,7 +36,7 @@ import {
     Square,
     Type as TypeIcon
 } from 'lucide-react';
-import type { CSSProperties, ReactElement } from 'react';
+import type { CSSProperties, HTMLAttributes, ReactElement } from 'react';
 
 import type {
     MiaomaAlignItems as AlignItems,
@@ -68,8 +68,10 @@ type ParentLayout = 'absolute' | Exclude<LayoutDirection, 'none'>;
 type NodeRendererProps<TNode extends DesignNode = DesignNode> = {
     node: TNode;
     nodeRenderers: NodeRendererRegistry;
+    onNodePointerDown?: (nodeId: string) => void;
     parentLayout: ParentLayout;
     resolveAsset: AssetResolver;
+    selectedNodeId?: string | null;
     topLevelBounds?: Bounds;
 };
 
@@ -82,6 +84,9 @@ type CanvasDocumentRendererProps = {
     resolveAsset?: AssetResolver;
     className?: string;
     nodeRenderers?: Partial<NodeRendererRegistry>;
+    selectedNodeId?: string | null;
+    onNodePointerDown?: (nodeId: string) => void;
+    onCanvasPointerDown?: () => void;
 };
 
 const defaultAssetResolver: AssetResolver = (url) => url;
@@ -93,6 +98,16 @@ const normalizeAngle = (angle: number) => ((angle % 360) + 360) % 360;
 const toCssGradientAngle = (rotation = 0) => `${normalizeAngle(-rotation)}deg`;
 
 const toCssNodeRotation = (rotation: number) => `rotate(${-rotation}deg)`;
+
+const toCssOpacityValue = (opacity: number | undefined) => {
+    if (opacity === undefined) {
+        return undefined;
+    }
+
+    const normalizedValue = opacity > 1 ? opacity / 100 : opacity;
+
+    return Math.max(0, Math.min(1, normalizedValue));
+};
 
 const toBackgroundSize = (mode: 'fill' | 'fit' | 'stretch') => {
     if (mode === 'fit') {
@@ -236,6 +251,10 @@ const toJustifyContent = (
 
     if (justifyContent === 'space_between') {
         return 'space-between';
+    }
+
+    if (justifyContent === 'space_around') {
+        return 'space-around';
     }
 
     if (justifyContent === 'start') {
@@ -391,6 +410,7 @@ const getNodeBoxStyle = ({
     const style: CSSProperties = {
         ...getNodePlacementStyle(node, topLevelBounds, parentLayout),
         boxSizing: 'border-box',
+        opacity: toCssOpacityValue(node.opacity),
         transform:
             node.rotation === undefined
                 ? undefined
@@ -466,10 +486,30 @@ const TextContent = ({ content }: { content: string }) => {
     );
 };
 
+type NodeInteractionProps = HTMLAttributes<HTMLDivElement> & {
+    'data-design-node-selected'?: 'true';
+};
+
+const getNodeInteractionProps = (
+    nodeId: string,
+    selectedNodeId: string | null | undefined,
+    onNodePointerDown: ((nodeId: string) => void) | undefined
+): NodeInteractionProps => ({
+    'data-design-node-selected': selectedNodeId === nodeId ? 'true' : undefined,
+    onPointerDown: onNodePointerDown
+        ? (event) => {
+              event.stopPropagation();
+              onNodePointerDown(nodeId);
+          }
+        : undefined
+});
+
 const CanvasTextNode = ({
     node,
+    onNodePointerDown,
     parentLayout,
     resolveAsset,
+    selectedNodeId,
     topLevelBounds
 }: NodeRendererProps<TextNode>) => {
     const lineHeight =
@@ -503,6 +543,11 @@ const CanvasTextNode = ({
             className="editor-document-node editor-document-text"
             data-design-node-id={node.id}
             data-design-node-name={node.name}
+            {...getNodeInteractionProps(
+                node.id,
+                selectedNodeId,
+                onNodePointerDown
+            )}
             style={style}
         >
             <TextContent content={node.content} />
@@ -512,14 +557,17 @@ const CanvasTextNode = ({
 
 const CanvasRectangleNode = ({
     node,
+    onNodePointerDown,
     parentLayout,
     resolveAsset,
+    selectedNodeId,
     topLevelBounds
 }: NodeRendererProps<RectangleNode>) => (
     <div
         className="editor-document-node editor-document-rectangle"
         data-design-node-id={node.id}
         data-design-node-name={node.name}
+        {...getNodeInteractionProps(node.id, selectedNodeId, onNodePointerDown)}
         style={{
             ...getNodeBoxStyle({
                 node,
@@ -535,14 +583,17 @@ const CanvasRectangleNode = ({
 
 const CanvasEllipseNode = ({
     node,
+    onNodePointerDown,
     parentLayout,
     resolveAsset,
+    selectedNodeId,
     topLevelBounds
 }: NodeRendererProps<EllipseNode>) => (
     <div
         className="editor-document-node editor-document-ellipse"
         data-design-node-id={node.id}
         data-design-node-name={node.name}
+        {...getNodeInteractionProps(node.id, selectedNodeId, onNodePointerDown)}
         style={{
             ...getNodeBoxStyle({
                 node,
@@ -559,7 +610,9 @@ const CanvasEllipseNode = ({
 
 const CanvasIconNode = ({
     node,
+    onNodePointerDown,
     parentLayout,
+    selectedNodeId,
     topLevelBounds
 }: NodeRendererProps<IconNode>) => {
     const Icon =
@@ -585,6 +638,11 @@ const CanvasIconNode = ({
             data-design-icon-name={node.icon}
             data-design-node-id={node.id}
             data-design-node-name={node.name}
+            {...getNodeInteractionProps(
+                node.id,
+                selectedNodeId,
+                onNodePointerDown
+            )}
             style={style}
         >
             {Icon ? (
@@ -603,8 +661,10 @@ const CanvasIconNode = ({
 const CanvasFrameNode = ({
     node,
     nodeRenderers,
+    onNodePointerDown,
     parentLayout,
     resolveAsset,
+    selectedNodeId,
     topLevelBounds
 }: NodeRendererProps<FrameNode>) => {
     const flowLayout = getFlowLayout(node.layout);
@@ -619,7 +679,7 @@ const CanvasFrameNode = ({
             topLevelBounds
         }),
         ...getVisualStyle(node, resolveAsset, 'shape'),
-        alignItems: toAlignItems(node.alignItems),
+        alignItems: flowLayout ? toAlignItems(node.alignItems) : undefined,
         display: flowLayout ? 'flex' : undefined,
         flexDirection:
             flowLayout === undefined
@@ -627,10 +687,12 @@ const CanvasFrameNode = ({
                 : flowLayout === 'vertical'
                   ? 'column'
                   : 'row',
-        gap: node.gap === undefined ? undefined : px(node.gap),
-        justifyContent: toJustifyContent(node.justifyContent),
+        gap: flowLayout && node.gap !== undefined ? px(node.gap) : undefined,
+        justifyContent: flowLayout
+            ? toJustifyContent(node.justifyContent)
+            : undefined,
         overflow: node.clip ? 'hidden' : undefined,
-        padding: toPaddingValue(node.padding)
+        padding: flowLayout ? toPaddingValue(node.padding) : undefined
     };
 
     return (
@@ -638,6 +700,11 @@ const CanvasFrameNode = ({
             className="editor-document-node editor-document-frame"
             data-design-node-id={node.id}
             data-design-node-name={node.name}
+            {...getNodeInteractionProps(
+                node.id,
+                selectedNodeId,
+                onNodePointerDown
+            )}
             style={style}
         >
             {children.map((child) => (
@@ -645,8 +712,10 @@ const CanvasFrameNode = ({
                     key={child.id}
                     node={child}
                     nodeRenderers={nodeRenderers}
+                    onNodePointerDown={onNodePointerDown}
                     parentLayout={childParentLayout}
                     resolveAsset={resolveAsset}
+                    selectedNodeId={selectedNodeId}
                 />
             ))}
         </div>
@@ -664,8 +733,10 @@ const defaultNodeRenderers: NodeRendererRegistry = {
 const CanvasRenderNode = ({
     node,
     nodeRenderers,
+    onNodePointerDown,
     parentLayout,
     resolveAsset,
+    selectedNodeId,
     topLevelBounds
 }: NodeRendererProps) => {
     const Renderer = nodeRenderers[node.type];
@@ -674,8 +745,10 @@ const CanvasRenderNode = ({
         <Renderer
             node={node}
             nodeRenderers={nodeRenderers}
+            onNodePointerDown={onNodePointerDown}
             parentLayout={parentLayout}
             resolveAsset={resolveAsset}
+            selectedNodeId={selectedNodeId}
             topLevelBounds={topLevelBounds}
         />
     );
@@ -685,7 +758,10 @@ export const CanvasDocumentRenderer = ({
     className,
     document,
     nodeRenderers,
-    resolveAsset = defaultAssetResolver
+    resolveAsset = defaultAssetResolver,
+    selectedNodeId,
+    onNodePointerDown,
+    onCanvasPointerDown
 }: CanvasDocumentRendererProps) => {
     const bounds = getTopLevelBounds(document.children);
     const rendererRegistry = {
@@ -699,6 +775,13 @@ export const CanvasDocumentRenderer = ({
                 .filter(Boolean)
                 .join(' ')}
             data-document-renderer="true"
+            onPointerDown={
+                onCanvasPointerDown
+                    ? () => {
+                          onCanvasPointerDown();
+                      }
+                    : undefined
+            }
             style={{
                 width: px(bounds.width),
                 height: px(bounds.height)
@@ -709,8 +792,10 @@ export const CanvasDocumentRenderer = ({
                     key={node.id}
                     node={node}
                     nodeRenderers={rendererRegistry}
+                    onNodePointerDown={onNodePointerDown}
                     parentLayout="absolute"
                     resolveAsset={resolveAsset}
+                    selectedNodeId={selectedNodeId}
                     topLevelBounds={bounds}
                 />
             ))}

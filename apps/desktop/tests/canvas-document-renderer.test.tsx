@@ -217,4 +217,50 @@ describe('CanvasDocumentRenderer', () => {
         expect(markup).toContain('Export layer');
         expect(markup).toContain('/resolved/favicon%40167.png');
     });
+
+    it('marks the selected node in the render tree', () => {
+        const result = strictValidateDesignDocument(readDesignSchemaFixture());
+
+        expect(result.success).toBe(true);
+        if (!result.success) {
+            throw new Error(JSON.stringify(result.diagnostics, null, 2));
+        }
+
+        const markup = renderToStaticMarkup(
+            <CanvasDocumentRenderer
+                document={result.document}
+                resolveAsset={(url) => `/resolved/${url}`}
+                selectedNodeId="xV5nO"
+            />
+        );
+
+        expect(markup).toContain('data-design-node-selected="true"');
+        expect(markup).toContain('data-design-node-id="xV5nO"');
+    });
+
+    it('maps node opacity values onto the DOM render style', () => {
+        const documentWithOpacity: MiaomaDesignDocument = {
+            version: '2.14',
+            children: [
+                {
+                    id: 'frame-opacity',
+                    type: 'frame',
+                    width: 100,
+                    height: 80,
+                    opacity: 25,
+                    fill: {
+                        type: 'color',
+                        color: '#ffffff'
+                    },
+                    children: []
+                }
+            ]
+        };
+
+        const markup = renderToStaticMarkup(
+            <CanvasDocumentRenderer document={documentWithOpacity} />
+        );
+
+        expect(markup).toContain('opacity:0.25');
+    });
 });

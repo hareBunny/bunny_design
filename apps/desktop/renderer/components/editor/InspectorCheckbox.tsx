@@ -10,17 +10,44 @@ import { classNames } from '../../utils/classNames';
 
 export const InspectorCheckbox = ({
     label,
-    checked
+    checked,
+    ariaLabel,
+    onCheckedChange,
+    disabled
 }: {
     label: string;
     checked?: boolean;
+    ariaLabel?: string;
+    onCheckedChange?: (checked: boolean) => void;
+    disabled?: boolean;
 }) => (
-    <span className="editor-checkbox-control flex min-w-0 items-center gap-2 text-[11px] leading-none font-medium text-[#333333]">
+    <button
+        aria-label={ariaLabel ?? label}
+        aria-checked={checked ? 'true' : 'false'}
+        aria-pressed={checked ? 'true' : 'false'}
+        className={classNames(
+            'editor-checkbox-control flex min-w-0 cursor-default items-center gap-2 border-0 bg-transparent p-0 text-[11px] leading-none font-medium text-[#333333]',
+            checked && 'editor-checkbox-control--checked text-[#111111]',
+            disabled && 'opacity-60'
+        )}
+        data-checked={checked ? 'true' : 'false'}
+        disabled={disabled}
+        onClick={() => {
+            if (disabled) {
+                return;
+            }
+
+            onCheckedChange?.(!checked);
+        }}
+        role="checkbox"
+        type="button"
+    >
         <span
             className={classNames(
-                'editor-check-box grid h-3.5 w-3.5 shrink-0 place-items-center rounded-[3px] border border-[#d1d5db] bg-white',
-                checked &&
-                    'editor-check-box--checked border-[#111111] bg-[#111111] text-white'
+                'editor-check-box grid h-[14px] w-[14px] shrink-0 place-items-center rounded-[3px] border border-[#111111]',
+                checked
+                    ? 'editor-check-box--checked bg-[#111111] text-white'
+                    : 'bg-white text-transparent'
             )}
         >
             {checked ? (
@@ -28,5 +55,5 @@ export const InspectorCheckbox = ({
             ) : null}
         </span>
         {label}
-    </span>
+    </button>
 );

@@ -9,6 +9,7 @@ import {
     type MiaomaFrameNode,
     strictValidateDesignDocument
 } from '@miaoma-design-ai/miaoma-design-schema';
+import { schemaToEditorDocument } from '@miaoma-design-ai/miaoma-editor-core';
 
 import designSchemaDocument from '../../../../miaoma-design-design-schema.json';
 
@@ -50,3 +51,7 @@ export const CANVAS_SAMPLE_DESIGN_DOCUMENT: MiaomaDesignDocument = {
         }
     ]
 };
+
+export const CANVAS_SAMPLE_EDITOR_DOCUMENT = schemaToEditorDocument(
+    CANVAS_SAMPLE_DESIGN_DOCUMENT
+);

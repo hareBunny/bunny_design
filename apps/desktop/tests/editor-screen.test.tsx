@@ -9,10 +9,17 @@ import { fileURLToPath } from 'node:url';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
+import type { EditorDocument } from '@miaoma-design-ai/miaoma-editor-core';
+
 import { CanvasStage } from '../renderer/components/editor/CanvasStage';
-import { LayoutConfigurationContent } from '../renderer/components/editor/FlexLayoutSection';
+import {
+    FlexLayoutSection,
+    LayoutConfigurationContent
+} from '../renderer/components/editor/FlexLayoutSection';
 import { SidebarContent } from '../renderer/components/editor/LeftSidebar';
 import { RightInspector } from '../renderer/components/editor/RightInspector';
+import { EditorSessionProvider } from '../renderer/components/editor/state/EditorSessionProvider';
+import { CANVAS_SAMPLE_EDITOR_DOCUMENT } from '../renderer/fixtures/canvasSampleDocument';
 import { MiaomaEditorScreen } from '../renderer/pages/MiaomaEditorScreen';
 
 const rendererFile = (relativePath: string) =>
@@ -180,50 +187,58 @@ describe('MiaomaEditorScreen', () => {
     });
 
     it('renders the detailed right inspector controls from the Pencil frame', () => {
-        const markup = renderToStaticMarkup(<RightInspector />);
+        const markup = renderToStaticMarkup(
+            <EditorSessionProvider
+                initialDocument={CANVAS_SAMPLE_EDITOR_DOCUMENT}
+                initialSelectedNodeId={
+                    CANVAS_SAMPLE_EDITOR_DOCUMENT.children[0]?.id
+                }
+            >
+                <RightInspector />
+            </EditorSessionProvider>
+        );
 
         expect(markup).toContain('alt="Miaoma logo"');
         expect(markup).toContain('妙笔 AI');
         expect(markup).toContain('miaomadesign');
-        expect(markup).toContain('Miaoma Editor Recr');
+        expect(markup).toContain('Miaoma Editor Recreation Course');
         expect(markup).toContain('Create Component');
         expect(markup).toContain('Context');
         expect(markup).toContain('editor-inspector-body');
         expect(markup).toContain('overflow-y-auto');
         expect(markup).toContain('Alignment');
+        expect(markup).toContain('editor-alignment-buttons');
         expect(markup.match(/aria-label="Align /g)).toHaveLength(6);
         expect(markup).toContain('Position');
         expect(markup).toContain('>X</');
         expect(markup).toContain('>Y</');
         expect(markup).toContain('>R</');
-        expect(markup).toContain('Flex Layout');
-        expect(markup).toContain('aria-label="Grid layout"');
+        expect(markup).not.toContain('aria-label="Layer name"');
+        expect(markup).toContain('Layout');
         expect(markup).toContain('aria-label="Vertical layout"');
-        expect(markup).toContain('aria-pressed="true"');
-        expect(markup).toContain('Alignment');
-        expect(markup).toContain('Gap');
-        expect(markup).toContain('Space Between');
-        expect(markup).toContain('Space Around');
-        expect(markup).toContain('Padding');
-        expect(markup).toContain('Dimensions');
+        expect(markup).toContain('aria-label="Switch to flex layout"');
         expect(markup).toContain('>W</');
-        expect(markup).toContain('404');
+        expect(markup).toContain('1920');
         expect(markup).toContain('>H</');
         expect(markup).toContain('1205');
-        expect(markup).toContain('Fill Width');
-        expect(markup).toContain('Fill Height');
-        expect(markup).toContain('Hug Width');
-        expect(markup).toContain('Hug Height');
         expect(markup).toContain('Clip Content');
-        expect(markup).not.toContain('1920');
         expect(markup).toContain('Appearance');
         expect(markup).toContain('aria-label="Opacity"');
         expect(markup).toContain('aria-label="Corner radius"');
         expect(markup).toContain('Fill');
+        expect(markup).toContain('editor-fill-control');
+        expect(markup).toContain('editor-fill-row');
         expect(markup).toContain('#f3f4f6');
+        expect(markup).toContain('aria-label="Fill color"');
         expect(markup).toContain('aria-label="Fill opacity"');
+        expect(markup).toContain('aria-label="Add fill"');
+        expect(markup).toContain('aria-label="Remove fill"');
         expect(markup).toContain('Stroke');
+        expect(markup).toContain('aria-label="Stroke width"');
+        expect(markup).toContain('aria-label="Add stroke"');
         expect(markup).toContain('Effects');
+        expect(markup).toContain('aria-label="Add effect"');
+        expect(markup).not.toContain('Selection transforms are live');
         expect(markup).toContain('data-schema-group="position"');
         expect(markup).toContain('data-schema-path="x"');
         expect(markup).toContain('data-schema-path="y"');
@@ -232,14 +247,88 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('data-schema-path="width"');
         expect(markup).toContain('data-schema-path="height"');
         expect(markup).toContain('data-schema-path="clip"');
-        expect(markup).toContain('data-schema-path="cornerRadius"');
         expect(markup).toContain('data-schema-path="fill"');
         expect(markup).toContain('data-schema-path="stroke"');
         expect(markup).toContain('data-schema-path="effect"');
-        expect(markup).not.toContain('data-schema-path="opacity"');
         expect(markup).toContain('2x');
         expect(markup).toContain('PNG');
         expect(markup).toContain('Export layer');
+    });
+
+    it('renders gradient and image paint rows with the shared inspector row skeleton', () => {
+        const styledDocument: EditorDocument = {
+            version: '1.0.0',
+            children: [
+                {
+                    id: 'styled-frame',
+                    type: 'frame',
+                    name: 'Styled Frame',
+                    x: 0,
+                    y: 0,
+                    width: 320,
+                    height: 180,
+                    clip: true,
+                    layout: 'none',
+                    fills: [
+                        {
+                            id: 'fill-color',
+                            enabled: true,
+                            type: 'color',
+                            color: '#f3f4f6'
+                        },
+                        {
+                            id: 'fill-gradient',
+                            enabled: true,
+                            type: 'gradient',
+                            gradientType: 'linear',
+                            rotation: 45,
+                            colors: [
+                                { color: '#4f46e5', position: 0 },
+                                { color: '#22c55e', position: 1 }
+                            ]
+                        },
+                        {
+                            id: 'fill-image',
+                            enabled: true,
+                            type: 'image',
+                            url: './poster.png',
+                            mode: 'fill'
+                        }
+                    ],
+                    strokes: [
+                        {
+                            id: 'stroke-gradient',
+                            enabled: true,
+                            type: 'gradient',
+                            gradientType: 'linear',
+                            rotation: 90,
+                            colors: [
+                                { color: '#111111', position: 0 },
+                                { color: '#8b5cf6', position: 1 }
+                            ],
+                            width: 2,
+                            align: 'center'
+                        }
+                    ],
+                    effects: [],
+                    children: []
+                }
+            ]
+        };
+        const markup = renderToStaticMarkup(
+            <EditorSessionProvider
+                initialDocument={styledDocument}
+                initialSelectedNodeId="styled-frame"
+            >
+                <RightInspector />
+            </EditorSessionProvider>
+        );
+
+        expect(markup.match(/data-style-field="fills"/g)).toHaveLength(3);
+        expect(markup).toContain('data-style-kind="gradient"');
+        expect(markup).toContain('data-style-kind="image"');
+        expect(markup).toContain('poster.png');
+        expect(markup).toContain('Linear gradient');
     });
 
     it('declares the schema workspace dependency for the renderer', () => {
@@ -294,7 +383,11 @@ describe('MiaomaEditorScreen', () => {
 
     it('shows the canvas prompt dock when the Layers sidebar tab is active', () => {
         const markup = renderToStaticMarkup(
-            <CanvasStage activeSidebarTab="layers" />
+            <EditorSessionProvider
+                initialDocument={CANVAS_SAMPLE_EDITOR_DOCUMENT}
+            >
+                <CanvasStage activeSidebarTab="layers" />
+            </EditorSessionProvider>
         );
         const promptDockStart = markup.indexOf('editor-prompt-dock');
         const promptDockEnd = markup.indexOf('</section>', promptDockStart);
@@ -418,47 +511,46 @@ describe('MiaomaEditorScreen', () => {
 
     it('reuses the inspector value input primitive for fixed icon-value-unit controls', () => {
         const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
-        const rightInspectorSource = rendererSource(
-            'components/editor/RightInspector.tsx'
+        const positionSectionSource = rendererSource(
+            'components/editor/inspector/sections/PositionSectionFields.tsx'
+        );
+        const layoutSectionSource = rendererSource(
+            'components/editor/FlexLayoutSection.tsx'
         );
         const valueInputSource = rendererSource(
             'components/editor/InspectorValueInput.tsx'
         );
 
-        expect(rightInspectorSource).toContain('InspectorValueInput');
+        expect(positionSectionSource).toContain('InspectorValueInput');
+        expect(layoutSectionSource).toContain('InspectorValueInput');
         expect(valueInputSource).toContain('startIcon');
         expect(valueInputSource).toContain('unit');
+        expect(valueInputSource).toContain('onValueChange');
         expect(
             markup.match(/editor-inspector-value-input/g)?.length ?? 0
         ).toBeGreaterThanOrEqual(8);
     });
 
-    it('keeps Fill as a dedicated inspector control instead of overloading the value input primitive', () => {
+    it('keeps Fill as a dedicated array section with explicit item controls', () => {
         const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
-        const rightInspectorSource = rendererSource(
-            'components/editor/RightInspector.tsx'
+        const fillSectionSource = rendererSource(
+            'components/editor/inspector/sections/FillArraySection.tsx'
         );
         const fillControlSource = rendererSource(
             'components/editor/FillControl.tsx'
         );
 
-        expect(rightInspectorSource).toContain('FillControl');
-        expect(fillControlSource).not.toContain('InspectorValueInput');
-        expect(markup).toContain('editor-fill-control');
-        expect(markup).toContain('editor-fill-color-field');
+        expect(fillSectionSource).toContain('Add fill');
+        expect(fillSectionSource).toContain('Remove fill');
+        expect(fillControlSource).toContain('editor-fill-row');
+        expect(fillSectionSource).toContain('data-style-kind');
         expect(markup).toContain('aria-label="Fill color"');
-        expect(markup).toContain('aria-label="Fill opacity"');
-        expect(fillControlSource).toContain('w-[221px]');
-        expect(fillControlSource).toContain('w-[144px]');
-        expect(fillControlSource).toContain('w-[73px]');
-        expect(fillControlSource).not.toContain('justify-between gap-2');
-        expect(fillControlSource).not.toContain(
-            'editor-fill-opacity-field flex h-8 min-w-0 flex-1'
-        );
+        expect(markup).toContain('aria-label="Add fill"');
+        expect(markup).toContain('aria-label="Remove fill"');
     });
 
     it('makes the flex layout segmented control switchable by click state', () => {
-        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const markup = renderToStaticMarkup(<FlexLayoutSection />);
         const flexLayoutSource = rendererSource(
             'components/editor/FlexLayoutSection.tsx'
         );
@@ -468,7 +560,7 @@ describe('MiaomaEditorScreen', () => {
         expect(flexLayoutSource).toContain('useState<LayoutMode>');
         expect(flexLayoutSource).toContain('onClick={() => selectLayoutMode');
         expect(flexLayoutSource).toMatch(
-            /aria-pressed=\{\s*activeMode === mode \? 'true' : 'false'\s*\}/
+            /aria-pressed=\{\s*resolvedActiveMode === mode \? 'true' : 'false'\s*\}/
         );
     });
 
@@ -502,18 +594,16 @@ describe('MiaomaEditorScreen', () => {
             expect(markup).not.toContain('1920');
         });
 
-        expect(flexLayoutSource).toContain(
-            '<LayoutConfigurationContent activeMode={activeMode} />'
-        );
+        expect(flexLayoutSource).toContain('<LayoutConfigurationContent');
     });
 
     it('matches the Layout Section header action and checkbox column geometry', () => {
-        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const markup = renderToStaticMarkup(<FlexLayoutSection />);
         const flexLayoutSource = rendererSource(
             'components/editor/FlexLayoutSection.tsx'
         );
 
-        expect(markup).toContain('aria-label="Switch to layout"');
+        expect(markup).toContain('aria-label="Switch to flex layout"');
         expect(flexLayoutSource).toContain('LayoutDashboard');
         expect(flexLayoutSource).toContain('toggleLayoutMode');
         expect(flexLayoutSource).toContain('useState<FlexDirectionMode>');
@@ -530,7 +620,9 @@ describe('MiaomaEditorScreen', () => {
     });
 
     it('matches the latest Alignment and Gap Row matrix behavior', () => {
-        const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
+        const markup = renderToStaticMarkup(
+            <FlexLayoutSection activeMode="vertical" />
+        );
         const flexLayoutSource = rendererSource(
             'components/editor/FlexLayoutSection.tsx'
         );
@@ -556,8 +648,23 @@ describe('MiaomaEditorScreen', () => {
         expect(flexLayoutSource).not.toContain('hover:shadow');
         expect(flexLayoutSource).not.toContain('absolute flex w-[60px]');
         expect(flexLayoutSource).toContain(
-            'onSelect={() => setActiveGapMode(option.mode)}'
+            'onSelect={() => onGapModeChange(option.mode)}'
         );
+        expect(flexLayoutSource).not.toContain("option.mode === 'around'");
+    });
+
+    it('keeps inspector checkboxes aligned with the Pencil box geometry', () => {
+        const checkboxSource = rendererSource(
+            'components/editor/InspectorCheckbox.tsx'
+        );
+
+        expect(checkboxSource).toContain('role="checkbox"');
+        expect(checkboxSource).toContain('h-[14px] w-[14px]');
+        expect(checkboxSource).toContain('rounded-[3px]');
+        expect(checkboxSource).toContain('border-[#111111]');
+        expect(checkboxSource).toContain('bg-[#111111]');
+        expect(checkboxSource).toContain('bg-white');
+        expect(checkboxSource).not.toContain('bg-[#0066ff]');
     });
 
     it('uses the Tailwind v4 CSS-first editor styling path', () => {

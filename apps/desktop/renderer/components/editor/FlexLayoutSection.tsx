@@ -24,8 +24,61 @@ import { InspectorValueInput } from './InspectorValueInput';
 
 export type LayoutMode = 'grid' | 'vertical' | 'right';
 
-type GapMode = 'fixed' | 'between' | 'around';
+export type LayoutGapMode = 'fixed' | 'between' | 'around';
+export type LayoutAlignmentId =
+    | 'top-left'
+    | 'top-center'
+    | 'top-right'
+    | 'middle-left'
+    | 'middle-center'
+    | 'middle-right'
+    | 'bottom-left'
+    | 'bottom-center'
+    | 'bottom-right';
+export type DimensionMode = 'fixed' | 'fill' | 'hug';
+
+type GapMode = LayoutGapMode;
 type FlexDirectionMode = Exclude<LayoutMode, 'grid'>;
+
+type FlexLayoutSectionProps = {
+    activeMode?: LayoutMode;
+    defaultActiveMode?: LayoutMode;
+    onActiveModeChange?: (mode: LayoutMode) => void;
+    activeAlignment?: LayoutAlignmentId;
+    defaultActiveAlignment?: LayoutAlignmentId;
+    onAlignmentChange?: (alignment: LayoutAlignmentId) => void;
+    gapMode?: LayoutGapMode;
+    defaultGapMode?: LayoutGapMode;
+    gapValue?: string;
+    defaultGapValue?: string;
+    onGapModeChange?: (mode: LayoutGapMode) => void;
+    onGapValueChange?: (value: string) => void;
+    widthValue?: string;
+    widthMode?: DimensionMode;
+    heightValue?: string;
+    heightMode?: DimensionMode;
+    clipChecked?: boolean;
+    showClip?: boolean;
+    disableAdvancedControls?: boolean;
+    onWidthChange?: (value: string) => void;
+    onWidthModeChange?: (mode: DimensionMode) => void;
+    onHeightChange?: (value: string) => void;
+    onHeightModeChange?: (mode: DimensionMode) => void;
+    paddingHorizontalValue?: string;
+    paddingVerticalValue?: string;
+    defaultPaddingHorizontalValue?: string;
+    defaultPaddingVerticalValue?: string;
+    onPaddingHorizontalChange?: (value: string) => void;
+    onPaddingVerticalChange?: (value: string) => void;
+    onClipChange?: (checked: boolean) => void;
+};
+
+type LayoutConfigurationContentProps = Omit<
+    FlexLayoutSectionProps,
+    'defaultActiveMode' | 'onActiveModeChange'
+> & {
+    activeMode: LayoutMode;
+};
 
 const ALIGNMENT_CELLS = [
     { id: 'top-left', label: 'Alignment top left', column: 0, row: 0 },
@@ -84,18 +137,25 @@ const LAYOUT_MODE_OPTIONS: {
 }[] = [
     { mode: 'grid', label: 'Grid layout', icon: LayoutGrid, edge: 'left' },
     { mode: 'vertical', label: 'Vertical layout', icon: ArrowDown },
-    { mode: 'right', label: 'Right layout', icon: ArrowRight, edge: 'right' }
+    {
+        mode: 'right',
+        label: 'Horizontal layout',
+        icon: ArrowRight,
+        edge: 'right'
+    }
 ];
 
 const AlignmentMatrix = ({
     activeAlignment,
     activeGapMode,
     activeMode,
+    disabled,
     onSelectAlignment
 }: {
     activeAlignment: AlignmentCellId;
     activeGapMode: GapMode;
     activeMode: LayoutMode;
+    disabled?: boolean;
     onSelectAlignment: (cellId: AlignmentCellId) => void;
 }) => {
     const activeCell = ALIGNMENT_CELLS.find(
@@ -108,7 +168,10 @@ const AlignmentMatrix = ({
     return (
         <div
             aria-label="Alignment matrix"
-            className="editor-alignment-matrix h-[69px] w-[100px] rounded-lg border border-[#e3e3e3] bg-[#f8f8f8]"
+            className={classNames(
+                'editor-alignment-matrix h-[69px] w-[100px] rounded-lg border border-[#e3e3e3] bg-[#f8f8f8]',
+                disabled && 'opacity-60'
+            )}
             data-preview-mode={activeGapMode}
             role="group"
         >
@@ -140,6 +203,7 @@ const AlignmentMatrix = ({
                             aria-label={cell.label}
                             aria-pressed={isSelected ? 'true' : 'false'}
                             className="editor-alignment-cell grid h-[23px] w-[23px] cursor-default place-items-center border-0 bg-transparent p-0 transition-colors hover:bg-[#eeeeee]"
+                            disabled={disabled}
                             key={cell.id}
                             onClick={() => onSelectAlignment(cell.id)}
                             type="button"
@@ -165,14 +229,25 @@ const AlignmentMatrix = ({
 
 const GapRadioRow = ({
     option,
+    disabled,
     onSelect,
-    selected
+    onValueChange,
+    selected,
+    value
 }: {
     option: (typeof GAP_MODE_OPTIONS)[number];
+    disabled?: boolean;
     onSelect: () => void;
+    onValueChange?: (value: string) => void;
     selected?: boolean;
+    value?: string;
 }) => (
-    <div className="editor-gap-radio-row flex min-w-0 items-center gap-2">
+    <div
+        className={classNames(
+            'editor-gap-radio-row flex min-w-0 items-center gap-2',
+            disabled && 'opacity-60'
+        )}
+    >
         <button
             aria-label={option.ariaLabel}
             aria-pressed={selected ? 'true' : 'false'}
@@ -181,6 +256,7 @@ const GapRadioRow = ({
                 !option.value && 'flex-1',
                 selected ? 'text-[#111111]' : 'text-[#333333]'
             )}
+            disabled={disabled}
             onClick={onSelect}
             type="button"
         >
@@ -200,29 +276,46 @@ const GapRadioRow = ({
             )}
         </button>
         {option.value ? (
-            <InspectorValueInput
-                ariaLabel="Gap value"
-                className="w-[42px] bg-white px-2"
-                inputClassName="text-center"
-                size="compact"
-                value={option.value}
-            />
+            <div data-schema-path={FRAME_INSPECTOR_PROPERTIES.gap.path}>
+                <InspectorValueInput
+                    ariaLabel="Gap value"
+                    className="w-[42px] bg-white px-2"
+                    disabled={disabled}
+                    inputClassName="text-center"
+                    onValueChange={onValueChange}
+                    size="compact"
+                    value={value ?? option.value}
+                />
+            </div>
         ) : null}
     </div>
 );
 
 const AlignmentAndGapControls = ({
-    activeMode
+    activeAlignment,
+    activeGapMode,
+    activeMode,
+    disabled,
+    gapValue,
+    onGapModeChange,
+    onGapValueChange,
+    onSelectAlignment
 }: {
+    activeAlignment: AlignmentCellId;
+    activeGapMode: GapMode;
     activeMode: LayoutMode;
+    disabled?: boolean;
+    gapValue?: string;
+    onGapModeChange: (mode: GapMode) => void;
+    onGapValueChange?: (value: string) => void;
+    onSelectAlignment: (cellId: AlignmentCellId) => void;
 }) => {
-    const [activeAlignment, setActiveAlignment] =
-        useState<AlignmentCellId>('top-left');
-    const [activeGapMode, setActiveGapMode] = useState<GapMode>('fixed');
-
     return (
         <div className="editor-flex-alignment-gap-row grid h-[90px] grid-cols-[104px_minmax(0,1fr)] gap-3">
-            <div className="editor-flex-alignment-column grid content-start gap-2">
+            <div
+                className="editor-flex-alignment-column grid content-start gap-2"
+                data-schema-path={FRAME_INSPECTOR_PROPERTIES.alignItems.path}
+            >
                 <span className="text-[11px] leading-none font-medium text-[#666666]">
                     Alignment
                 </span>
@@ -230,19 +323,28 @@ const AlignmentAndGapControls = ({
                     activeAlignment={activeAlignment}
                     activeGapMode={activeGapMode}
                     activeMode={activeMode}
-                    onSelectAlignment={setActiveAlignment}
+                    disabled={disabled}
+                    onSelectAlignment={onSelectAlignment}
                 />
             </div>
-            <div className="editor-flex-gap-column grid content-start gap-2">
+            <div
+                className="editor-flex-gap-column grid content-start gap-2"
+                data-schema-path={
+                    FRAME_INSPECTOR_PROPERTIES.justifyContent.path
+                }
+            >
                 <span className="text-[11px] leading-none font-medium text-[#666666]">
                     Gap
                 </span>
                 {GAP_MODE_OPTIONS.map((option) => (
                     <GapRadioRow
+                        disabled={disabled}
                         key={option.mode}
+                        onSelect={() => onGapModeChange(option.mode)}
+                        onValueChange={onGapValueChange}
                         option={option}
                         selected={activeGapMode === option.mode}
-                        onSelect={() => setActiveGapMode(option.mode)}
+                        value={gapValue}
                     />
                 ))}
             </div>
@@ -271,11 +373,21 @@ const LayoutSubsectionHeader = ({
 );
 
 const CheckboxPairRow = ({
+    disabled,
+    leftChecked,
     leftLabel,
+    onLeftCheckedChange,
+    onRightCheckedChange,
+    rightChecked,
     rightLabel,
     rowClassName
 }: {
+    disabled?: boolean;
+    leftChecked?: boolean;
     leftLabel: string;
+    onLeftCheckedChange?: (checked: boolean) => void;
+    onRightCheckedChange?: (checked: boolean) => void;
+    rightChecked?: boolean;
     rightLabel: string;
     rowClassName?: string;
 }) => (
@@ -285,30 +397,86 @@ const CheckboxPairRow = ({
             rowClassName
         )}
     >
-        <InspectorCheckbox label={leftLabel} />
-        <InspectorCheckbox label={rightLabel} />
+        <InspectorCheckbox
+            checked={leftChecked}
+            disabled={disabled}
+            label={leftLabel}
+            onCheckedChange={onLeftCheckedChange}
+        />
+        <InspectorCheckbox
+            checked={rightChecked}
+            disabled={disabled}
+            label={rightLabel}
+            onCheckedChange={onRightCheckedChange}
+        />
     </div>
 );
 
-const PaddingControls = () => (
+const PaddingControls = ({
+    disabled,
+    horizontalValue,
+    onHorizontalChange,
+    onVerticalChange,
+    verticalValue
+}: {
+    disabled?: boolean;
+    horizontalValue: string;
+    onHorizontalChange?: (value: string) => void;
+    onVerticalChange?: (value: string) => void;
+    verticalValue: string;
+}) => (
     <div className="editor-flex-padding-section grid gap-1.5">
         <LayoutSubsectionHeader title="Padding" withSettings />
         <div className="grid grid-cols-2 gap-2">
-            <InspectorValueInput
-                ariaLabel="Horizontal padding"
-                startIcon={PanelLeft}
-                value="0"
-            />
-            <InspectorValueInput
-                ariaLabel="Vertical padding"
-                startIcon={PanelTop}
-                value="0"
-            />
+            <div data-schema-path={FRAME_INSPECTOR_PROPERTIES.padding.path}>
+                <InspectorValueInput
+                    ariaLabel="Horizontal padding"
+                    disabled={disabled}
+                    onValueChange={onHorizontalChange}
+                    startIcon={PanelLeft}
+                    value={horizontalValue}
+                />
+            </div>
+            <div data-schema-path={FRAME_INSPECTOR_PROPERTIES.padding.path}>
+                <InspectorValueInput
+                    ariaLabel="Vertical padding"
+                    disabled={disabled}
+                    onValueChange={onVerticalChange}
+                    startIcon={PanelTop}
+                    value={verticalValue}
+                />
+            </div>
         </div>
     </div>
 );
 
-const DimensionsControls = () => (
+const DimensionsControls = ({
+    widthValue,
+    widthMode,
+    heightValue,
+    heightMode,
+    clipChecked,
+    showClip,
+    disableAdvancedControls,
+    onWidthChange,
+    onWidthModeChange,
+    onHeightChange,
+    onHeightModeChange,
+    onClipChange
+}: {
+    widthValue: string;
+    widthMode?: DimensionMode;
+    heightValue: string;
+    heightMode?: DimensionMode;
+    clipChecked?: boolean;
+    showClip?: boolean;
+    disableAdvancedControls?: boolean;
+    onWidthChange?: (value: string) => void;
+    onWidthModeChange?: (mode: DimensionMode) => void;
+    onHeightChange?: (value: string) => void;
+    onHeightModeChange?: (mode: DimensionMode) => void;
+    onClipChange?: (checked: boolean) => void;
+}) => (
     <div className="editor-flex-dimensions-section grid gap-2">
         <LayoutSubsectionHeader title="Dimensions" />
         <div className="grid grid-cols-2 gap-2">
@@ -316,90 +484,394 @@ const DimensionsControls = () => (
                 <InspectorValueInput
                     ariaLabel="Width"
                     label={FRAME_INSPECTOR_PROPERTIES.width.label}
-                    value="404"
+                    onValueChange={onWidthChange}
+                    value={widthValue}
                 />
             </div>
             <div data-schema-path={FRAME_INSPECTOR_PROPERTIES.height.path}>
                 <InspectorValueInput
                     ariaLabel="Height"
                     label={FRAME_INSPECTOR_PROPERTIES.height.label}
-                    value="1205"
+                    onValueChange={onHeightChange}
+                    value={heightValue}
                 />
             </div>
         </div>
         <div className="grid gap-1.5">
             <CheckboxPairRow
+                disabled={disableAdvancedControls}
+                leftChecked={widthMode === 'fill'}
                 leftLabel="Fill Width"
+                onLeftCheckedChange={(checked) => {
+                    onWidthModeChange?.(checked ? 'fill' : 'fixed');
+                }}
+                onRightCheckedChange={(checked) => {
+                    onHeightModeChange?.(checked ? 'fill' : 'fixed');
+                }}
+                rightChecked={heightMode === 'fill'}
                 rightLabel="Fill Height"
                 rowClassName="h-[23px]"
             />
             <CheckboxPairRow
+                disabled={disableAdvancedControls}
+                leftChecked={widthMode === 'hug'}
                 leftLabel="Hug Width"
+                onLeftCheckedChange={(checked) => {
+                    onWidthModeChange?.(checked ? 'hug' : 'fixed');
+                }}
+                onRightCheckedChange={(checked) => {
+                    onHeightModeChange?.(checked ? 'hug' : 'fixed');
+                }}
+                rightChecked={heightMode === 'hug'}
                 rightLabel="Hug Height"
                 rowClassName="h-[22px]"
             />
-            <div
-                className="flex h-[22px] items-center"
-                data-schema-path={FRAME_INSPECTOR_PROPERTIES.clip.path}
-            >
-                <InspectorCheckbox label="Clip Content" />
-            </div>
+            {showClip ? (
+                <div
+                    className="flex h-[22px] items-center"
+                    data-schema-path={FRAME_INSPECTOR_PROPERTIES.clip.path}
+                >
+                    <InspectorCheckbox
+                        ariaLabel="Clip Content"
+                        checked={clipChecked}
+                        label="Clip Content"
+                        onCheckedChange={onClipChange}
+                    />
+                </div>
+            ) : null}
         </div>
     </div>
 );
 
-const StaticLayoutControls = () => (
+const StaticLayoutControls = ({
+    widthValue,
+    heightValue,
+    clipChecked,
+    showClip,
+    onWidthChange,
+    onHeightChange,
+    onClipChange
+}: {
+    widthValue: string;
+    heightValue: string;
+    clipChecked?: boolean;
+    showClip?: boolean;
+    onWidthChange?: (value: string) => void;
+    onHeightChange?: (value: string) => void;
+    onClipChange?: (checked: boolean) => void;
+}) => (
     <div className="editor-static-layout-controls grid gap-1.5">
         <div className="grid grid-cols-2 gap-2">
-            <InspectorValueInput
-                ariaLabel="Static width"
-                label="W"
-                value="1920"
-            />
-            <InspectorValueInput
-                ariaLabel="Static height"
-                label="H"
-                value="1205"
-            />
+            <div data-schema-path={FRAME_INSPECTOR_PROPERTIES.width.path}>
+                <InspectorValueInput
+                    ariaLabel="Static width"
+                    label="W"
+                    onValueChange={onWidthChange}
+                    value={widthValue}
+                />
+            </div>
+            <div data-schema-path={FRAME_INSPECTOR_PROPERTIES.height.path}>
+                <InspectorValueInput
+                    ariaLabel="Static height"
+                    label="H"
+                    onValueChange={onHeightChange}
+                    value={heightValue}
+                />
+            </div>
         </div>
         <CheckboxPairRow
+            disabled
             leftLabel="Fill Width"
             rightLabel="Fill Height"
             rowClassName="min-h-[22px]"
         />
-        <div className="flex min-h-7 items-center justify-start gap-5">
-            <InspectorCheckbox checked label="Clip Content" />
-        </div>
+        {showClip ? (
+            <div
+                className="flex min-h-7 items-center justify-start gap-5"
+                data-schema-path={FRAME_INSPECTOR_PROPERTIES.clip.path}
+            >
+                <InspectorCheckbox
+                    ariaLabel="Clip Content"
+                    checked={clipChecked}
+                    label="Clip Content"
+                    onCheckedChange={onClipChange}
+                />
+            </div>
+        ) : null}
     </div>
 );
 
-const FlexLayoutControls = ({ activeMode }: { activeMode: LayoutMode }) => (
+const FlexLayoutControls = ({
+    activeAlignment,
+    activeGapMode,
+    activeMode,
+    widthValue,
+    widthMode,
+    heightValue,
+    heightMode,
+    clipChecked,
+    showClip,
+    disableAdvancedControls,
+    gapValue,
+    onAlignmentChange,
+    onGapModeChange,
+    onGapValueChange,
+    onWidthChange,
+    onWidthModeChange,
+    onHeightChange,
+    onHeightModeChange,
+    paddingHorizontalValue,
+    paddingVerticalValue,
+    onPaddingHorizontalChange,
+    onPaddingVerticalChange,
+    onClipChange
+}: {
+    activeAlignment: LayoutAlignmentId;
+    activeGapMode: LayoutGapMode;
+    activeMode: LayoutMode;
+    widthValue: string;
+    widthMode?: DimensionMode;
+    heightValue: string;
+    heightMode?: DimensionMode;
+    clipChecked?: boolean;
+    showClip?: boolean;
+    disableAdvancedControls?: boolean;
+    gapValue?: string;
+    onAlignmentChange: (alignment: LayoutAlignmentId) => void;
+    onGapModeChange: (mode: LayoutGapMode) => void;
+    onGapValueChange?: (value: string) => void;
+    onWidthChange?: (value: string) => void;
+    onWidthModeChange?: (mode: DimensionMode) => void;
+    onHeightChange?: (value: string) => void;
+    onHeightModeChange?: (mode: DimensionMode) => void;
+    paddingHorizontalValue: string;
+    paddingVerticalValue: string;
+    onPaddingHorizontalChange?: (value: string) => void;
+    onPaddingVerticalChange?: (value: string) => void;
+    onClipChange?: (checked: boolean) => void;
+}) => (
     <div className="editor-flex-layout-controls grid gap-1.5">
-        <AlignmentAndGapControls activeMode={activeMode} />
-        <PaddingControls />
-        <DimensionsControls />
+        <AlignmentAndGapControls
+            activeAlignment={activeAlignment}
+            activeGapMode={activeGapMode}
+            activeMode={activeMode}
+            disabled={disableAdvancedControls}
+            gapValue={gapValue}
+            onGapModeChange={onGapModeChange}
+            onGapValueChange={onGapValueChange}
+            onSelectAlignment={onAlignmentChange}
+        />
+        <PaddingControls
+            disabled={disableAdvancedControls}
+            horizontalValue={paddingHorizontalValue}
+            onHorizontalChange={onPaddingHorizontalChange}
+            onVerticalChange={onPaddingVerticalChange}
+            verticalValue={paddingVerticalValue}
+        />
+        <DimensionsControls
+            clipChecked={clipChecked}
+            disableAdvancedControls={disableAdvancedControls}
+            heightValue={heightValue}
+            heightMode={heightMode}
+            onClipChange={onClipChange}
+            onHeightChange={onHeightChange}
+            onHeightModeChange={onHeightModeChange}
+            onWidthChange={onWidthChange}
+            onWidthModeChange={onWidthModeChange}
+            showClip={showClip}
+            widthValue={widthValue}
+            widthMode={widthMode}
+        />
     </div>
 );
 
 export const LayoutConfigurationContent = ({
-    activeMode
-}: {
-    activeMode: LayoutMode;
-}) =>
+    activeMode,
+    activeAlignment,
+    gapMode,
+    gapValue,
+    widthValue,
+    widthMode,
+    heightValue,
+    heightMode,
+    paddingHorizontalValue,
+    paddingVerticalValue,
+    clipChecked,
+    showClip = true,
+    disableAdvancedControls,
+    onAlignmentChange,
+    onGapModeChange,
+    onGapValueChange,
+    onWidthChange,
+    onWidthModeChange,
+    onHeightChange,
+    onHeightModeChange,
+    onPaddingHorizontalChange,
+    onPaddingVerticalChange,
+    onClipChange
+}: LayoutConfigurationContentProps) =>
     activeMode === 'grid' ? (
-        <StaticLayoutControls />
+        <StaticLayoutControls
+            clipChecked={clipChecked}
+            heightValue={heightValue ?? '1205'}
+            onClipChange={onClipChange}
+            onHeightChange={onHeightChange}
+            onWidthChange={onWidthChange}
+            showClip={showClip}
+            widthValue={widthValue ?? '1920'}
+        />
     ) : (
-        <FlexLayoutControls activeMode={activeMode} />
+        <FlexLayoutControls
+            activeAlignment={activeAlignment ?? 'top-left'}
+            activeGapMode={gapMode ?? 'fixed'}
+            activeMode={activeMode}
+            clipChecked={clipChecked}
+            disableAdvancedControls={disableAdvancedControls}
+            gapValue={gapValue}
+            heightValue={heightValue ?? '1205'}
+            heightMode={heightMode}
+            onAlignmentChange={onAlignmentChange ?? (() => undefined)}
+            onClipChange={onClipChange}
+            onGapModeChange={onGapModeChange ?? (() => undefined)}
+            onGapValueChange={onGapValueChange}
+            onHeightChange={onHeightChange}
+            onHeightModeChange={onHeightModeChange}
+            onPaddingHorizontalChange={onPaddingHorizontalChange}
+            onPaddingVerticalChange={onPaddingVerticalChange}
+            onWidthChange={onWidthChange}
+            onWidthModeChange={onWidthModeChange}
+            paddingHorizontalValue={paddingHorizontalValue ?? '0'}
+            paddingVerticalValue={paddingVerticalValue ?? '0'}
+            showClip={showClip}
+            widthValue={widthValue ?? '404'}
+            widthMode={widthMode}
+        />
     );
 
-export const FlexLayoutSection = () => {
-    const [activeMode, setActiveMode] = useState<LayoutMode>('vertical');
+export const FlexLayoutSection = ({
+    activeMode: controlledActiveMode,
+    defaultActiveMode = 'grid',
+    onActiveModeChange,
+    activeAlignment: controlledActiveAlignment,
+    defaultActiveAlignment = 'top-left',
+    onAlignmentChange,
+    gapMode: controlledGapMode,
+    defaultGapMode = 'fixed',
+    gapValue: controlledGapValue,
+    defaultGapValue = '0',
+    onGapModeChange,
+    onGapValueChange,
+    widthValue,
+    widthMode: controlledWidthMode,
+    heightValue,
+    heightMode: controlledHeightMode,
+    paddingHorizontalValue: controlledPaddingHorizontalValue,
+    paddingVerticalValue: controlledPaddingVerticalValue,
+    defaultPaddingHorizontalValue = '0',
+    defaultPaddingVerticalValue = '0',
+    clipChecked,
+    showClip = true,
+    disableAdvancedControls,
+    onWidthChange,
+    onWidthModeChange,
+    onHeightChange,
+    onHeightModeChange,
+    onPaddingHorizontalChange,
+    onPaddingVerticalChange,
+    onClipChange
+}: FlexLayoutSectionProps = {}) => {
+    const [activeMode, setActiveMode] = useState<LayoutMode>(defaultActiveMode);
+    const [activeAlignment, setActiveAlignment] = useState<LayoutAlignmentId>(
+        defaultActiveAlignment
+    );
+    const [activeGapMode, setActiveGapMode] =
+        useState<LayoutGapMode>(defaultGapMode);
+    const [gapValue, setGapValue] = useState(defaultGapValue);
+    const [widthMode, setWidthMode] = useState<DimensionMode>('fixed');
+    const [heightMode, setHeightMode] = useState<DimensionMode>('fixed');
+    const [paddingHorizontalValue, setPaddingHorizontalValue] = useState(
+        defaultPaddingHorizontalValue
+    );
+    const [paddingVerticalValue, setPaddingVerticalValue] = useState(
+        defaultPaddingVerticalValue
+    );
     const [lastFlexMode, setLastFlexMode] =
         useState<FlexDirectionMode>('vertical');
-    const isFlexLayout = activeMode !== 'grid';
+    const resolvedActiveMode = controlledActiveMode ?? activeMode;
+    const resolvedActiveAlignment =
+        controlledActiveAlignment ?? activeAlignment;
+    const resolvedGapMode = controlledGapMode ?? activeGapMode;
+    const resolvedGapValue = controlledGapValue ?? gapValue;
+    const resolvedWidthMode = controlledWidthMode ?? widthMode;
+    const resolvedHeightMode = controlledHeightMode ?? heightMode;
+    const resolvedPaddingHorizontalValue =
+        controlledPaddingHorizontalValue ?? paddingHorizontalValue;
+    const resolvedPaddingVerticalValue =
+        controlledPaddingVerticalValue ?? paddingVerticalValue;
+    const isFlexLayout = resolvedActiveMode !== 'grid';
+
+    const selectAlignment = (alignment: LayoutAlignmentId) => {
+        if (controlledActiveAlignment === undefined) {
+            setActiveAlignment(alignment);
+        }
+
+        onAlignmentChange?.(alignment);
+    };
+
+    const selectGapMode = (mode: LayoutGapMode) => {
+        if (controlledGapMode === undefined) {
+            setActiveGapMode(mode);
+        }
+
+        onGapModeChange?.(mode);
+    };
+
+    const updateGapValue = (value: string) => {
+        if (controlledGapValue === undefined) {
+            setGapValue(value);
+        }
+
+        onGapValueChange?.(value);
+    };
+
+    const updateWidthMode = (mode: DimensionMode) => {
+        if (controlledWidthMode === undefined) {
+            setWidthMode(mode);
+        }
+
+        onWidthModeChange?.(mode);
+    };
+
+    const updateHeightMode = (mode: DimensionMode) => {
+        if (controlledHeightMode === undefined) {
+            setHeightMode(mode);
+        }
+
+        onHeightModeChange?.(mode);
+    };
+
+    const updatePaddingHorizontalValue = (value: string) => {
+        if (controlledPaddingHorizontalValue === undefined) {
+            setPaddingHorizontalValue(value);
+        }
+
+        onPaddingHorizontalChange?.(value);
+    };
+
+    const updatePaddingVerticalValue = (value: string) => {
+        if (controlledPaddingVerticalValue === undefined) {
+            setPaddingVerticalValue(value);
+        }
+
+        onPaddingVerticalChange?.(value);
+    };
 
     const selectLayoutMode = (mode: LayoutMode) => {
-        setActiveMode(mode);
+        if (controlledActiveMode === undefined) {
+            setActiveMode(mode);
+        }
+
+        onActiveModeChange?.(mode);
 
         if (mode !== 'grid') {
             setLastFlexMode(mode);
@@ -408,12 +880,21 @@ export const FlexLayoutSection = () => {
 
     const toggleLayoutMode = () => {
         if (isFlexLayout) {
-            setLastFlexMode(activeMode);
-            setActiveMode('grid');
+            setLastFlexMode(resolvedActiveMode);
+
+            if (controlledActiveMode === undefined) {
+                setActiveMode('grid');
+            }
+
+            onActiveModeChange?.('grid');
             return;
         }
 
-        setActiveMode(lastFlexMode);
+        if (controlledActiveMode === undefined) {
+            setActiveMode(lastFlexMode);
+        }
+
+        onActiveModeChange?.(lastFlexMode);
     };
 
     return (
@@ -449,13 +930,13 @@ export const FlexLayoutSection = () => {
                         <button
                             aria-label={label}
                             aria-pressed={
-                                activeMode === mode ? 'true' : 'false'
+                                resolvedActiveMode === mode ? 'true' : 'false'
                             }
                             className={classNames(
                                 'editor-layout-mode-segment grid h-full min-w-0 cursor-default place-items-center border-0 p-0',
                                 edge === 'left' && 'rounded-l-md',
                                 edge === 'right' && 'rounded-r-md',
-                                activeMode === mode
+                                resolvedActiveMode === mode
                                     ? 'editor-layout-mode-segment--active rounded-md border border-[#dadada] bg-white text-[#2f2f2f] shadow-[0_1px_2px_#00000014]'
                                     : 'bg-[#ededed] text-[#6e6e6e]'
                             )}
@@ -472,7 +953,31 @@ export const FlexLayoutSection = () => {
                     )
                 )}
             </div>
-            <LayoutConfigurationContent activeMode={activeMode} />
+            <LayoutConfigurationContent
+                activeAlignment={resolvedActiveAlignment}
+                activeMode={resolvedActiveMode}
+                clipChecked={clipChecked}
+                disableAdvancedControls={disableAdvancedControls}
+                gapMode={resolvedGapMode}
+                gapValue={resolvedGapValue}
+                heightValue={heightValue}
+                heightMode={resolvedHeightMode}
+                onAlignmentChange={selectAlignment}
+                onClipChange={onClipChange}
+                onGapModeChange={selectGapMode}
+                onGapValueChange={updateGapValue}
+                onHeightChange={onHeightChange}
+                onHeightModeChange={updateHeightMode}
+                onPaddingHorizontalChange={updatePaddingHorizontalValue}
+                onPaddingVerticalChange={updatePaddingVerticalValue}
+                onWidthChange={onWidthChange}
+                onWidthModeChange={updateWidthMode}
+                paddingHorizontalValue={resolvedPaddingHorizontalValue}
+                paddingVerticalValue={resolvedPaddingVerticalValue}
+                showClip={showClip}
+                widthValue={widthValue}
+                widthMode={resolvedWidthMode}
+            />
         </section>
     );
 };

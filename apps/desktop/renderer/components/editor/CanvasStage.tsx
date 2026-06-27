@@ -4,12 +4,15 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import { editorDocumentToRenderable } from '@miaoma-design-ai/miaoma-editor-core';
+
 import faviconUrl from '../../assets/brand/favicon@152.png';
 import coverImageUrl from '../../assets/dSqyy.png';
 import { TOOL_BUTTONS } from '../../constants/editor';
-import { CANVAS_SAMPLE_DESIGN_DOCUMENT } from '../../fixtures/canvasSampleDocument';
 import type { SidebarTab } from '../../types/editor';
 
+import { useEditorSession } from './state/useEditorSession';
+import { useEditorSnapshot } from './state/useEditorSnapshot';
 import { CanvasViewportShell } from './CanvasViewportShell';
 import { EditorIconButton } from './EditorIconButton';
 import { PromptDock } from './PromptDock';
@@ -36,23 +39,40 @@ type CanvasStageProps = {
 };
 
 export const CanvasStage = ({ activeSidebarTab }: CanvasStageProps) => (
-    <main
-        className="editor-canvas-stage relative col-start-1 row-start-2 min-h-0 min-w-0 overflow-hidden bg-[#f6f6f6]"
-        data-region="canvas-stage"
-    >
-        <CanvasViewportShell
-            document={CANVAS_SAMPLE_DESIGN_DOCUMENT}
-            overlay={
-                activeSidebarTab === 'layers' ? (
-                    <PromptDock variant="canvas" />
-                ) : null
-            }
-            resolveAsset={resolveCanvasAsset}
-        />
-        <ToolRail />
-        <div
-            aria-hidden="true"
-            className="editor-canvas-scrollbar absolute bottom-1.5 left-[min(49.85%,calc(100%_-_300px))] z-20 h-1.5 w-[276px] rounded-[3px] bg-[#bdbec3]"
-        />
-    </main>
+    <CanvasStageInner activeSidebarTab={activeSidebarTab} />
 );
+
+const CanvasStageInner = ({ activeSidebarTab }: CanvasStageProps) => {
+    const session = useEditorSession();
+    const snapshot = useEditorSnapshot();
+    const renderableDocument = editorDocumentToRenderable(snapshot.document);
+
+    return (
+        <main
+            className="editor-canvas-stage relative col-start-1 row-start-2 min-h-0 min-w-0 overflow-hidden bg-[#f6f6f6]"
+            data-region="canvas-stage"
+        >
+            <CanvasViewportShell
+                document={renderableDocument}
+                onCanvasPointerDown={() => {
+                    session.selectNode(null);
+                }}
+                onNodePointerDown={(nodeId) => {
+                    session.selectNode(nodeId);
+                }}
+                overlay={
+                    activeSidebarTab === 'layers' ? (
+                        <PromptDock variant="canvas" />
+                    ) : null
+                }
+                resolveAsset={resolveCanvasAsset}
+                selectedNodeId={snapshot.selection.selectedNodeId}
+            />
+            <ToolRail />
+            <div
+                aria-hidden="true"
+                className="editor-canvas-scrollbar absolute bottom-1.5 left-[min(49.85%,calc(100%_-_300px))] z-20 h-1.5 w-[276px] rounded-[3px] bg-[#bdbec3]"
+            />
+        </main>
+    );
+};

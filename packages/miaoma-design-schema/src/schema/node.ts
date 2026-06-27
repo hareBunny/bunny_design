@@ -18,6 +18,7 @@ import type { MiaomaTextStyle } from './text';
 type MiaomaBaseNode = {
     id: string;
     name?: string;
+    opacity?: number;
     x?: number;
     y?: number;
     rotation?: number;

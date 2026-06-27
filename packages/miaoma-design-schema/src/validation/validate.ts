@@ -283,6 +283,7 @@ export const strictValidateDesignDocument = (
                 'Node id is required.'
             ) ?? path,
         name: readString(value.name),
+        opacity: readNumber(value.opacity),
         x: readNumber(value.x),
         y: readNumber(value.y),
         rotation: readNumber(value.rotation),
@@ -327,7 +328,8 @@ export const strictValidateDesignDocument = (
                         'start',
                         'center',
                         'end',
-                        'space_between'
+                        'space_between',
+                        'space_around'
                     ]),
                     alignItems: readStringUnion(value.alignItems, [
                         'start',
