@@ -33,6 +33,7 @@ export const createInitialInteractionState = (): EditorInteractionState => ({
     activeTool: 'pointer',
     mode: 'idle',
     textEditingNodeId: null,
+    pendingNewText: null,
     draft: null
 });
 
@@ -59,7 +60,8 @@ export const reduceInteraction = (
                 ...state,
                 mode: 'idle',
                 draft: null,
-                textEditingNodeId: null
+                textEditingNodeId: null,
+                pendingNewText: null
             },
             commands: [{ type: 'clearCreationOverlay' }]
         };
@@ -69,19 +71,42 @@ export const reduceInteraction = (
         return {
             state: {
                 ...state,
-                textEditingNodeId: event.nodeId
+                textEditingNodeId: event.nodeId,
+                pendingNewText: state.pendingNewText
+                    ? {
+                          ...state.pendingNewText,
+                          nodeId: event.nodeId
+                      }
+                    : null
             },
             commands: []
         };
     }
 
     if (event.type === 'textEditCommit' || event.type === 'textEditCancel') {
+        const isNewTextNode = state.pendingNewText?.nodeId === event.nodeId;
+        const shouldRemoveNewText =
+            isNewTextNode &&
+            (event.type === 'textEditCancel' || event.content.trim().length === 0);
+
         return {
             state: {
                 ...state,
-                textEditingNodeId: null
+                textEditingNodeId: null,
+                pendingNewText: null
             },
-            commands: []
+            commands: shouldRemoveNewText
+                ? [
+                      {
+                          type: 'removeNode',
+                          nodeId: event.nodeId
+                      },
+                      {
+                          type: 'selectNode',
+                          nodeId: state.pendingNewText.parentId
+                      }
+                  ]
+                : []
         };
     }
 
@@ -96,7 +121,11 @@ export const reduceInteraction = (
             return {
                 state: {
                     ...state,
-                    activeTool: 'pointer'
+                    activeTool: 'pointer',
+                    pendingNewText: {
+                        nodeId: null,
+                        parentId: parent.parentId
+                    }
                 },
                 commands: [
                     {
@@ -193,7 +222,7 @@ export const reduceInteraction = (
         const deltaY = event.payload.screenY - state.draft.originScreen.y;
         const distance = Math.hypot(deltaX, deltaY);
 
-        if (distance < DRAG_THRESHOLD) {
+        if (distance <= DRAG_THRESHOLD) {
             return {
                 state: {
                     ...state,

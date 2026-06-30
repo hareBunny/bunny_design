@@ -39,6 +39,8 @@ export type EditorInteractionEvent =
 
 export type EditorInteractionCommand =
     | { type: 'setActiveTool'; tool: CanvasToolId }
+    | { type: 'selectNode'; nodeId: string | null }
+    | { type: 'removeNode'; nodeId: string }
     | { type: 'clearCreationOverlay' }
     | {
           type: 'showCreationOverlay';
@@ -74,6 +76,12 @@ export type EditorInteractionState = {
     activeTool: CanvasToolId;
     mode: 'idle' | 'creatingShape';
     textEditingNodeId: string | null;
+    pendingNewText:
+        | null
+        | {
+              nodeId: string | null;
+              parentId: string | null;
+          };
     draft:
         | null
         | {

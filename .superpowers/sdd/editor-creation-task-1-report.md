@@ -88,3 +88,34 @@ Result:
 ## Concerns
 
 - None
+
+## Review Fixes
+
+### Applied fixes
+
+- Extended the interaction command protocol with:
+  - `removeNode`
+  - `selectNode`
+- Added reducer state for tracking a brand-new text node through its inline-edit lifecycle
+- Implemented cleanup behavior so a brand-new text node is removed on:
+  - `textEditCancel`
+  - `textEditCommit` with trimmed empty content
+- Implemented selection fallback after brand-new text cleanup:
+  - reselect parent frame when present
+  - clear selection at root
+- Tightened shape creation threshold handling so creation requires drag distance to be strictly greater than `4px`
+
+### Added regression coverage
+
+- `distance === 4` does not create a shape and leaves the active creation tool unchanged
+- Brand-new text cancel removes the node and reselects the parent frame
+- Brand-new text empty commit removes the node and clears selection when parent is root
+
+### Verification evidence
+
+Ran after the fixes:
+
+- `pnpm --dir "/Users/heyi/MiaoMa/Projects/poc-demo/miaoma-design-ai/packages/miaoma-editor-interaction" test:run -- tests/creation.test.ts`
+  - Result: `8` tests passed
+- `pnpm --dir "/Users/heyi/MiaoMa/Projects/poc-demo/miaoma-design-ai/packages/miaoma-editor-interaction" test:run`
+  - Result: package tests passed

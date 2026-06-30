@@ -116,6 +116,38 @@ describe('editor interaction creation reducer', () => {
         ]);
     });
 
+    it('does not create a shape when drag distance equals the threshold', () => {
+        const interaction = createEditorInteraction();
+
+        interaction.dispatch({ type: 'selectTool', tool: 'rectangle' });
+        interaction.dispatch({
+            type: 'pointerDown',
+            payload: {
+                worldX: 12,
+                worldY: 18,
+                screenX: 100,
+                screenY: 120,
+                button: 0,
+                nodePath: absoluteFramePath
+            }
+        });
+
+        const commands = interaction.dispatch({
+            type: 'pointerUp',
+            payload: {
+                worldX: 16,
+                worldY: 18,
+                screenX: 104,
+                screenY: 120,
+                button: 0,
+                nodePath: absoluteFramePath
+            }
+        });
+
+        expect(commands).toEqual([{ type: 'clearCreationOverlay' }]);
+        expect(interaction.getState().activeTool).toBe('rectangle');
+    });
+
     it('emits text creation command immediately on click', () => {
         const interaction = createEditorInteraction();
 
@@ -242,5 +274,82 @@ describe('editor interaction creation reducer', () => {
                 startTextEditAfterCreate: false
             }
         });
+    });
+
+    it('removes a brand-new text node on cancel and reselects its parent frame', () => {
+        const interaction = createEditorInteraction();
+
+        interaction.dispatch({ type: 'selectTool', tool: 'text' });
+        interaction.dispatch({
+            type: 'pointerDown',
+            payload: {
+                worldX: 24,
+                worldY: 40,
+                screenX: 220,
+                screenY: 180,
+                button: 0,
+                nodePath: absoluteFramePath
+            }
+        });
+        interaction.dispatch({
+            type: 'textEditingStarted',
+            nodeId: 'text-1'
+        });
+
+        const commands = interaction.dispatch({
+            type: 'textEditCancel',
+            nodeId: 'text-1'
+        });
+
+        expect(commands).toEqual([
+            {
+                type: 'removeNode',
+                nodeId: 'text-1'
+            },
+            {
+                type: 'selectNode',
+                nodeId: 'frame-1'
+            }
+        ]);
+        expect(interaction.getState().textEditingNodeId).toBeNull();
+    });
+
+    it('removes a brand-new text node on empty commit and clears selection at root', () => {
+        const interaction = createEditorInteraction();
+
+        interaction.dispatch({ type: 'selectTool', tool: 'text' });
+        interaction.dispatch({
+            type: 'pointerDown',
+            payload: {
+                worldX: 4,
+                worldY: 8,
+                screenX: 40,
+                screenY: 80,
+                button: 0,
+                nodePath: []
+            }
+        });
+        interaction.dispatch({
+            type: 'textEditingStarted',
+            nodeId: 'text-root'
+        });
+
+        const commands = interaction.dispatch({
+            type: 'textEditCommit',
+            nodeId: 'text-root',
+            content: '   '
+        });
+
+        expect(commands).toEqual([
+            {
+                type: 'removeNode',
+                nodeId: 'text-root'
+            },
+            {
+                type: 'selectNode',
+                nodeId: null
+            }
+        ]);
+        expect(interaction.getState().textEditingNodeId).toBeNull();
     });
 });
