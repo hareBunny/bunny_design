@@ -6,6 +6,14 @@
 
 export { editorDocumentToRenderable } from './adapters/editorDocumentToRenderable';
 export { schemaToEditorDocument } from './adapters/schemaToEditorDocument';
+export { appendChildNode } from './commands/appendChildNode';
+export { appendNode } from './commands/appendNode';
+export { insertChildNode } from './commands/insertChildNode';
+export { removeNode } from './commands/removeNode';
+export { createDefaultEllipseNode } from './factories/createDefaultEllipseNode';
+export { createDefaultFrameNode } from './factories/createDefaultFrameNode';
+export { createDefaultRectangleNode } from './factories/createDefaultRectangleNode';
+export { createDefaultTextNode } from './factories/createDefaultTextNode';
 export type { EditorDocument } from './model/document';
 export type {
     EditorEllipseNode,

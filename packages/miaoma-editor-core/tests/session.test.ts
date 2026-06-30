@@ -7,6 +7,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    createDefaultEllipseNode,
+    createDefaultFrameNode,
+    createDefaultRectangleNode,
+    createDefaultTextNode,
     createEditorSession,
     type EditorDocument,
     getNodeById,
@@ -77,5 +81,152 @@ describe('editor session', () => {
             }
         ]);
         expect(node?.effects).toEqual([]);
+    });
+
+    it('appends a node at document root', () => {
+        const session = createEditorSession(sampleDocument);
+        const node = createDefaultTextNode({
+            x: 24,
+            y: 30,
+            content: 'Hello'
+        });
+
+        session.appendNode(node);
+
+        expect(session.getNodeById(node.id)).toMatchObject({
+            id: node.id,
+            type: 'text',
+            x: 24,
+            y: 30,
+            content: 'Hello'
+        });
+        expect(session.getSnapshot().document.children).toContainEqual(
+            expect.objectContaining({ id: node.id })
+        );
+    });
+
+    it('appends a rectangle into a frame and exposes it through selectors', () => {
+        const session = createEditorSession(sampleDocument);
+        const node = createDefaultRectangleNode({
+            x: 12,
+            y: 18,
+            width: 48,
+            height: 32
+        });
+
+        session.appendChildNode('frame-1', node);
+
+        expect(session.getNodeById(node.id)).toMatchObject({
+            id: node.id,
+            type: 'rectangle',
+            x: 12,
+            y: 18,
+            width: 48,
+            height: 32
+        });
+        expect(session.getNodeById('frame-1')).toMatchObject({
+            children: [expect.objectContaining({ id: node.id })]
+        });
+    });
+
+    it('inserts a child node at a stable index inside a frame', () => {
+        const session = createEditorSession(sampleDocument);
+        const existing = createDefaultEllipseNode({
+            x: 40,
+            y: 40,
+            width: 20,
+            height: 20
+        });
+        const inserted = createDefaultTextNode({
+            x: 8,
+            y: 12,
+            content: 'Inserted'
+        });
+
+        session.appendChildNode('frame-1', existing);
+        session.insertChildNode('frame-1', 0, inserted);
+
+        expect(session.getNodeById('frame-1')).toMatchObject({
+            children: [
+                expect.objectContaining({ id: inserted.id }),
+                expect.objectContaining({ id: existing.id })
+            ]
+        });
+    });
+
+    it('removes a temporary text node after cancellation', () => {
+        const session = createEditorSession(sampleDocument);
+        const node = createDefaultTextNode({
+            x: 24,
+            y: 30,
+            content: ''
+        });
+
+        session.appendNode(node);
+        session.removeNode(node.id);
+
+        expect(session.getNodeById(node.id)).toBeNull();
+    });
+});
+
+describe('default node factories', () => {
+    it('creates frame, rectangle, ellipse, and text nodes with stable defaults', () => {
+        const frame = createDefaultFrameNode({
+            x: 0,
+            y: 0,
+            width: 320,
+            height: 180
+        });
+        const rectangle = createDefaultRectangleNode({
+            x: 12,
+            y: 18,
+            width: 48,
+            height: 32
+        });
+        const ellipse = createDefaultEllipseNode({
+            x: 20,
+            y: 24,
+            width: 36,
+            height: 36
+        });
+        const text = createDefaultTextNode({
+            x: 30,
+            y: 40,
+            content: 'Title'
+        });
+
+        expect(frame).toMatchObject({
+            type: 'frame',
+            name: 'Frame',
+            width: 320,
+            height: 180,
+            children: [],
+            fills: [],
+            strokes: [],
+            effects: []
+        });
+        expect(rectangle).toMatchObject({
+            type: 'rectangle',
+            name: 'Rectangle',
+            width: 48,
+            height: 32,
+            cornerRadius: 0
+        });
+        expect(ellipse).toMatchObject({
+            type: 'ellipse',
+            name: 'Ellipse',
+            width: 36,
+            height: 36
+        });
+        expect(text).toMatchObject({
+            type: 'text',
+            name: 'Text',
+            content: 'Title',
+            textGrowth: 'auto'
+        });
+        expect(frame.id).toMatch(/^frame-/);
+        expect(rectangle.id).toMatch(/^rectangle-/);
+        expect(ellipse.id).toMatch(/^ellipse-/);
+        expect(text.id).toMatch(/^text-/);
     });
 });

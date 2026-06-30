@@ -4,6 +4,10 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import { appendChildNode } from '../commands/appendChildNode';
+import { appendNode } from '../commands/appendNode';
+import { insertChildNode } from '../commands/insertChildNode';
+import { removeNode } from '../commands/removeNode';
 import type { EditorDocument } from '../model/document';
 import type { EditorNode } from '../model/node';
 import type { EditorStyleArrayField, EditorStyleItem } from '../model/style';
@@ -117,6 +121,58 @@ export const createEditorSession = (
                         'effects'
                     )
                 }
+            };
+            notify();
+        },
+        appendNode: (node) => {
+            snapshot = {
+                ...snapshot,
+                document: appendNode(snapshot.document, node)
+            };
+            notify();
+        },
+        appendChildNode: (parentId, node) => {
+            snapshot = {
+                ...snapshot,
+                document: appendChildNode(snapshot.document, parentId, node)
+            };
+            notify();
+        },
+        insertChildNode: (parentId, index, node) => {
+            snapshot = {
+                ...snapshot,
+                document: insertChildNode(
+                    snapshot.document,
+                    parentId,
+                    index,
+                    node
+                )
+            };
+            notify();
+        },
+        removeNode: (nodeId) => {
+            const nextDocument = removeNode(snapshot.document, nodeId);
+            const nextSelectedNodeId = snapshot.selection.selectedNodeId;
+            const hasSelectedNode =
+                nextSelectedNodeId !== null &&
+                selectNodeById(nextDocument, nextSelectedNodeId) !== null;
+
+            snapshot = {
+                ...snapshot,
+                document: nextDocument,
+                selection: hasSelectedNode
+                    ? snapshot.selection
+                    : {
+                          ...snapshot.selection,
+                          selectedNodeId: null
+                      },
+                inspectorUi: hasSelectedNode
+                    ? snapshot.inspectorUi
+                    : {
+                          activeFillId: null,
+                          activeStrokeId: null,
+                          activeEffectId: null
+                      }
             };
             notify();
         },

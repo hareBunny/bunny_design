@@ -66,6 +66,10 @@ export type EditorSession = {
     getNodeById(nodeId: string): EditorNode | null;
     getSelectedNode(): EditorNode | null;
     selectNode(nodeId: string | null): void;
+    appendNode(node: EditorNode): void;
+    appendChildNode(parentId: string, node: EditorNode): void;
+    insertChildNode(parentId: string, index: number, node: EditorNode): void;
+    removeNode(nodeId: string): void;
     patchNode(nodeId: string, patch: EditorNodePatch): void;
     replaceNode(nodeId: string, nextNode: EditorNode): void;
     appendStyleItem(
