@@ -21,7 +21,10 @@ export const insertChildNode = (
             return current;
         }
 
-        const nextIndex = clampInsertIndex(index, current.children.length);
+        const nextIndex =
+            current.layout === 'horizontal' || current.layout === 'vertical'
+                ? current.children.length
+                : clampInsertIndex(index, current.children.length);
 
         return {
             ...current,

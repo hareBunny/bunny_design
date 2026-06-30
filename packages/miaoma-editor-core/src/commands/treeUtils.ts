@@ -6,22 +6,6 @@
 
 import type { EditorNode } from '../model/node';
 
-export const mapNodes = (
-    nodes: EditorNode[],
-    mapper: (node: EditorNode) => EditorNode
-): EditorNode[] =>
-    nodes.map((node) => {
-        const nextNode =
-            node.type === 'frame'
-                ? {
-                      ...node,
-                      children: mapNodes(node.children, mapper)
-                  }
-                : node;
-
-        return mapper(nextNode);
-    });
-
 export const updateNodes = (
     nodes: EditorNode[],
     nodeId: string,

@@ -154,6 +154,44 @@ describe('editor session', () => {
         });
     });
 
+    it('appends inserted children to the end of auto layout frames', () => {
+        const session = createEditorSession({
+            version: '1.0.0',
+            children: [
+                {
+                    id: 'frame-flow',
+                    type: 'frame',
+                    name: 'Flow Frame',
+                    layout: 'vertical',
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    children: [
+                        createDefaultRectangleNode({
+                            x: 0,
+                            y: 0,
+                            width: 24,
+                            height: 24
+                        })
+                    ]
+                }
+            ]
+        });
+        const inserted = createDefaultTextNode({
+            x: 8,
+            y: 12
+        });
+
+        session.insertChildNode('frame-flow', 0, inserted);
+
+        expect(session.getNodeById('frame-flow')).toMatchObject({
+            children: [
+                expect.anything(),
+                expect.objectContaining({ id: inserted.id })
+            ]
+        });
+    });
+
     it('removes a temporary text node after cancellation', () => {
         const session = createEditorSession(sampleDocument);
         const node = createDefaultTextNode({
@@ -224,6 +262,12 @@ describe('default node factories', () => {
             content: 'Title',
             textGrowth: 'auto'
         });
+        expect(
+            createDefaultTextNode({
+                x: 0,
+                y: 0
+            }).content
+        ).toBe('');
         expect(frame.id).toMatch(/^frame-/);
         expect(rectangle.id).toMatch(/^rectangle-/);
         expect(ellipse.id).toMatch(/^ellipse-/);

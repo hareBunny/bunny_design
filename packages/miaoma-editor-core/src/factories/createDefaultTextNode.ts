@@ -21,7 +21,7 @@ export const createDefaultTextNode = ({
     y,
     width,
     height,
-    content
+    content = ''
 }: CreateDefaultTextNodeInput): EditorTextNode => ({
     id: buildNodeId('text'),
     type: 'text',
