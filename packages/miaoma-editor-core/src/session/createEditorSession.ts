@@ -68,6 +68,34 @@ const replaceNodeInDocument = (
     children: updateNodeCollection(document.children, nodeId, updater)
 });
 
+const findParentFrameId = (
+    nodes: EditorNode[],
+    nodeId: string,
+    parentFrameId: string | null = null
+): string | null => {
+    for (const node of nodes) {
+        if (node.id === nodeId) {
+            return parentFrameId;
+        }
+
+        if (node.type !== 'frame') {
+            continue;
+        }
+
+        const nextParentFrameId = findParentFrameId(
+            node.children,
+            nodeId,
+            node.id
+        );
+
+        if (nextParentFrameId !== null) {
+            return nextParentFrameId;
+        }
+    }
+
+    return null;
+};
+
 export const createEditorSession = (
     document: EditorDocument
 ): EditorSession => {
@@ -151,28 +179,46 @@ export const createEditorSession = (
             notify();
         },
         removeNode: (nodeId) => {
+            const fallbackNodeId = findParentFrameId(
+                snapshot.document.children,
+                nodeId
+            );
             const nextDocument = removeNode(snapshot.document, nodeId);
             const nextSelectedNodeId = snapshot.selection.selectedNodeId;
             const hasSelectedNode =
                 nextSelectedNodeId !== null &&
                 selectNodeById(nextDocument, nextSelectedNodeId) !== null;
+            const nextSelectedNode = hasSelectedNode
+                ? nextSelectedNodeId === null
+                    ? null
+                    : selectNodeById(nextDocument, nextSelectedNodeId)
+                : fallbackNodeId === null
+                  ? null
+                  : selectNodeById(nextDocument, fallbackNodeId);
 
             snapshot = {
                 ...snapshot,
                 document: nextDocument,
-                selection: hasSelectedNode
-                    ? snapshot.selection
-                    : {
-                          ...snapshot.selection,
-                          selectedNodeId: null
-                      },
-                inspectorUi: hasSelectedNode
-                    ? snapshot.inspectorUi
-                    : {
-                          activeFillId: null,
-                          activeStrokeId: null,
-                          activeEffectId: null
-                      }
+                selection: {
+                    ...snapshot.selection,
+                    selectedNodeId: hasSelectedNode
+                        ? nextSelectedNodeId
+                        : fallbackNodeId
+                },
+                inspectorUi: {
+                    activeFillId: getNextActiveStyleId(
+                        nextSelectedNode,
+                        'fills'
+                    ),
+                    activeStrokeId: getNextActiveStyleId(
+                        nextSelectedNode,
+                        'strokes'
+                    ),
+                    activeEffectId: getNextActiveStyleId(
+                        nextSelectedNode,
+                        'effects'
+                    )
+                }
             };
             notify();
         },

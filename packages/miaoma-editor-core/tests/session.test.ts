@@ -201,9 +201,27 @@ describe('editor session', () => {
         });
 
         session.appendNode(node);
+        session.selectNode(node.id);
         session.removeNode(node.id);
 
         expect(session.getNodeById(node.id)).toBeNull();
+        expect(session.getSnapshot().selection.selectedNodeId).toBeNull();
+    });
+
+    it('falls back to the parent frame after removing a selected child node', () => {
+        const session = createEditorSession(sampleDocument);
+        const node = createDefaultTextNode({
+            x: 24,
+            y: 30,
+            content: ''
+        });
+
+        session.appendChildNode('frame-1', node);
+        session.selectNode(node.id);
+        session.removeNode(node.id);
+
+        expect(session.getNodeById(node.id)).toBeNull();
+        expect(session.getSnapshot().selection.selectedNodeId).toBe('frame-1');
     });
 });
 
