@@ -20,6 +20,10 @@ import {
     DEFAULT_RULER_THICKNESS
 } from '@miaoma-design-ai/miaoma-canvas-ruler';
 import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schema';
+import type {
+    HitPathNode,
+    InteractionPointerPayload
+} from '@miaoma-design-ai/miaoma-editor-interaction';
 
 import { CanvasDocumentRenderer } from '../document/CanvasDocumentRenderer';
 
@@ -45,6 +49,9 @@ type CanvasViewportShellProps = {
     selectedNodeId?: string | null;
     onNodePointerDown?: (nodeId: string) => void;
     onCanvasPointerDown?: () => void;
+    onViewportPointerDown?: (payload: InteractionPointerPayload) => void;
+    onViewportPointerMove?: (payload: InteractionPointerPayload) => void;
+    onViewportPointerUp?: (payload: InteractionPointerPayload) => void;
     resolveAsset: (url: string) => string;
     overlay?: ReactNode;
 };
@@ -59,11 +66,39 @@ const isInteractiveViewportTarget = (target: HTMLElement) =>
         'button,input,textarea,select,[role="button"],[role="checkbox"],[role="tab"]'
     ) !== null;
 
+const buildNodeLookup = (document: MiaomaDesignDocument) => {
+    const entries = new Map<
+        string,
+        Pick<HitPathNode, 'id' | 'layout' | 'type'>
+    >();
+
+    const visit = (nodes: MiaomaDesignDocument['children']) => {
+        nodes.forEach((node) => {
+            entries.set(node.id, {
+                id: node.id,
+                layout: node.type === 'frame' ? node.layout : undefined,
+                type: node.type
+            });
+
+            if (node.type === 'frame') {
+                visit(node.children);
+            }
+        });
+    };
+
+    visit(document.children);
+
+    return entries;
+};
+
 export const CanvasViewportShell = ({
     document,
     selectedNodeId,
     onNodePointerDown,
     onCanvasPointerDown,
+    onViewportPointerDown,
+    onViewportPointerMove,
+    onViewportPointerUp,
     resolveAsset,
     overlay
 }: CanvasViewportShellProps) => {
@@ -81,6 +116,7 @@ export const CanvasViewportShell = ({
         scrollRef,
         setState
     });
+    const nodeLookup = useMemo(() => buildNodeLookup(document), [document]);
 
     useEffect(() => {
         const element = scrollRef.current;
@@ -166,6 +202,43 @@ export const CanvasViewportShell = ({
         );
     };
 
+    const buildPointerPayload = (
+        event: ReactPointerEvent<HTMLDivElement>
+    ): InteractionPointerPayload | null => {
+        const viewportElement = scrollRef.current;
+
+        if (!viewportElement || !(event.target instanceof HTMLElement)) {
+            return null;
+        }
+
+        const rect = viewportElement.getBoundingClientRect();
+        const nodePath: HitPathNode[] = [];
+        let currentElement: HTMLElement | null = event.target;
+
+        while (currentElement && currentElement !== viewportElement) {
+            const nodeId = currentElement.dataset.designNodeId;
+
+            if (nodeId) {
+                const node = nodeLookup.get(nodeId);
+
+                if (node) {
+                    nodePath.unshift(node);
+                }
+            }
+
+            currentElement = currentElement.parentElement;
+        }
+
+        return {
+            button: event.button,
+            nodePath,
+            screenX: event.clientX,
+            screenY: event.clientY,
+            worldX: state.cameraX + (event.clientX - rect.left) / state.zoom,
+            worldY: state.cameraY + (event.clientY - rect.top) / state.zoom
+        };
+    };
+
     const handleViewportPointerDown = (
         event: ReactPointerEvent<HTMLDivElement>
     ) => {
@@ -173,14 +246,57 @@ export const CanvasViewportShell = ({
             return;
         }
 
-        if (
-            event.target.closest('[data-document-renderer="true"]') ||
-            isInteractiveViewportTarget(event.target)
-        ) {
+        if (isInteractiveViewportTarget(event.target)) {
+            return;
+        }
+
+        const payload = buildPointerPayload(event);
+
+        if (payload) {
+            onViewportPointerDown?.(payload);
+        }
+
+        if (event.target.closest('[data-document-renderer="true"]')) {
             return;
         }
 
         onCanvasPointerDown?.();
+    };
+
+    const handleViewportPointerMove = (
+        event: ReactPointerEvent<HTMLDivElement>
+    ) => {
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+
+        if (isInteractiveViewportTarget(event.target)) {
+            return;
+        }
+
+        const payload = buildPointerPayload(event);
+
+        if (payload) {
+            onViewportPointerMove?.(payload);
+        }
+    };
+
+    const handleViewportPointerUp = (
+        event: ReactPointerEvent<HTMLDivElement>
+    ) => {
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+
+        if (isInteractiveViewportTarget(event.target)) {
+            return;
+        }
+
+        const payload = buildPointerPayload(event);
+
+        if (payload) {
+            onViewportPointerUp?.(payload);
+        }
     };
 
     const surfaceStyle = {
@@ -220,6 +336,8 @@ export const CanvasViewportShell = ({
                 aria-label="Canvas viewport"
                 className="absolute top-[var(--editor-ruler-thickness)] right-0 bottom-0 left-[var(--editor-ruler-thickness)] overflow-scroll"
                 onPointerDown={handleViewportPointerDown}
+                onPointerMove={handleViewportPointerMove}
+                onPointerUp={handleViewportPointerUp}
                 onScroll={handleScroll}
                 ref={scrollRef}
             >

@@ -11,6 +11,11 @@ import coverImageUrl from '../../assets/dSqyy.png';
 import type { SidebarTab } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
 
+import { useCanvasCreationBridge } from './bridges/useCanvasCreationBridge';
+import {
+    EditorInteractionProvider,
+    useOptionalEditorInteractionContext
+} from './state/EditorInteractionProvider';
 import { useEditorSession } from './state/useEditorSession';
 import { useEditorSnapshot } from './state/useEditorSnapshot';
 import { CanvasToolRail } from './CanvasToolRail';
@@ -35,14 +40,31 @@ export const CanvasStage = ({
     onCanvasBlankSelect,
     onCanvasNodeSelect,
     spanInspectorColumn
-}: CanvasStageProps) => (
-    <CanvasStageInner
-        activeSidebarTab={activeSidebarTab}
-        onCanvasBlankSelect={onCanvasBlankSelect}
-        onCanvasNodeSelect={onCanvasNodeSelect}
-        spanInspectorColumn={spanInspectorColumn}
-    />
-);
+}: CanvasStageProps) => {
+    const interaction = useOptionalEditorInteractionContext();
+
+    if (interaction) {
+        return (
+            <CanvasStageInner
+                activeSidebarTab={activeSidebarTab}
+                onCanvasBlankSelect={onCanvasBlankSelect}
+                onCanvasNodeSelect={onCanvasNodeSelect}
+                spanInspectorColumn={spanInspectorColumn}
+            />
+        );
+    }
+
+    return (
+        <EditorInteractionProvider>
+            <CanvasStageInner
+                activeSidebarTab={activeSidebarTab}
+                onCanvasBlankSelect={onCanvasBlankSelect}
+                onCanvasNodeSelect={onCanvasNodeSelect}
+                spanInspectorColumn={spanInspectorColumn}
+            />
+        </EditorInteractionProvider>
+    );
+};
 
 const CanvasStageInner = ({
     activeSidebarTab,
@@ -52,6 +74,7 @@ const CanvasStageInner = ({
 }: CanvasStageProps) => {
     const session = useEditorSession();
     const snapshot = useEditorSnapshot();
+    const creationBridge = useCanvasCreationBridge();
     const renderableDocument = editorDocumentToRenderable(snapshot.document);
 
     return (
@@ -68,6 +91,9 @@ const CanvasStageInner = ({
                     session.selectNode(null);
                     onCanvasBlankSelect?.();
                 }}
+                onViewportPointerDown={creationBridge.handleViewportPointerDown}
+                onViewportPointerMove={creationBridge.handleViewportPointerMove}
+                onViewportPointerUp={creationBridge.handleViewportPointerUp}
                 onNodePointerDown={(nodeId) => {
                     session.selectNode(nodeId);
                     onCanvasNodeSelect?.(nodeId);
@@ -80,7 +106,10 @@ const CanvasStageInner = ({
                 resolveAsset={resolveCanvasAsset}
                 selectedNodeId={snapshot.selection.selectedNodeId}
             />
-            <CanvasToolRail />
+            <CanvasToolRail
+                activeTool={creationBridge.activeTool}
+                onSelectTool={creationBridge.selectTool}
+            />
             <div
                 aria-hidden="true"
                 className="editor-canvas-scrollbar absolute bottom-1.5 left-[min(49.85%,calc(100%_-_300px))] z-20 h-1.5 w-[276px] rounded-[3px] bg-[#bdbec3]"

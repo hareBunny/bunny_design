@@ -12,6 +12,7 @@ import { CANVAS_SAMPLE_EDITOR_DOCUMENT } from '../../fixtures/canvasSampleDocume
 import type { SidebarTab } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
 
+import { EditorInteractionProvider } from './state/EditorInteractionProvider';
 import { EditorSessionProvider } from './state/EditorSessionProvider';
 import { CanvasStage } from './CanvasStage';
 import { LeftSidebar } from './LeftSidebar';
@@ -45,44 +46,46 @@ export const MiaomaEditor = () => {
                 CANVAS_SAMPLE_EDITOR_DOCUMENT.children[0]?.id
             }
         >
-            <div
-                className="miaoma-editor-screen grid h-screen min-h-[700px] w-screen grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)] overflow-hidden"
-                data-canvas-width={EDITOR_DESIGN_METRICS.canvasWidth}
-                data-content-width={EDITOR_DESIGN_METRICS.contentWidth}
-                data-design-frame={EDITOR_DESIGN_METRICS.frameId}
-                data-inspector-width={EDITOR_DESIGN_METRICS.inspectorWidth}
-                data-sidebar-width={EDITOR_DESIGN_METRICS.sidebarWidth}
-            >
-                <LeftSidebar
-                    activeTab={activeSidebarTab}
-                    onLayerSelect={() => {
-                        setIsInspectorBodyVisible(true);
-                    }}
-                    onSelectTab={setActiveSidebarTab}
-                />
-                <section
-                    className={classNames(
-                        'editor-content grid h-full min-w-0 grid-rows-[var(--editor-header-height)_minmax(0,1fr)] overflow-hidden rounded-l-3xl border-l border-[#e6e6e6] bg-[#f6f6f6] shadow-[-4px_0_20px_#0000001a]',
-                        'grid-cols-[minmax(0,1fr)_var(--editor-inspector-width)] max-[980px]:grid-cols-[minmax(520px,1fr)]'
-                    )}
-                    data-inspector-body-visible={
-                        isInspectorBodyVisible ? 'true' : 'false'
-                    }
+            <EditorInteractionProvider>
+                <div
+                    className="miaoma-editor-screen grid h-screen min-h-[700px] w-screen grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)] overflow-hidden"
+                    data-canvas-width={EDITOR_DESIGN_METRICS.canvasWidth}
+                    data-content-width={EDITOR_DESIGN_METRICS.contentWidth}
+                    data-design-frame={EDITOR_DESIGN_METRICS.frameId}
+                    data-inspector-width={EDITOR_DESIGN_METRICS.inspectorWidth}
+                    data-sidebar-width={EDITOR_DESIGN_METRICS.sidebarWidth}
                 >
-                    <MainHeader />
-                    <CanvasStage
-                        activeSidebarTab={activeSidebarTab}
-                        onCanvasBlankSelect={() => {
-                            setIsInspectorBodyVisible(false);
-                        }}
-                        onCanvasNodeSelect={() => {
+                    <LeftSidebar
+                        activeTab={activeSidebarTab}
+                        onLayerSelect={() => {
                             setIsInspectorBodyVisible(true);
                         }}
-                        spanInspectorColumn={!isInspectorBodyVisible}
+                        onSelectTab={setActiveSidebarTab}
                     />
-                    <RightInspector bodyVisible={isInspectorBodyVisible} />
-                </section>
-            </div>
+                    <section
+                        className={classNames(
+                            'editor-content grid h-full min-w-0 grid-rows-[var(--editor-header-height)_minmax(0,1fr)] overflow-hidden rounded-l-3xl border-l border-[#e6e6e6] bg-[#f6f6f6] shadow-[-4px_0_20px_#0000001a]',
+                            'grid-cols-[minmax(0,1fr)_var(--editor-inspector-width)] max-[980px]:grid-cols-[minmax(520px,1fr)]'
+                        )}
+                        data-inspector-body-visible={
+                            isInspectorBodyVisible ? 'true' : 'false'
+                        }
+                    >
+                        <MainHeader />
+                        <CanvasStage
+                            activeSidebarTab={activeSidebarTab}
+                            onCanvasBlankSelect={() => {
+                                setIsInspectorBodyVisible(false);
+                            }}
+                            onCanvasNodeSelect={() => {
+                                setIsInspectorBodyVisible(true);
+                            }}
+                            spanInspectorColumn={!isInspectorBodyVisible}
+                        />
+                        <RightInspector bodyVisible={isInspectorBodyVisible} />
+                    </section>
+                </div>
+            </EditorInteractionProvider>
         </EditorSessionProvider>
     );
 };

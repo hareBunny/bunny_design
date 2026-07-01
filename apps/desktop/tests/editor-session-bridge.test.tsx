@@ -250,6 +250,31 @@ class TestResizeObserver {
 }
 
 describe('RightInspectorFormBridge', () => {
+    it('drives the tool rail from shared interaction state instead of local component state', async () => {
+        const user = userEvent.setup();
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            render(<MiaomaEditor />);
+
+            await user.click(
+                screen.getByRole('button', { name: 'Frame tool' })
+            );
+
+            await waitFor(() => {
+                expect(
+                    document
+                        .querySelector('[data-region="canvas-tool-rail"]')
+                        ?.getAttribute('data-active-tool')
+                ).toBe('frame');
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
     it('opens the shapes expand menu from the canvas toolbar and updates active tools', async () => {
         const originalResizeObserver = globalThis.ResizeObserver;
         const user = userEvent.setup();

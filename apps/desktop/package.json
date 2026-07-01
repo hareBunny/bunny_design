@@ -48,6 +48,7 @@
         "@miaoma-design-ai/miaoma-canvas-ruler": "workspace:*",
         "@miaoma-design-ai/miaoma-design-schema": "workspace:*",
         "@miaoma-design-ai/miaoma-editor-core": "workspace:*",
+        "@miaoma-design-ai/miaoma-editor-interaction": "workspace:*",
         "electron-squirrel-startup": "1.0.1",
         "lucide-react": "^1.21.0",
         "react": "19.2.0",

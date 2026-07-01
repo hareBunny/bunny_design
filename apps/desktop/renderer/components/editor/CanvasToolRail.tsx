@@ -18,20 +18,17 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+import type { CanvasToolId as InteractionCanvasToolId } from '@miaoma-design-ai/miaoma-editor-interaction';
+
 import { classNames } from '../../utils/classNames';
 
-type CanvasToolId =
-    | 'ellipse'
-    | 'frame'
-    | 'hand'
+type ShapeMenuToolId =
+    | Extract<InteractionCanvasToolId, 'ellipse' | 'rectangle'>
     | 'icon'
-    | 'pointer'
-    | 'polygon'
-    | 'rectangle'
-    | 'text';
+    | 'polygon';
 
 type ToolButtonConfig = {
-    id: CanvasToolId | 'shape-menu';
+    id: InteractionCanvasToolId | 'shape-menu';
     icon: LucideIcon;
     label: string;
     height: 28 | 30;
@@ -86,7 +83,7 @@ const TOOL_BUTTONS: ToolButtonConfig[] = [
 ];
 
 const SHAPE_MENU_ITEMS: {
-    id: Extract<CanvasToolId, 'ellipse' | 'icon' | 'polygon' | 'rectangle'>;
+    id: ShapeMenuToolId;
     icon: LucideIcon;
     label: string;
 }[] = [
@@ -98,12 +95,24 @@ const SHAPE_MENU_ITEMS: {
 
 const SHAPES_MENU_ID = 'canvas-shapes-expand-menu';
 
-export const CanvasToolRail = () => {
-    const [activeTool, setActiveTool] = useState<CanvasToolId>('pointer');
+type CanvasToolRailProps = {
+    activeTool: InteractionCanvasToolId;
+    onSelectTool: (tool: InteractionCanvasToolId) => void;
+};
+
+const isSupportedShapeMenuTool = (
+    toolId: ShapeMenuToolId
+): toolId is Extract<InteractionCanvasToolId, 'ellipse' | 'rectangle'> =>
+    toolId === 'ellipse' || toolId === 'rectangle';
+
+export const CanvasToolRail = ({
+    activeTool,
+    onSelectTool
+}: CanvasToolRailProps) => {
     const [isShapesMenuOpen, setIsShapesMenuOpen] = useState(false);
 
-    const selectTool = (toolId: CanvasToolId) => {
-        setActiveTool(toolId);
+    const selectTool = (toolId: InteractionCanvasToolId) => {
+        onSelectTool(toolId);
         setIsShapesMenuOpen(false);
     };
 
@@ -157,7 +166,7 @@ export const CanvasToolRail = () => {
                         );
                     }
 
-                    const toolId = tool.id as CanvasToolId;
+                    const toolId = tool.id as InteractionCanvasToolId;
                     const selected = activeTool === toolId;
 
                     return (
@@ -203,7 +212,14 @@ export const CanvasToolRail = () => {
                             <button
                                 className="editor-shapes-expand-menu-item group flex h-[26px] w-full cursor-default items-center gap-3 rounded-md border-0 bg-transparent px-1.5 py-1 text-left text-[14px] leading-none font-normal text-[#26272b] hover:bg-[#f7f8fa] focus-visible:bg-[#f7f8fa] focus-visible:outline-none"
                                 key={item.id}
-                                onClick={() => selectTool(item.id)}
+                                onClick={() => {
+                                    if (isSupportedShapeMenuTool(item.id)) {
+                                        selectTool(item.id);
+                                        return;
+                                    }
+
+                                    setIsShapesMenuOpen(false);
+                                }}
                                 role="menuitem"
                                 type="button"
                             >
