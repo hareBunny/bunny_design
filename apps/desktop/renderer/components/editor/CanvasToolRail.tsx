@@ -224,14 +224,12 @@ export const CanvasToolRail = ({
                                         ? 'opacity-45'
                                         : 'hover:bg-[#f7f8fa] focus-visible:bg-[#f7f8fa]'
                                 )}
+                                disabled={isDisabledShapeMenuTool(item.id)}
                                 key={item.id}
                                 onClick={() => {
                                     if (isSupportedShapeMenuTool(item.id)) {
                                         selectTool(item.id);
-                                        return;
                                     }
-
-                                    setIsShapesMenuOpen(false);
                                 }}
                                 role="menuitem"
                                 type="button"
