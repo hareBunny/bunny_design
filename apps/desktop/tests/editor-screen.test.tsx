@@ -18,6 +18,7 @@ import {
 } from '../renderer/components/editor/FlexLayoutSection';
 import { SidebarContent } from '../renderer/components/editor/LeftSidebar';
 import { RightInspector } from '../renderer/components/editor/RightInspector';
+import { EditorInteractionProvider } from '../renderer/components/editor/state/EditorInteractionProvider';
 import { EditorSessionProvider } from '../renderer/components/editor/state/EditorSessionProvider';
 import { CANVAS_SAMPLE_EDITOR_DOCUMENT } from '../renderer/fixtures/canvasSampleDocument';
 import { MiaomaEditorScreen } from '../renderer/pages/MiaomaEditorScreen';
@@ -399,7 +400,9 @@ describe('MiaomaEditorScreen', () => {
             <EditorSessionProvider
                 initialDocument={CANVAS_SAMPLE_EDITOR_DOCUMENT}
             >
-                <CanvasStage activeSidebarTab="layers" />
+                <EditorInteractionProvider>
+                    <CanvasStage activeSidebarTab="layers" />
+                </EditorInteractionProvider>
             </EditorSessionProvider>
         );
         const promptDockStart = markup.indexOf('editor-prompt-dock');

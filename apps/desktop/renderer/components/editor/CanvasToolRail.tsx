@@ -105,6 +105,9 @@ const isSupportedShapeMenuTool = (
 ): toolId is Extract<InteractionCanvasToolId, 'ellipse' | 'rectangle'> =>
     toolId === 'ellipse' || toolId === 'rectangle';
 
+const isDisabledShapeMenuTool = (toolId: ShapeMenuToolId) =>
+    !isSupportedShapeMenuTool(toolId);
+
 export const CanvasToolRail = ({
     activeTool,
     onSelectTool
@@ -210,7 +213,17 @@ export const CanvasToolRail = ({
 
                         return (
                             <button
-                                className="editor-shapes-expand-menu-item group flex h-[26px] w-full cursor-default items-center gap-3 rounded-md border-0 bg-transparent px-1.5 py-1 text-left text-[14px] leading-none font-normal text-[#26272b] hover:bg-[#f7f8fa] focus-visible:bg-[#f7f8fa] focus-visible:outline-none"
+                                aria-disabled={
+                                    isDisabledShapeMenuTool(item.id)
+                                        ? 'true'
+                                        : undefined
+                                }
+                                className={classNames(
+                                    'editor-shapes-expand-menu-item group flex h-[26px] w-full cursor-default items-center gap-3 rounded-md border-0 bg-transparent px-1.5 py-1 text-left text-[14px] leading-none font-normal text-[#26272b] focus-visible:outline-none',
+                                    isDisabledShapeMenuTool(item.id)
+                                        ? 'opacity-45'
+                                        : 'hover:bg-[#f7f8fa] focus-visible:bg-[#f7f8fa]'
+                                )}
                                 key={item.id}
                                 onClick={() => {
                                     if (isSupportedShapeMenuTool(item.id)) {
@@ -225,7 +238,11 @@ export const CanvasToolRail = ({
                             >
                                 <Icon
                                     aria-hidden="true"
-                                    className="text-[#7a808d] group-hover:text-[#5b6370]"
+                                    className={classNames(
+                                        'text-[#7a808d]',
+                                        !isDisabledShapeMenuTool(item.id) &&
+                                            'group-hover:text-[#5b6370]'
+                                    )}
                                     size={18}
                                     strokeWidth={1.7}
                                 />

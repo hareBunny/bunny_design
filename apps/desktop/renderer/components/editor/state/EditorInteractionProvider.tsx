@@ -37,6 +37,3 @@ export const useEditorInteractionContext = () => {
 
     return interaction;
 };
-
-export const useOptionalEditorInteractionContext = () =>
-    useContext(EditorInteractionContext);

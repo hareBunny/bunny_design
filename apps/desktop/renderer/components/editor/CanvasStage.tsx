@@ -12,10 +12,6 @@ import type { SidebarTab } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
 
 import { useCanvasCreationBridge } from './bridges/useCanvasCreationBridge';
-import {
-    EditorInteractionProvider,
-    useOptionalEditorInteractionContext
-} from './state/EditorInteractionProvider';
 import { useEditorSession } from './state/useEditorSession';
 import { useEditorSnapshot } from './state/useEditorSnapshot';
 import { CanvasToolRail } from './CanvasToolRail';
@@ -40,31 +36,14 @@ export const CanvasStage = ({
     onCanvasBlankSelect,
     onCanvasNodeSelect,
     spanInspectorColumn
-}: CanvasStageProps) => {
-    const interaction = useOptionalEditorInteractionContext();
-
-    if (interaction) {
-        return (
-            <CanvasStageInner
-                activeSidebarTab={activeSidebarTab}
-                onCanvasBlankSelect={onCanvasBlankSelect}
-                onCanvasNodeSelect={onCanvasNodeSelect}
-                spanInspectorColumn={spanInspectorColumn}
-            />
-        );
-    }
-
-    return (
-        <EditorInteractionProvider>
-            <CanvasStageInner
-                activeSidebarTab={activeSidebarTab}
-                onCanvasBlankSelect={onCanvasBlankSelect}
-                onCanvasNodeSelect={onCanvasNodeSelect}
-                spanInspectorColumn={spanInspectorColumn}
-            />
-        </EditorInteractionProvider>
-    );
-};
+}: CanvasStageProps) => (
+    <CanvasStageInner
+        activeSidebarTab={activeSidebarTab}
+        onCanvasBlankSelect={onCanvasBlankSelect}
+        onCanvasNodeSelect={onCanvasNodeSelect}
+        spanInspectorColumn={spanInspectorColumn}
+    />
+);
 
 const CanvasStageInner = ({
     activeSidebarTab,

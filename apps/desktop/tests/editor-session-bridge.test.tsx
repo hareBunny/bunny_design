@@ -322,6 +322,16 @@ describe('RightInspectorFormBridge', () => {
             expect(
                 within(menu).getByRole('menuitem', { name: 'Icon' })
             ).not.toBeNull();
+            expect(
+                within(menu)
+                    .getByRole('menuitem', { name: 'Polygon' })
+                    .getAttribute('aria-disabled')
+            ).toBe('true');
+            expect(
+                within(menu)
+                    .getByRole('menuitem', { name: 'Icon' })
+                    .getAttribute('aria-disabled')
+            ).toBe('true');
             expect(expandToolButton.className).toContain('border-[#f0f2f5]');
             expect(expandToolButton.className).toContain('bg-[#f7f8fa]');
 
