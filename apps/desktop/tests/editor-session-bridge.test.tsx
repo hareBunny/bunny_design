@@ -6,6 +6,7 @@
 
 // @vitest-environment jsdom
 
+import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -13,6 +14,7 @@ import {
     editorDocumentToRenderable,
     getSelectedNode
 } from '@miaoma-design-ai/miaoma-editor-core';
+import type { CanvasToolId } from '@miaoma-design-ai/miaoma-editor-interaction';
 import {
     fireEvent,
     render,
@@ -23,10 +25,14 @@ import {
 import userEvent from '@testing-library/user-event';
 
 import { CanvasDocumentRenderer } from '../renderer/components/document/CanvasDocumentRenderer';
+import { useCanvasCreationBridge } from '../renderer/components/editor/bridges/useCanvasCreationBridge';
+import { CanvasToolRail } from '../renderer/components/editor/CanvasToolRail';
 import { LeftSidebar } from '../renderer/components/editor/LeftSidebar';
 import { MiaomaEditor } from '../renderer/components/editor/MiaomaEditor';
 import { RightInspector } from '../renderer/components/editor/RightInspector';
+import { EditorInteractionProvider } from '../renderer/components/editor/state/EditorInteractionProvider';
 import { EditorSessionProvider } from '../renderer/components/editor/state/EditorSessionProvider';
+import { useEditorInteraction } from '../renderer/components/editor/state/useEditorInteraction';
 import { useEditorSession } from '../renderer/components/editor/state/useEditorSession';
 import { useEditorSnapshot } from '../renderer/components/editor/state/useEditorSnapshot';
 
@@ -241,6 +247,40 @@ const readSelectedNode = () =>
 const readCheckboxBox = (button: HTMLElement) =>
     button.querySelector('.editor-check-box') as HTMLElement | null;
 
+const SharedActiveToolDebug = () => {
+    const { state } = useEditorInteraction();
+
+    return <div data-testid="shared-active-tool">{state.activeTool}</div>;
+};
+
+const ToolRailBridgeHarness = () => {
+    const bridge = useCanvasCreationBridge();
+
+    return (
+        <>
+            <CanvasToolRail
+                activeTool={bridge.activeTool}
+                onSelectTool={bridge.selectTool}
+            />
+            <SharedActiveToolDebug />
+        </>
+    );
+};
+
+const LegacyLocalToolRailHarness = () => {
+    const [activeTool, setActiveTool] = useState<CanvasToolId>('pointer');
+
+    return (
+        <>
+            <CanvasToolRail
+                activeTool={activeTool}
+                onSelectTool={setActiveTool}
+            />
+            <SharedActiveToolDebug />
+        </>
+    );
+};
+
 class TestResizeObserver {
     constructor() {}
 
@@ -257,7 +297,11 @@ describe('RightInspectorFormBridge', () => {
         globalThis.ResizeObserver = TestResizeObserver;
 
         try {
-            render(<MiaomaEditor />);
+            render(
+                <EditorInteractionProvider>
+                    <ToolRailBridgeHarness />
+                </EditorInteractionProvider>
+            );
 
             await user.click(
                 screen.getByRole('button', { name: 'Frame tool' })
@@ -269,6 +313,41 @@ describe('RightInspectorFormBridge', () => {
                         .querySelector('[data-region="canvas-tool-rail"]')
                         ?.getAttribute('data-active-tool')
                 ).toBe('frame');
+                expect(
+                    screen.getByTestId('shared-active-tool').textContent
+                ).toBe('frame');
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('shows that a local-only tool rail does not update shared interaction state', async () => {
+        const user = userEvent.setup();
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            render(
+                <EditorInteractionProvider>
+                    <LegacyLocalToolRailHarness />
+                </EditorInteractionProvider>
+            );
+
+            await user.click(
+                screen.getByRole('button', { name: 'Frame tool' })
+            );
+
+            await waitFor(() => {
+                expect(
+                    document
+                        .querySelector('[data-region="canvas-tool-rail"]')
+                        ?.getAttribute('data-active-tool')
+                ).toBe('frame');
+                expect(
+                    screen.getByTestId('shared-active-tool').textContent
+                ).toBe('pointer');
             });
         } finally {
             globalThis.ResizeObserver = originalResizeObserver;
