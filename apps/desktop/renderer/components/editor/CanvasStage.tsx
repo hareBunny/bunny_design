@@ -70,6 +70,7 @@ const CanvasStageInner = ({
                     session.selectNode(null);
                     onCanvasBlankSelect?.();
                 }}
+                creationDraft={creationBridge.creationDraft}
                 onViewportPointerDown={creationBridge.handleViewportPointerDown}
                 onViewportPointerMove={creationBridge.handleViewportPointerMove}
                 onViewportPointerUp={creationBridge.handleViewportPointerUp}

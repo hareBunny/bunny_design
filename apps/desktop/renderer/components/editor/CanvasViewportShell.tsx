@@ -27,7 +27,9 @@ import type {
 
 import { CanvasDocumentRenderer } from '../document/CanvasDocumentRenderer';
 
+import { CanvasCreationOverlay } from './creation/CanvasCreationOverlay';
 import { DEFAULT_INITIAL_ZOOM, ZOOM_PRESETS } from './viewport/constants';
+import { extractDesignNodePath } from './viewport/extractDesignNodePath';
 import { useShortcutWheelZoom } from './viewport/useShortcutWheelZoom';
 import {
     measureViewportSelectionBounds,
@@ -40,13 +42,21 @@ import {
     getAdjacentZoomPreset,
     getVisibleWorldRect,
     resizeViewport,
-    setViewportZoom
+    screenToWorld,
+    setViewportZoom,
+    worldToScreen
 } from './viewport/viewportState';
 import { CanvasZoomControl } from './CanvasZoomControl';
 
 type CanvasViewportShellProps = {
     document: MiaomaDesignDocument;
     selectedNodeId?: string | null;
+    creationDraft?: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    } | null;
     onNodePointerDown?: (nodeId: string) => void;
     onCanvasPointerDown?: () => void;
     onViewportPointerDown?: (payload: InteractionPointerPayload) => void;
@@ -94,6 +104,7 @@ const buildNodeLookup = (document: MiaomaDesignDocument) => {
 export const CanvasViewportShell = ({
     document,
     selectedNodeId,
+    creationDraft,
     onNodePointerDown,
     onCanvasPointerDown,
     onViewportPointerDown,
@@ -212,30 +223,26 @@ export const CanvasViewportShell = ({
         }
 
         const rect = viewportElement.getBoundingClientRect();
-        const nodePath: HitPathNode[] = [];
-        let currentElement: HTMLElement | null = event.target;
-
-        while (currentElement && currentElement !== viewportElement) {
-            const nodeId = currentElement.dataset.designNodeId;
-
-            if (nodeId) {
-                const node = nodeLookup.get(nodeId);
-
-                if (node) {
-                    nodePath.unshift(node);
-                }
-            }
-
-            currentElement = currentElement.parentElement;
-        }
+        const worldPoint = screenToWorld(state, {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top
+        });
+        const nodePath: HitPathNode[] = extractDesignNodePath({
+            document,
+            lookup: nodeLookup,
+            rendererRoot: viewportElement,
+            target: event.target,
+            worldX: worldPoint.x,
+            worldY: worldPoint.y
+        });
 
         return {
             button: event.button,
             nodePath,
             screenX: event.clientX,
             screenY: event.clientY,
-            worldX: state.cameraX + (event.clientX - rect.left) / state.zoom,
-            worldY: state.cameraY + (event.clientY - rect.top) / state.zoom
+            worldX: worldPoint.x,
+            worldY: worldPoint.y
         };
     };
 
@@ -305,6 +312,25 @@ export const CanvasViewportShell = ({
         transform: `translate(${-state.cameraX * state.zoom}px, ${-state.cameraY * state.zoom}px) scale(${state.zoom})`,
         transformOrigin: 'top left'
     } as const;
+    const creationOverlayBounds = creationDraft
+        ? (() => {
+              const topLeft = worldToScreen(state, {
+                  x: creationDraft.x,
+                  y: creationDraft.y
+              });
+              const bottomRight = worldToScreen(state, {
+                  x: creationDraft.x + creationDraft.width,
+                  y: creationDraft.y + creationDraft.height
+              });
+
+              return {
+                  height: Math.max(0, bottomRight.y - topLeft.y),
+                  left: topLeft.x,
+                  top: topLeft.y,
+                  width: Math.max(0, bottomRight.x - topLeft.x)
+              };
+          })()
+        : null;
 
     return (
         <div
@@ -368,6 +394,16 @@ export const CanvasViewportShell = ({
                         >
                             <ViewportSelectionOverlay
                                 bounds={selectionBounds}
+                            />
+                        </div>
+                    ) : null}
+                    {creationOverlayBounds ? (
+                        <div
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-0 z-20 overflow-visible"
+                        >
+                            <CanvasCreationOverlay
+                                bounds={creationOverlayBounds}
                             />
                         </div>
                     ) : null}

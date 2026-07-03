@@ -298,9 +298,11 @@ describe('RightInspectorFormBridge', () => {
 
         try {
             render(
-                <EditorInteractionProvider>
-                    <ToolRailBridgeHarness />
-                </EditorInteractionProvider>
+                <EditorSessionProvider initialDocument={SAMPLE_EDITOR_DOCUMENT}>
+                    <EditorInteractionProvider>
+                        <ToolRailBridgeHarness />
+                    </EditorInteractionProvider>
+                </EditorSessionProvider>
             );
 
             await user.click(
@@ -883,5 +885,90 @@ describe('RightInspectorFormBridge', () => {
 
         expect(readSelectedNode().cornerRadius).toBe(16);
         expect(renderedFrame?.style.borderRadius).toBe('16px');
+    });
+
+    it('creates a rectangle inside the innermost frame after drag and selects it', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            render(<MiaomaEditor />);
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Rectangle tool' })
+            );
+
+            const viewport = screen.getByLabelText('Canvas viewport');
+            fireEvent.pointerDown(viewport, {
+                button: 0,
+                clientX: 260,
+                clientY: 220
+            });
+            fireEvent.pointerMove(viewport, {
+                button: 0,
+                clientX: 340,
+                clientY: 290
+            });
+            fireEvent.pointerUp(viewport, {
+                button: 0,
+                clientX: 340,
+                clientY: 290
+            });
+
+            await waitFor(() => {
+                expect(
+                    document
+                        .querySelector('[data-region="canvas-tool-rail"]')
+                        ?.getAttribute('data-active-tool')
+                ).toBe('pointer');
+            });
+
+            expect(
+                document.querySelector('[data-design-node-name="Rectangle"]')
+            ).not.toBeNull();
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('appends a newly created ellipse to the end of a vertical frame children list', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            render(<MiaomaEditor />);
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'More shape tools' })
+            );
+            fireEvent.click(screen.getByRole('menuitem', { name: 'Ellipse' }));
+
+            const viewport = screen.getByLabelText('Canvas viewport');
+            fireEvent.pointerDown(viewport, {
+                button: 0,
+                clientX: 240,
+                clientY: 200
+            });
+            fireEvent.pointerMove(viewport, {
+                button: 0,
+                clientX: 300,
+                clientY: 250
+            });
+            fireEvent.pointerUp(viewport, {
+                button: 0,
+                clientX: 300,
+                clientY: 250
+            });
+
+            await waitFor(() => {
+                expect(
+                    document.querySelector('[data-design-node-name="Ellipse"]')
+                ).not.toBeNull();
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
     });
 });
