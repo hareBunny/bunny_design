@@ -18,7 +18,7 @@ export const CanvasCreationOverlay = ({
 }: CanvasCreationOverlayProps) => (
     <div
         aria-hidden="true"
-        className="absolute border border-[#1a1a1a] bg-[#11111114]"
+        className="absolute border border-[#4592FF] bg-transparent"
         data-region="canvas-creation-overlay"
         style={{
             left: `${bounds.left}px`,

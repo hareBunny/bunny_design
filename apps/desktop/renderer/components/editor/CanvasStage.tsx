@@ -55,6 +55,7 @@ const CanvasStageInner = ({
     const snapshot = useEditorSnapshot();
     const creationBridge = useCanvasCreationBridge();
     const renderableDocument = editorDocumentToRenderable(snapshot.document);
+    const isCanvasSelectionEnabled = creationBridge.activeTool === 'pointer';
 
     return (
         <main
@@ -74,6 +75,7 @@ const CanvasStageInner = ({
                 onViewportPointerDown={creationBridge.handleViewportPointerDown}
                 onViewportPointerMove={creationBridge.handleViewportPointerMove}
                 onViewportPointerUp={creationBridge.handleViewportPointerUp}
+                selectionEnabled={isCanvasSelectionEnabled}
                 onNodePointerDown={(nodeId) => {
                     session.selectNode(nodeId);
                     onCanvasNodeSelect?.(nodeId);

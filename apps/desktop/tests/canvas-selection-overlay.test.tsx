@@ -172,10 +172,9 @@ describe('Canvas selection overlay', () => {
         const viewport = container.querySelector(
             '[aria-label="Canvas viewport"]'
         ) as HTMLElement;
-        const documentRenderer = container.querySelector(
-            '[data-document-renderer="true"]'
+        const surface = container.querySelector(
+            '[data-region="canvas-world-surface"]'
         ) as HTMLElement;
-        const surface = documentRenderer.parentElement as HTMLElement;
 
         viewport.getBoundingClientRect = () =>
             domRect({ left: 0, top: 0, width: 1200, height: 800 });

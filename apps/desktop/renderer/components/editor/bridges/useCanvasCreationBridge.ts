@@ -9,7 +9,8 @@ import { useCallback, useMemo, useState } from 'react';
 import {
     createDefaultEllipseNode,
     createDefaultFrameNode,
-    createDefaultRectangleNode
+    createDefaultRectangleNode,
+    editorDocumentToRenderable
 } from '@miaoma-design-ai/miaoma-editor-core';
 import type {
     CanvasToolId,
@@ -19,6 +20,8 @@ import type {
 
 import { useEditorInteraction } from '../state/useEditorInteraction';
 import { useEditorSession } from '../state/useEditorSession';
+import { useEditorSnapshot } from '../state/useEditorSnapshot';
+import { findFrameRectInRenderer } from '../viewport/extractDesignNodePath';
 
 type CreationDraft = {
     x: number;
@@ -34,9 +37,43 @@ const isShapeCreationTool = (
 
 export const useCanvasCreationBridge = () => {
     const session = useEditorSession();
+    const snapshot = useEditorSnapshot();
     const { interaction, state } = useEditorInteraction();
     const [creationDraft, setCreationDraft] = useState<CreationDraft | null>(
         null
+    );
+    const renderableDocument = useMemo(
+        () => editorDocumentToRenderable(snapshot.document),
+        [snapshot.document]
+    );
+
+    const resolveAbsolutePosition = useCallback(
+        (payload: { parentId: string | null; x: number; y: number }) => {
+            if (!payload.parentId) {
+                return {
+                    x: payload.x,
+                    y: payload.y
+                };
+            }
+
+            const parentRect = findFrameRectInRenderer(
+                renderableDocument,
+                payload.parentId
+            );
+
+            if (!parentRect) {
+                return {
+                    x: payload.x,
+                    y: payload.y
+                };
+            }
+
+            return {
+                x: payload.x - parentRect.x,
+                y: payload.y - parentRect.y
+            };
+        },
+        [renderableDocument]
     );
 
     const applyCreateNodeCommand = useCallback(
@@ -51,44 +88,34 @@ export const useCanvasCreationBridge = () => {
                 return;
             }
 
+            const absolutePosition =
+                command.payload.parentLayout === 'absolute'
+                    ? resolveAbsolutePosition({
+                          parentId: command.payload.parentId,
+                          x: command.payload.bounds.x,
+                          y: command.payload.bounds.y
+                      })
+                    : null;
             const nextNode =
                 command.payload.nodeType === 'frame'
                     ? createDefaultFrameNode({
                           height: command.payload.bounds.height,
                           width: command.payload.bounds.width,
-                          x:
-                              command.payload.parentLayout === 'absolute'
-                                  ? command.payload.bounds.x
-                                  : undefined,
-                          y:
-                              command.payload.parentLayout === 'absolute'
-                                  ? command.payload.bounds.y
-                                  : undefined
+                          x: absolutePosition?.x,
+                          y: absolutePosition?.y
                       })
                     : command.payload.nodeType === 'rectangle'
                       ? createDefaultRectangleNode({
                             height: command.payload.bounds.height,
                             width: command.payload.bounds.width,
-                            x:
-                                command.payload.parentLayout === 'absolute'
-                                    ? command.payload.bounds.x
-                                    : undefined,
-                            y:
-                                command.payload.parentLayout === 'absolute'
-                                    ? command.payload.bounds.y
-                                    : undefined
+                            x: absolutePosition?.x,
+                            y: absolutePosition?.y
                         })
                       : createDefaultEllipseNode({
                             height: command.payload.bounds.height,
                             width: command.payload.bounds.width,
-                            x:
-                                command.payload.parentLayout === 'absolute'
-                                    ? command.payload.bounds.x
-                                    : undefined,
-                            y:
-                                command.payload.parentLayout === 'absolute'
-                                    ? command.payload.bounds.y
-                                    : undefined
+                            x: absolutePosition?.x,
+                            y: absolutePosition?.y
                         });
 
             if (command.payload.parentId) {
@@ -101,7 +128,7 @@ export const useCanvasCreationBridge = () => {
                 session.selectNode(nextNode.id);
             }
         },
-        [session]
+        [resolveAbsolutePosition, session]
     );
 
     const applyInteractionCommands = useCallback(

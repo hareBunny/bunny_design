@@ -13,8 +13,6 @@ import type {
 } from '@miaoma-design-ai/miaoma-design-schema';
 import type { HitPathNode } from '@miaoma-design-ai/miaoma-editor-interaction';
 
-import { getTopLevelBounds } from '../../document/CanvasNodeStyle';
-
 type DesignNodeLookup = Map<
     string,
     Pick<HitPathNode, 'id' | 'layout' | 'type'>
@@ -31,6 +29,8 @@ type Rect = {
     width: number;
     height: number;
 };
+
+export type FrameRect = Rect;
 
 type MeasureContext = {
     availableWidth?: number;
@@ -458,8 +458,6 @@ const hitTestFramePath = (
     document: MiaomaDesignDocument,
     point: Point
 ): HitPathNode[] => {
-    const topLevelBounds = getTopLevelBounds(document.children);
-
     for (const node of [...document.children].reverse()) {
         if (node.type !== 'frame') {
             continue;
@@ -471,8 +469,8 @@ const hitTestFramePath = (
         const rect = {
             height: size.height,
             width: size.width,
-            x: (node.x ?? 0) - topLevelBounds.x,
-            y: (node.y ?? 0) - topLevelBounds.y
+            x: node.x ?? 0,
+            y: node.y ?? 0
         };
         const path = findFramePathAtPoint(node, rect, point);
 
@@ -482,6 +480,60 @@ const hitTestFramePath = (
     }
 
     return [];
+};
+
+const findFrameRectAtId = (
+    frame: MiaomaFrameNode,
+    frameRect: Rect,
+    frameId: string
+): FrameRect | null => {
+    if (frame.id === frameId) {
+        return frameRect;
+    }
+
+    const childRects = getChildRects(frame, frameRect);
+
+    for (const child of childRects) {
+        if (child.node.type !== 'frame') {
+            continue;
+        }
+
+        const nestedRect = findFrameRectAtId(child.node, child.rect, frameId);
+
+        if (nestedRect) {
+            return nestedRect;
+        }
+    }
+
+    return null;
+};
+
+export const findFrameRectInRenderer = (
+    document: MiaomaDesignDocument,
+    frameId: string
+): FrameRect | null => {
+    for (const node of document.children) {
+        if (node.type !== 'frame') {
+            continue;
+        }
+
+        const size = measureNodeSize(node, {
+            parentLayout: 'absolute'
+        });
+        const frameRect = {
+            height: size.height,
+            width: size.width,
+            x: node.x ?? 0,
+            y: node.y ?? 0
+        };
+        const nestedRect = findFrameRectAtId(node, frameRect, frameId);
+
+        if (nestedRect) {
+            return nestedRect;
+        }
+    }
+
+    return null;
 };
 
 export const extractDesignNodePath = ({

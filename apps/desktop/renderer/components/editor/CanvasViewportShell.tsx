@@ -26,6 +26,7 @@ import type {
 } from '@miaoma-design-ai/miaoma-editor-interaction';
 
 import { CanvasDocumentRenderer } from '../document/CanvasDocumentRenderer';
+import { getTopLevelBounds } from '../document/CanvasNodeRenderers';
 
 import { CanvasCreationOverlay } from './creation/CanvasCreationOverlay';
 import { DEFAULT_INITIAL_ZOOM, ZOOM_PRESETS } from './viewport/constants';
@@ -62,6 +63,7 @@ type CanvasViewportShellProps = {
     onViewportPointerDown?: (payload: InteractionPointerPayload) => void;
     onViewportPointerMove?: (payload: InteractionPointerPayload) => void;
     onViewportPointerUp?: (payload: InteractionPointerPayload) => void;
+    selectionEnabled?: boolean;
     resolveAsset: (url: string) => string;
     overlay?: ReactNode;
 };
@@ -110,6 +112,7 @@ export const CanvasViewportShell = ({
     onViewportPointerDown,
     onViewportPointerMove,
     onViewportPointerUp,
+    selectionEnabled = true,
     resolveAsset,
     overlay
 }: CanvasViewportShellProps) => {
@@ -128,6 +131,10 @@ export const CanvasViewportShell = ({
         setState
     });
     const nodeLookup = useMemo(() => buildNodeLookup(document), [document]);
+    const documentBounds = useMemo(
+        () => getTopLevelBounds(document.children),
+        [document.children]
+    );
 
     useEffect(() => {
         const element = scrollRef.current;
@@ -257,6 +264,10 @@ export const CanvasViewportShell = ({
             return;
         }
 
+        if (typeof event.currentTarget.setPointerCapture === 'function') {
+            event.currentTarget.setPointerCapture(event.pointerId);
+        }
+
         const payload = buildPointerPayload(event);
 
         if (payload) {
@@ -264,6 +275,10 @@ export const CanvasViewportShell = ({
         }
 
         if (event.target.closest('[data-document-renderer="true"]')) {
+            return;
+        }
+
+        if (!selectionEnabled) {
             return;
         }
 
@@ -304,6 +319,14 @@ export const CanvasViewportShell = ({
         if (payload) {
             onViewportPointerUp?.(payload);
         }
+
+        if (
+            typeof event.currentTarget.releasePointerCapture === 'function' &&
+            (typeof event.currentTarget.hasPointerCapture !== 'function' ||
+                event.currentTarget.hasPointerCapture(event.pointerId))
+        ) {
+            event.currentTarget.releasePointerCapture(event.pointerId);
+        }
     };
 
     const surfaceStyle = {
@@ -325,8 +348,8 @@ export const CanvasViewportShell = ({
 
               return {
                   height: Math.max(0, bottomRight.y - topLeft.y),
-                  left: topLeft.x,
-                  top: topLeft.y,
+                  left: state.scrollLeft + topLeft.x,
+                  top: state.scrollTop + topLeft.y,
                   width: Math.max(0, bottomRight.x - topLeft.x)
               };
           })()
@@ -374,16 +397,37 @@ export const CanvasViewportShell = ({
                         height: `${state.travelZoneHeight}px`
                     }}
                 >
-                    <div className="absolute" style={surfaceStyle}>
-                        <CanvasDocumentRenderer
-                            document={document}
-                            onCanvasPointerDown={onCanvasPointerDown}
-                            onNodePointerDown={onNodePointerDown}
-                            renderSelectionOverlay={false}
-                            resolveAsset={resolveAsset}
-                            selectedNodeId={selectedNodeId}
-                            zoom={state.zoom}
-                        />
+                    <div
+                        className="absolute"
+                        data-region="canvas-world-surface"
+                        style={surfaceStyle}
+                    >
+                        <div
+                            className="absolute"
+                            data-region="canvas-document-world-layer"
+                            style={{
+                                left: `${documentBounds.x}px`,
+                                top: `${documentBounds.y}px`
+                            }}
+                        >
+                            <CanvasDocumentRenderer
+                                document={document}
+                                onCanvasPointerDown={
+                                    selectionEnabled
+                                        ? onCanvasPointerDown
+                                        : undefined
+                                }
+                                onNodePointerDown={
+                                    selectionEnabled
+                                        ? onNodePointerDown
+                                        : undefined
+                                }
+                                renderSelectionOverlay={false}
+                                resolveAsset={resolveAsset}
+                                selectedNodeId={selectedNodeId}
+                                zoom={state.zoom}
+                            />
+                        </div>
                     </div>
                     {selectionBounds ? (
                         <div

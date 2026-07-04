@@ -26,6 +26,7 @@ import userEvent from '@testing-library/user-event';
 
 import { CanvasDocumentRenderer } from '../renderer/components/document/CanvasDocumentRenderer';
 import { useCanvasCreationBridge } from '../renderer/components/editor/bridges/useCanvasCreationBridge';
+import { CanvasStage } from '../renderer/components/editor/CanvasStage';
 import { CanvasToolRail } from '../renderer/components/editor/CanvasToolRail';
 import { LeftSidebar } from '../renderer/components/editor/LeftSidebar';
 import { MiaomaEditor } from '../renderer/components/editor/MiaomaEditor';
@@ -35,6 +36,8 @@ import { EditorSessionProvider } from '../renderer/components/editor/state/Edito
 import { useEditorInteraction } from '../renderer/components/editor/state/useEditorInteraction';
 import { useEditorSession } from '../renderer/components/editor/state/useEditorSession';
 import { useEditorSnapshot } from '../renderer/components/editor/state/useEditorSnapshot';
+import { findFrameRectInRenderer } from '../renderer/components/editor/viewport/extractDesignNodePath';
+import { CANVAS_SAMPLE_EDITOR_DOCUMENT } from '../renderer/fixtures/canvasSampleDocument';
 
 const SAMPLE_EDITOR_DOCUMENT: EditorDocument = {
     version: '1.0.0',
@@ -238,6 +241,27 @@ const renderNestedCanvasHarness = () =>
     render(
         <EditorSessionProvider initialDocument={NESTED_EDITOR_DOCUMENT}>
             <NestedCanvasDebug />
+        </EditorSessionProvider>
+    );
+
+const CanvasCreationStageDebug = () => (
+    <>
+        <CanvasStage activeSidebarTab="layers" />
+        <SelectedNodeDebug />
+    </>
+);
+
+const renderCanvasCreationStageHarness = () =>
+    render(
+        <EditorSessionProvider
+            initialDocument={CANVAS_SAMPLE_EDITOR_DOCUMENT}
+            initialSelectedNodeId={
+                CANVAS_SAMPLE_EDITOR_DOCUMENT.children[0]?.id
+            }
+        >
+            <EditorInteractionProvider>
+                <CanvasCreationStageDebug />
+            </EditorInteractionProvider>
         </EditorSessionProvider>
     );
 
@@ -965,6 +989,178 @@ describe('RightInspectorFormBridge', () => {
             await waitFor(() => {
                 expect(
                     document.querySelector('[data-design-node-name="Ellipse"]')
+                ).not.toBeNull();
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('stores newly created rectangle coordinates relative to the innermost absolute frame', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasCreationStageHarness();
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Rectangle tool' })
+            );
+
+            const viewport = screen.getByLabelText('Canvas viewport');
+            fireEvent.pointerDown(viewport, {
+                button: 0,
+                clientX: 360,
+                clientY: 220
+            });
+            fireEvent.pointerMove(viewport, {
+                button: 0,
+                clientX: 420,
+                clientY: 280
+            });
+            fireEvent.pointerUp(viewport, {
+                button: 0,
+                clientX: 420,
+                clientY: 280
+            });
+
+            await waitFor(() => {
+                expect(readSelectedNode()?.name).toBe('Rectangle');
+            });
+
+            expect(readSelectedNode()).toMatchObject({
+                height: 60,
+                width: 60,
+                x: 60,
+                y: 159
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('keeps frame hit rects in document world coordinates after root bounds expand left', () => {
+        const document = editorDocumentToRenderable({
+            version: '1.0.0',
+            children: [
+                {
+                    id: 'root-frame',
+                    type: 'frame',
+                    name: 'Root Frame',
+                    x: 0,
+                    y: 0,
+                    width: 100,
+                    height: 80,
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    children: []
+                },
+                {
+                    id: 'left-rectangle',
+                    type: 'rectangle',
+                    name: 'Left Rectangle',
+                    x: -40,
+                    y: 0,
+                    width: 20,
+                    height: 20,
+                    fills: [],
+                    strokes: [],
+                    effects: []
+                }
+            ]
+        });
+
+        expect(findFrameRectInRenderer(document, 'root-frame')).toEqual({
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 80
+        });
+    });
+
+    it('shows the drag creation overlay while the pointer is moving', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasCreationStageHarness();
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Rectangle tool' })
+            );
+
+            const viewport = screen.getByLabelText('Canvas viewport');
+            fireEvent.pointerDown(viewport, {
+                button: 0,
+                clientX: 360,
+                clientY: 220
+            });
+            fireEvent.pointerMove(viewport, {
+                button: 0,
+                clientX: 420,
+                clientY: 280
+            });
+
+            await waitFor(() => {
+                const overlay = document.querySelector<HTMLElement>(
+                    '[data-region="canvas-creation-overlay"]'
+                );
+
+                expect(overlay).not.toBeNull();
+                expect(overlay?.className).toContain('border');
+                expect(overlay?.className).toContain('border-[#4592FF]');
+                expect(overlay?.className).toContain('bg-transparent');
+                expect(overlay?.className).not.toContain('bg-[#11111114]');
+                expect(overlay?.style.left).toBe(
+                    `${viewport.scrollLeft + 360}px`
+                );
+                expect(overlay?.style.top).toBe(
+                    `${viewport.scrollTop + 220}px`
+                );
+                expect(overlay?.style.width).toBe('60px');
+                expect(overlay?.style.height).toBe('60px');
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('keeps the inspector body visible while a shape creation drag starts from blank canvas space', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            render(<MiaomaEditor />);
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Rectangle tool' })
+            );
+
+            fireEvent.pointerDown(screen.getByLabelText('Canvas viewport'), {
+                button: 0,
+                clientX: 40,
+                clientY: 40
+            });
+
+            await waitFor(() => {
+                expect(
+                    document
+                        .querySelector('[data-region="right-inspector"]')
+                        ?.getAttribute('data-inspector-body-visible')
+                ).toBe('true');
+                expect(
+                    document
+                        .querySelector('[data-region="canvas-stage"]')
+                        ?.className.includes('col-span-2')
+                ).toBe(false);
+                expect(
+                    document.querySelector(
+                        '[data-region="right-inspector-body"]'
+                    )
                 ).not.toBeNull();
             });
         } finally {
