@@ -75,7 +75,10 @@ const CanvasStageInner = ({
                 onViewportPointerDown={creationBridge.handleViewportPointerDown}
                 onViewportPointerMove={creationBridge.handleViewportPointerMove}
                 onViewportPointerUp={creationBridge.handleViewportPointerUp}
+                onTextCancel={creationBridge.handleTextCancel}
+                onTextCommit={creationBridge.handleTextCommit}
                 selectionEnabled={isCanvasSelectionEnabled}
+                onNodeDoubleClick={creationBridge.startTextEditing}
                 onNodePointerDown={(nodeId) => {
                     session.selectNode(nodeId);
                     onCanvasNodeSelect?.(nodeId);
@@ -87,6 +90,7 @@ const CanvasStageInner = ({
                 }
                 resolveAsset={resolveCanvasAsset}
                 selectedNodeId={snapshot.selection.selectedNodeId}
+                textEditorState={creationBridge.textEditorState}
             />
             <CanvasToolRail
                 activeTool={creationBridge.activeTool}

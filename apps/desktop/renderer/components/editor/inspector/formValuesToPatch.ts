@@ -242,10 +242,6 @@ export const formValuesToPatch = (
     }
 
     if (node.type === 'text') {
-        if (values.content !== (node.content ?? '')) {
-            patch.content = values.content;
-        }
-
         const fontSize = parseOptionalNumber(values.fontSize);
         if (fontSize !== null && fontSize !== node.fontSize) {
             patch.fontSize = fontSize;

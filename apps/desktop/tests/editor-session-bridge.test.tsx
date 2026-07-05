@@ -140,6 +140,38 @@ const NESTED_EDITOR_DOCUMENT: EditorDocument = {
     ]
 };
 
+const GAP_EDITOR_DOCUMENT: EditorDocument = {
+    version: '1.0.0',
+    children: [
+        {
+            id: 'gap-frame-left',
+            type: 'frame',
+            name: 'Gap Frame Left',
+            x: 0,
+            y: 0,
+            width: 120,
+            height: 120,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: []
+        },
+        {
+            id: 'gap-frame-right',
+            type: 'frame',
+            name: 'Gap Frame Right',
+            x: 300,
+            y: 0,
+            width: 120,
+            height: 120,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: []
+        }
+    ]
+};
+
 const SelectionControls = () => {
     const session = useEditorSession();
 
@@ -161,6 +193,16 @@ const SelectedNodeDebug = () => {
     return (
         <pre data-testid="selected-node-json">
             {JSON.stringify(getSelectedNode(snapshot))}
+        </pre>
+    );
+};
+
+const DocumentDebug = () => {
+    const snapshot = useEditorSnapshot();
+
+    return (
+        <pre data-testid="document-json">
+            {JSON.stringify(snapshot.document)}
         </pre>
     );
 };
@@ -265,8 +307,31 @@ const renderCanvasCreationStageHarness = () =>
         </EditorSessionProvider>
     );
 
+const renderCanvasStageHarnessForDocument = ({
+    document,
+    initialSelectedNodeId
+}: {
+    document: EditorDocument;
+    initialSelectedNodeId?: string | null;
+}) =>
+    render(
+        <EditorSessionProvider
+            initialDocument={document}
+            initialSelectedNodeId={initialSelectedNodeId ?? null}
+        >
+            <EditorInteractionProvider>
+                <CanvasStage activeSidebarTab="layers" />
+                <SelectedNodeDebug />
+                <DocumentDebug />
+            </EditorInteractionProvider>
+        </EditorSessionProvider>
+    );
+
 const readSelectedNode = () =>
     JSON.parse(screen.getByTestId('selected-node-json').textContent ?? 'null');
+
+const readDocument = () =>
+    JSON.parse(screen.getByTestId('document-json').textContent ?? 'null');
 
 const readCheckboxBox = (button: HTMLElement) =>
     button.querySelector('.editor-check-box') as HTMLElement | null;
@@ -633,6 +698,123 @@ describe('RightInspectorFormBridge', () => {
         expect(readSelectedNode().id).toBe('nested-text');
     });
 
+    it('opens inline editing when double clicking an existing text node', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'frame-1'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            );
+
+            expect(textNode).not.toBeNull();
+
+            await user.dblClick(textNode as HTMLElement);
+
+            const editor = await screen.findByRole('textbox', {
+                name: 'Canvas inline text editor'
+            });
+
+            expect(readSelectedNode()).toMatchObject({
+                id: 'text-1',
+                type: 'text'
+            });
+            expect((editor as HTMLTextAreaElement).value).toBe('Hello');
+            expect(editor.getAttribute('style')).toContain('box-shadow');
+            expect(editor.getAttribute('style')).toContain('caret-color');
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('opens inline editing when the viewport owns the double click after pointer capture', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: CANVAS_SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId:
+                    CANVAS_SAMPLE_EDITOR_DOCUMENT.children[0]?.id ?? null
+            });
+
+            const viewport = screen.getByLabelText('Canvas viewport');
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="fX4RY"]'
+            );
+
+            expect(textNode).not.toBeNull();
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                clientX: 2800,
+                clientY: 420,
+                detail: 1
+            });
+            fireEvent.pointerUp(viewport, {
+                bubbles: true,
+                button: 0,
+                clientX: 2800,
+                clientY: 420
+            });
+            fireEvent.click(viewport, {
+                bubbles: true,
+                button: 0,
+                clientX: 2800,
+                clientY: 420,
+                detail: 1
+            });
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                clientX: 2800,
+                clientY: 420,
+                detail: 2
+            });
+            fireEvent.pointerUp(viewport, {
+                bubbles: true,
+                button: 0,
+                clientX: 2800,
+                clientY: 420
+            });
+            fireEvent.click(viewport, {
+                bubbles: true,
+                button: 0,
+                clientX: 2800,
+                clientY: 420,
+                detail: 2
+            });
+            fireEvent.doubleClick(viewport, {
+                bubbles: true,
+                button: 0,
+                clientX: 2800,
+                clientY: 420,
+                detail: 2
+            });
+
+            const editor = await screen.findByRole('textbox', {
+                name: 'Canvas inline text editor'
+            });
+
+            expect(readSelectedNode()).toMatchObject({
+                id: 'fX4RY',
+                type: 'text'
+            });
+            expect((editor as HTMLTextAreaElement).value).toBe('MIAOMAEDU');
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
     it('resets to the selected node and writes valid numeric edits back to the session', async () => {
         const user = userEvent.setup();
 
@@ -661,6 +843,17 @@ describe('RightInspectorFormBridge', () => {
             (screen.getByLabelText('X position') as HTMLInputElement).value
         ).toBe('90');
         expect(readSelectedNode().id).toBe('text-1');
+    });
+
+    it('does not render a text content field in the inspector for text nodes', async () => {
+        const user = userEvent.setup();
+
+        renderInspector();
+
+        await user.click(screen.getByRole('button', { name: 'Select text' }));
+
+        expect(screen.getByLabelText('Font size')).not.toBeNull();
+        expect(screen.queryByLabelText('Text content')).toBeNull();
     });
 
     it('updates style arrays for the selected node through the inspector form', async () => {
@@ -1082,13 +1275,14 @@ describe('RightInspectorFormBridge', () => {
 
     it('shows the drag creation overlay while the pointer is moving', async () => {
         const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
 
         globalThis.ResizeObserver = TestResizeObserver;
 
         try {
             renderCanvasCreationStageHarness();
 
-            fireEvent.click(
+            await user.click(
                 screen.getByRole('button', { name: 'Rectangle tool' })
             );
 
@@ -1122,6 +1316,329 @@ describe('RightInspectorFormBridge', () => {
                 );
                 expect(overlay?.style.width).toBe('60px');
                 expect(overlay?.style.height).toBe('60px');
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('creates text on click, opens inline editing, and commits the content back into the node', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasCreationStageHarness();
+
+            await user.click(screen.getByRole('button', { name: 'Text tool' }));
+
+            const rootFrame = document.querySelector<HTMLElement>(
+                '[data-design-node-name="Miaoma Editor Recreation Course"]'
+            );
+
+            expect(rootFrame).not.toBeNull();
+
+            fireEvent.pointerDown(rootFrame as HTMLElement, {
+                button: 0,
+                clientX: 280,
+                clientY: 240
+            });
+            fireEvent.pointerUp(rootFrame as HTMLElement, {
+                button: 0,
+                clientX: 280,
+                clientY: 240
+            });
+            fireEvent.click(rootFrame as HTMLElement, {
+                button: 0,
+                clientX: 280,
+                clientY: 240
+            });
+
+            const editor = await screen.findByRole('textbox', {
+                name: 'Canvas inline text editor'
+            });
+
+            await user.type(editor, 'Text create smoke{enter}');
+
+            await waitFor(() => {
+                expect(
+                    screen.queryByRole('textbox', {
+                        name: 'Canvas inline text editor'
+                    })
+                ).toBeNull();
+                const selectedNode = readSelectedNode();
+
+                expect(selectedNode).toMatchObject({
+                    type: 'text',
+                    content: 'Text create smoke'
+                });
+                expect(selectedNode?.width).toBeUndefined();
+                expect(selectedNode?.height).toBeUndefined();
+            });
+
+            expect(document.body.textContent).toContain('Text create smoke');
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('creates text with visible draft bounds before the first commit', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasCreationStageHarness();
+
+            await user.click(screen.getByRole('button', { name: 'Text tool' }));
+
+            const rootFrame = document.querySelector<HTMLElement>(
+                '[data-design-node-name="Miaoma Editor Recreation Course"]'
+            );
+
+            expect(rootFrame).not.toBeNull();
+
+            fireEvent.pointerDown(rootFrame as HTMLElement, {
+                button: 0,
+                clientX: 280,
+                clientY: 240
+            });
+
+            await screen.findByRole('textbox', {
+                name: 'Canvas inline text editor'
+            });
+
+            expect(readSelectedNode()).toMatchObject({
+                type: 'text',
+                width: 64,
+                height: 24
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('creates text under the currently selected top-level frame instead of the deepest hit child frame', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasCreationStageHarness();
+
+            const selectedTopLevelFrame = readSelectedNode();
+
+            expect(selectedTopLevelFrame).toMatchObject({
+                type: 'frame',
+                name: 'Miaoma Editor Recreation Course'
+            });
+
+            await user.click(screen.getByRole('button', { name: 'Text tool' }));
+
+            const nestedChildFrame = document.querySelector<HTMLElement>(
+                '[data-design-node-name="Right Inspector"]'
+            );
+
+            expect(nestedChildFrame).not.toBeNull();
+
+            fireEvent.pointerDown(nestedChildFrame as HTMLElement, {
+                button: 0,
+                clientX: 980,
+                clientY: 120
+            });
+
+            const createdTextNode = readSelectedNode();
+            const createdTextElement = document.querySelector<HTMLElement>(
+                `[data-design-node-id="${createdTextNode?.id}"]`
+            );
+            const parentNodeElement =
+                createdTextElement?.parentElement?.closest<HTMLElement>(
+                    '[data-design-node-id]'
+                ) ?? null;
+
+            expect(createdTextNode).toMatchObject({
+                type: 'text'
+            });
+            expect(parentNodeElement?.getAttribute('data-design-node-id')).toBe(
+                selectedTopLevelFrame?.id
+            );
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('creates a root-level text node when clicking the gap between top-level frames', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: GAP_EDITOR_DOCUMENT,
+                initialSelectedNodeId: null
+            });
+
+            await user.click(screen.getByRole('button', { name: 'Text tool' }));
+
+            fireEvent.pointerDown(screen.getByLabelText('Canvas viewport'), {
+                button: 0,
+                clientX: 180,
+                clientY: 48
+            });
+
+            const editor = await screen.findByRole('textbox', {
+                name: 'Canvas inline text editor'
+            });
+
+            const selectedNode = readSelectedNode();
+            const nextDocument = readDocument();
+            const topLevelTextNode = nextDocument.children.find(
+                (node: { id: string }) => node.id === selectedNode?.id
+            );
+
+            expect(selectedNode).toMatchObject({
+                type: 'text'
+            });
+            expect(topLevelTextNode).toBeDefined();
+            expect(editor.getAttribute('style')).toContain('box-shadow');
+            expect(editor.getAttribute('style')).toContain('caret-color');
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('keeps a root-level text node selected after the full click sequence in blank canvas space', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: GAP_EDITOR_DOCUMENT,
+                initialSelectedNodeId: null
+            });
+
+            await user.click(screen.getByRole('button', { name: 'Text tool' }));
+
+            const viewport = screen.getByLabelText('Canvas viewport');
+
+            fireEvent.pointerDown(viewport, {
+                button: 0,
+                clientX: 180,
+                clientY: 48
+            });
+            fireEvent.pointerUp(viewport, {
+                button: 0,
+                clientX: 180,
+                clientY: 48
+            });
+            fireEvent.click(viewport, {
+                button: 0,
+                clientX: 180,
+                clientY: 48
+            });
+
+            await waitFor(() => {
+                const editor = screen.getByRole('textbox', {
+                    name: 'Canvas inline text editor'
+                });
+
+                expect(editor).not.toBeNull();
+                expect(readSelectedNode()).toMatchObject({
+                    type: 'text'
+                });
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('opens inline editing when double clicking a text node that is already selected', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'frame-1'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            );
+
+            expect(textNode).not.toBeNull();
+
+            await user.click(textNode as HTMLElement);
+            await user.click(textNode as HTMLElement);
+
+            expect(readSelectedNode()).toMatchObject({
+                id: 'text-1',
+                type: 'text'
+            });
+
+            await user.dblClick(textNode as HTMLElement);
+
+            const editor = await screen.findByRole('textbox', {
+                name: 'Canvas inline text editor'
+            });
+
+            expect((editor as HTMLTextAreaElement).value).toBe('Hello');
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('removes a newly created empty text node on escape', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasCreationStageHarness();
+
+            await user.click(screen.getByRole('button', { name: 'Text tool' }));
+
+            fireEvent.pointerDown(screen.getByLabelText('Canvas viewport'), {
+                button: 0,
+                clientX: 300,
+                clientY: 260
+            });
+
+            const editor = await screen.findByRole('textbox', {
+                name: 'Canvas inline text editor'
+            });
+
+            const createdTextNodeId = readSelectedNode()?.id;
+
+            fireEvent.keyDown(editor, { key: 'Escape' });
+
+            await waitFor(() => {
+                expect(
+                    screen.queryByRole('textbox', {
+                        name: 'Canvas inline text editor'
+                    })
+                ).toBeNull();
+
+                const selectedNode = readSelectedNode();
+
+                expect(selectedNode).toMatchObject({
+                    type: 'frame'
+                });
+                expect(selectedNode?.id).not.toBe(createdTextNodeId);
+                expect(
+                    document.querySelector(
+                        `[data-design-node-id="${createdTextNodeId}"]`
+                    )
+                ).toBeNull();
             });
         } finally {
             globalThis.ResizeObserver = originalResizeObserver;

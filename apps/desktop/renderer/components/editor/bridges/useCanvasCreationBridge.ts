@@ -10,6 +10,7 @@ import {
     createDefaultEllipseNode,
     createDefaultFrameNode,
     createDefaultRectangleNode,
+    createDefaultTextNode,
     editorDocumentToRenderable
 } from '@miaoma-design-ai/miaoma-editor-core';
 import type {
@@ -30,10 +31,14 @@ type CreationDraft = {
     height: number;
 };
 
-const isShapeCreationTool = (
-    tool: CanvasToolId
-): tool is 'ellipse' | 'frame' | 'rectangle' =>
-    tool === 'frame' || tool === 'rectangle' || tool === 'ellipse';
+type TextEditorState = {
+    nodeId: string;
+    initialValue: string;
+    isNew: boolean;
+};
+
+const DEFAULT_TEXT_DRAFT_WIDTH = 64;
+const DEFAULT_TEXT_DRAFT_HEIGHT = 24;
 
 export const useCanvasCreationBridge = () => {
     const session = useEditorSession();
@@ -42,10 +47,13 @@ export const useCanvasCreationBridge = () => {
     const [creationDraft, setCreationDraft] = useState<CreationDraft | null>(
         null
     );
+    const [textEditorState, setTextEditorState] =
+        useState<TextEditorState | null>(null);
     const renderableDocument = useMemo(
         () => editorDocumentToRenderable(snapshot.document),
         [snapshot.document]
     );
+    const selectedNodeId = snapshot.selection.selectedNodeId;
 
     const resolveAbsolutePosition = useCallback(
         (payload: { parentId: string | null; x: number; y: number }) => {
@@ -80,11 +88,45 @@ export const useCanvasCreationBridge = () => {
         (
             command: Extract<EditorInteractionCommand, { type: 'createNode' }>
         ) => {
-            if (
-                command.payload.nodeType !== 'frame' &&
-                command.payload.nodeType !== 'rectangle' &&
-                command.payload.nodeType !== 'ellipse'
-            ) {
+            if (command.payload.nodeType === 'text') {
+                const absolutePosition =
+                    command.payload.parentLayout === 'absolute'
+                        ? resolveAbsolutePosition({
+                              parentId: command.payload.parentId,
+                              x: command.payload.position.x,
+                              y: command.payload.position.y
+                          })
+                        : null;
+                const nextNode = createDefaultTextNode({
+                    content: '',
+                    height: DEFAULT_TEXT_DRAFT_HEIGHT,
+                    width: DEFAULT_TEXT_DRAFT_WIDTH,
+                    x: absolutePosition?.x,
+                    y: absolutePosition?.y
+                });
+
+                if (command.payload.parentId) {
+                    session.appendChildNode(command.payload.parentId, nextNode);
+                } else {
+                    session.appendNode(nextNode);
+                }
+
+                if (command.payload.selectAfterCreate) {
+                    session.selectNode(nextNode.id);
+                }
+
+                if (command.payload.startTextEditAfterCreate) {
+                    interaction.dispatch({
+                        type: 'textEditingStarted',
+                        nodeId: nextNode.id
+                    });
+                    setTextEditorState({
+                        initialValue: nextNode.content,
+                        isNew: true,
+                        nodeId: nextNode.id
+                    });
+                }
+
                 return;
             }
 
@@ -128,7 +170,7 @@ export const useCanvasCreationBridge = () => {
                 session.selectNode(nextNode.id);
             }
         },
-        [resolveAbsolutePosition, session]
+        [interaction, resolveAbsolutePosition, session]
     );
 
     const applyInteractionCommands = useCallback(
@@ -158,30 +200,126 @@ export const useCanvasCreationBridge = () => {
         [applyCreateNodeCommand, session]
     );
 
+    const scopeTextCreationPayload = useCallback(
+        (payload: InteractionPointerPayload) => {
+            if (!selectedNodeId) {
+                return payload;
+            }
+
+            const selectedNode = session.getNodeById(selectedNodeId);
+
+            if (!selectedNode || selectedNode.type !== 'frame') {
+                return payload;
+            }
+
+            const selectedFrameIndex = payload.nodePath.findIndex(
+                (node) => node.id === selectedNodeId
+            );
+
+            if (selectedFrameIndex === -1) {
+                return payload;
+            }
+
+            return {
+                ...payload,
+                nodePath: payload.nodePath.slice(0, selectedFrameIndex + 1)
+            };
+        },
+        [selectedNodeId, session]
+    );
+
     const dispatchPointerEvent = useCallback(
         (
             type: 'pointerDown' | 'pointerMove' | 'pointerUp',
             payload: InteractionPointerPayload
         ) => {
-            if (!isShapeCreationTool(interaction.getState().activeTool)) {
-                return;
-            }
-
+            const activeTool = interaction.getState().activeTool;
+            const nextPayload =
+                type === 'pointerDown' && activeTool === 'text'
+                    ? scopeTextCreationPayload(payload)
+                    : payload;
             const commands = interaction.dispatch({
-                payload,
+                payload: nextPayload,
                 type
             });
 
             applyInteractionCommands(commands);
         },
-        [applyInteractionCommands, interaction]
+        [applyInteractionCommands, interaction, scopeTextCreationPayload]
+    );
+
+    const handleTextCommit = useCallback(
+        (value: string) => {
+            if (!textEditorState) {
+                return;
+            }
+
+            if (textEditorState.isNew) {
+                if (value.trim().length > 0) {
+                    session.patchNode(textEditorState.nodeId, {
+                        content: value,
+                        height: undefined,
+                        width: undefined
+                    });
+                }
+            } else {
+                session.patchNode(textEditorState.nodeId, {
+                    content: value
+                });
+            }
+
+            const commands = interaction.dispatch({
+                type: 'textEditCommit',
+                nodeId: textEditorState.nodeId,
+                content: value
+            });
+
+            applyInteractionCommands(commands);
+            setTextEditorState(null);
+        },
+        [applyInteractionCommands, interaction, session, textEditorState]
+    );
+
+    const handleTextCancel = useCallback(() => {
+        if (!textEditorState) {
+            return;
+        }
+
+        const commands = interaction.dispatch({
+            type: 'textEditCancel',
+            nodeId: textEditorState.nodeId
+        });
+
+        applyInteractionCommands(commands);
+        setTextEditorState(null);
+    }, [applyInteractionCommands, interaction, textEditorState]);
+
+    const startTextEditing = useCallback(
+        (nodeId: string) => {
+            const node = session.getNodeById(nodeId);
+
+            if (!node || node.type !== 'text') {
+                return;
+            }
+
+            interaction.dispatch({
+                type: 'textEditingStarted',
+                nodeId
+            });
+            setTextEditorState({
+                initialValue: node.content,
+                isNew: false,
+                nodeId
+            });
+        },
+        [interaction, session]
     );
 
     return useMemo(
         () => ({
             activeTool: state.activeTool,
             creationDraft,
-            textEditorState: null,
+            textEditorState,
             selectTool: (tool: CanvasToolId) => {
                 interaction.dispatch({ type: 'selectTool', tool });
             },
@@ -194,9 +332,19 @@ export const useCanvasCreationBridge = () => {
             handleViewportPointerUp: (payload: InteractionPointerPayload) => {
                 dispatchPointerEvent('pointerUp', payload);
             },
-            handleTextCommit: () => undefined,
-            handleTextCancel: () => undefined
+            startTextEditing,
+            handleTextCommit,
+            handleTextCancel
         }),
-        [creationDraft, dispatchPointerEvent, interaction, state.activeTool]
+        [
+            creationDraft,
+            dispatchPointerEvent,
+            handleTextCancel,
+            handleTextCommit,
+            interaction,
+            startTextEditing,
+            state.activeTool,
+            textEditorState
+        ]
     );
 };

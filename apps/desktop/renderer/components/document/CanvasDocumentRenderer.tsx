@@ -5,6 +5,7 @@
   */
 
 import {
+    type MouseEvent as ReactMouseEvent,
     type PointerEvent as ReactPointerEvent,
     useEffect,
     useLayoutEffect,
@@ -36,6 +37,7 @@ type CanvasDocumentRendererProps = {
     nodeRenderers?: Partial<NodeRendererRegistry>;
     selectedNodeId?: string | null;
     onNodePointerDown?: (nodeId: string) => void;
+    onNodeDoubleClick?: (nodeId: string) => void;
     onCanvasPointerDown?: () => void;
     renderSelectionOverlay?: boolean;
     zoom?: number;
@@ -108,6 +110,7 @@ export const CanvasDocumentRenderer = ({
     resolveAsset = defaultAssetResolver,
     selectedNodeId,
     onNodePointerDown,
+    onNodeDoubleClick,
     onCanvasPointerDown,
     renderSelectionOverlay = true,
     zoom = 1
@@ -238,7 +241,36 @@ export const CanvasDocumentRenderer = ({
         });
 
         if (nextSelectedNodeId) {
-            onNodePointerDown(nextSelectedNodeId);
+            onNodePointerDown?.(nextSelectedNodeId);
+        }
+    };
+
+    const handleRendererDoubleClick = (
+        event: ReactMouseEvent<HTMLDivElement>
+    ) => {
+        const rendererElement = rendererRef.current;
+
+        if (!rendererElement || !onNodeDoubleClick) {
+            return;
+        }
+
+        const nodePath = getDesignNodePathFromTarget(
+            event.target,
+            rendererElement
+        );
+
+        if (nodePath.length === 0) {
+            return;
+        }
+
+        const nextSelectedNodeId = getNextSelectedNodeIdFromPath({
+            nodePath,
+            selectedNodeId,
+            clickCount: 2
+        });
+
+        if (nextSelectedNodeId) {
+            onNodeDoubleClick(nextSelectedNodeId);
         }
     };
 
@@ -249,6 +281,7 @@ export const CanvasDocumentRenderer = ({
                 .filter(Boolean)
                 .join(' ')}
             data-document-renderer="true"
+            onDoubleClick={handleRendererDoubleClick}
             onPointerDown={handleRendererPointerDown}
             style={{
                 width: px(bounds.width),

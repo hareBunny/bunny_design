@@ -19,25 +19,6 @@ export const TextSectionFields = () => {
             </header>
             <Controller
                 control={control}
-                name="content"
-                render={({ field }) => (
-                    <label className="grid gap-1">
-                        <span className="text-[11px] leading-none font-medium text-[#666666]">
-                            Content
-                        </span>
-                        <textarea
-                            aria-label="Text content"
-                            className="min-h-20 resize-y rounded-lg border border-[#e3e3e3] bg-[#f8f8f8] px-2 py-2 font-mono text-[12px] leading-5 font-medium text-[#262626] outline-none"
-                            onChange={(event) => {
-                                field.onChange(event.target.value);
-                            }}
-                            value={field.value}
-                        />
-                    </label>
-                )}
-            />
-            <Controller
-                control={control}
                 name="fontSize"
                 render={({ field }) => (
                     <InspectorValueInput

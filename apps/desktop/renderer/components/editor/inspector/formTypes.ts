@@ -81,7 +81,6 @@ export type InspectorFormValues = {
     paddingHorizontal: string;
     paddingVertical: string;
     clip: boolean;
-    content: string;
     fontSize: string;
     fills: InspectorFillFormItem[];
     strokes: InspectorStrokeFormItem[];

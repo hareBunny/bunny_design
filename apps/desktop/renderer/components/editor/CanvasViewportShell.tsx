@@ -5,6 +5,8 @@
   */
 
 import {
+    type CSSProperties,
+    type MouseEvent as ReactMouseEvent,
     type PointerEvent as ReactPointerEvent,
     type ReactNode,
     useEffect,
@@ -29,6 +31,7 @@ import { CanvasDocumentRenderer } from '../document/CanvasDocumentRenderer';
 import { getTopLevelBounds } from '../document/CanvasNodeRenderers';
 
 import { CanvasCreationOverlay } from './creation/CanvasCreationOverlay';
+import { CanvasInlineTextEditor } from './creation/CanvasInlineTextEditor';
 import { DEFAULT_INITIAL_ZOOM, ZOOM_PRESETS } from './viewport/constants';
 import { extractDesignNodePath } from './viewport/extractDesignNodePath';
 import { useShortcutWheelZoom } from './viewport/useShortcutWheelZoom';
@@ -52,6 +55,10 @@ import { CanvasZoomControl } from './CanvasZoomControl';
 type CanvasViewportShellProps = {
     document: MiaomaDesignDocument;
     selectedNodeId?: string | null;
+    textEditorState?: {
+        nodeId: string;
+        initialValue: string;
+    } | null;
     creationDraft?: {
         x: number;
         y: number;
@@ -59,10 +66,13 @@ type CanvasViewportShellProps = {
         height: number;
     } | null;
     onNodePointerDown?: (nodeId: string) => void;
+    onNodeDoubleClick?: (nodeId: string) => void;
     onCanvasPointerDown?: () => void;
     onViewportPointerDown?: (payload: InteractionPointerPayload) => void;
     onViewportPointerMove?: (payload: InteractionPointerPayload) => void;
     onViewportPointerUp?: (payload: InteractionPointerPayload) => void;
+    onTextCommit?: (value: string) => void;
+    onTextCancel?: () => void;
     selectionEnabled?: boolean;
     resolveAsset: (url: string) => string;
     overlay?: ReactNode;
@@ -77,6 +87,22 @@ const isInteractiveViewportTarget = (target: HTMLElement) =>
     target.closest(
         'button,input,textarea,select,[role="button"],[role="checkbox"],[role="tab"]'
     ) !== null;
+
+const escapeDesignNodeSelectorValue = (value: string) =>
+    value.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
+
+type InlineTextEditorLayout = {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    color?: string;
+    fontFamily?: string;
+    fontSize?: number;
+    fontWeight?: string;
+    lineHeight?: number;
+    textAlign?: CSSProperties['textAlign'];
+};
 
 const buildNodeLookup = (document: MiaomaDesignDocument) => {
     const entries = new Map<
@@ -106,12 +132,16 @@ const buildNodeLookup = (document: MiaomaDesignDocument) => {
 export const CanvasViewportShell = ({
     document,
     selectedNodeId,
+    textEditorState,
     creationDraft,
     onNodePointerDown,
+    onNodeDoubleClick,
     onCanvasPointerDown,
     onViewportPointerDown,
     onViewportPointerMove,
     onViewportPointerUp,
+    onTextCommit,
+    onTextCancel,
     selectionEnabled = true,
     resolveAsset,
     overlay
@@ -126,6 +156,10 @@ export const CanvasViewportShell = ({
     );
     const [selectionBounds, setSelectionBounds] =
         useState<ViewportSelectionBounds | null>(null);
+    const [textEditorLayout, setTextEditorLayout] =
+        useState<InlineTextEditorLayout | null>(null);
+    const lastDocumentPointerPayloadRef =
+        useRef<InteractionPointerPayload | null>(null);
     const consumeShortcutWheelScrollLock = useShortcutWheelZoom({
         scrollRef,
         setState
@@ -202,6 +236,56 @@ export const CanvasViewportShell = ({
         state.zoom
     ]);
 
+    useIsomorphicLayoutEffect(() => {
+        const element = scrollRef.current;
+
+        if (!element || !textEditorState) {
+            setTextEditorLayout(null);
+            return;
+        }
+
+        const nodeElement = element.querySelector<HTMLElement>(
+            `[data-design-node-id="${escapeDesignNodeSelectorValue(
+                textEditorState.nodeId
+            )}"]`
+        );
+
+        if (!nodeElement) {
+            setTextEditorLayout(null);
+            return;
+        }
+
+        const scrollRect = element.getBoundingClientRect();
+        const nodeRect = nodeElement.getBoundingClientRect();
+        const computedStyle = window.getComputedStyle(nodeElement);
+        const fontSize = Number.parseFloat(computedStyle.fontSize) || 16;
+        const parsedLineHeight = Number.parseFloat(computedStyle.lineHeight);
+        const lineHeight = Number.isFinite(parsedLineHeight)
+            ? parsedLineHeight
+            : fontSize * 1.5;
+
+        setTextEditorLayout({
+            color: computedStyle.color || undefined,
+            fontFamily: computedStyle.fontFamily || undefined,
+            fontSize,
+            fontWeight: computedStyle.fontWeight || undefined,
+            height: Math.max(nodeRect.height, lineHeight),
+            left: nodeRect.left - scrollRect.left + element.scrollLeft,
+            lineHeight,
+            textAlign: computedStyle.textAlign as CSSProperties['textAlign'],
+            top: nodeRect.top - scrollRect.top + element.scrollTop,
+            width: Math.max(nodeRect.width, fontSize * 4)
+        });
+    }, [
+        document,
+        state.cameraX,
+        state.cameraY,
+        state.scrollLeft,
+        state.scrollTop,
+        state.zoom,
+        textEditorState
+    ]);
+
     const handleScroll = () => {
         const element = scrollRef.current;
         if (!element) {
@@ -271,6 +355,8 @@ export const CanvasViewportShell = ({
         const payload = buildPointerPayload(event);
 
         if (payload) {
+            lastDocumentPointerPayloadRef.current =
+                payload.nodePath.length > 0 ? payload : null;
             onViewportPointerDown?.(payload);
         }
 
@@ -329,6 +415,33 @@ export const CanvasViewportShell = ({
         }
     };
 
+    const handleViewportDoubleClick = (
+        event: ReactMouseEvent<HTMLDivElement>
+    ) => {
+        if (
+            !selectionEnabled ||
+            !onNodeDoubleClick ||
+            !(event.target instanceof HTMLElement)
+        ) {
+            return;
+        }
+
+        if (isInteractiveViewportTarget(event.target)) {
+            return;
+        }
+
+        if (event.target.closest('[data-document-renderer="true"]')) {
+            return;
+        }
+
+        const nextSelectedNodeId =
+            lastDocumentPointerPayloadRef.current?.nodePath.at(-1)?.id;
+
+        if (nextSelectedNodeId) {
+            onNodeDoubleClick(nextSelectedNodeId);
+        }
+    };
+
     const surfaceStyle = {
         left: `${state.scrollLeft}px`,
         top: `${state.scrollTop}px`,
@@ -384,6 +497,7 @@ export const CanvasViewportShell = ({
             <div
                 aria-label="Canvas viewport"
                 className="absolute top-[var(--editor-ruler-thickness)] right-0 bottom-0 left-[var(--editor-ruler-thickness)] overflow-scroll"
+                onDoubleClick={handleViewportDoubleClick}
                 onPointerDown={handleViewportPointerDown}
                 onPointerMove={handleViewportPointerMove}
                 onPointerUp={handleViewportPointerUp}
@@ -417,6 +531,11 @@ export const CanvasViewportShell = ({
                                         ? onCanvasPointerDown
                                         : undefined
                                 }
+                                onNodeDoubleClick={
+                                    selectionEnabled
+                                        ? onNodeDoubleClick
+                                        : undefined
+                                }
                                 onNodePointerDown={
                                     selectionEnabled
                                         ? onNodePointerDown
@@ -448,6 +567,19 @@ export const CanvasViewportShell = ({
                         >
                             <CanvasCreationOverlay
                                 bounds={creationOverlayBounds}
+                            />
+                        </div>
+                    ) : null}
+                    {textEditorState &&
+                    textEditorLayout &&
+                    onTextCommit &&
+                    onTextCancel ? (
+                        <div className="absolute inset-0 z-40 overflow-visible">
+                            <CanvasInlineTextEditor
+                                initialValue={textEditorState.initialValue}
+                                layout={textEditorLayout}
+                                onCancel={onTextCancel}
+                                onCommit={onTextCommit}
                             />
                         </div>
                     ) : null}
