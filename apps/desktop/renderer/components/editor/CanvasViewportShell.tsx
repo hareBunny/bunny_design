@@ -6,6 +6,7 @@
 
 import {
     type CSSProperties,
+    type KeyboardEvent as ReactKeyboardEvent,
     type MouseEvent as ReactMouseEvent,
     type PointerEvent as ReactPointerEvent,
     type ReactNode,
@@ -23,6 +24,7 @@ import {
 } from '@miaoma-design-ai/miaoma-canvas-ruler';
 import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schema';
 import type {
+    CanvasToolId,
     HitPathNode,
     InteractionPointerPayload
 } from '@miaoma-design-ai/miaoma-editor-interaction';
@@ -54,6 +56,7 @@ import { CanvasZoomControl } from './CanvasZoomControl';
 
 type CanvasViewportShellProps = {
     document: MiaomaDesignDocument;
+    activeTool: CanvasToolId;
     selectedNodeId?: string | null;
     textEditorState?: {
         nodeId: string;
@@ -87,6 +90,9 @@ const isInteractiveViewportTarget = (target: HTMLElement) =>
     target.closest(
         'button,input,textarea,select,[role="button"],[role="checkbox"],[role="tab"]'
     ) !== null;
+
+const isSpaceKey = (event: Pick<KeyboardEvent, 'code' | 'key'>) =>
+    event.code === 'Space' || event.key === ' ';
 
 const escapeDesignNodeSelectorValue = (value: string) =>
     value.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
@@ -131,6 +137,7 @@ const buildNodeLookup = (document: MiaomaDesignDocument) => {
 
 export const CanvasViewportShell = ({
     document,
+    activeTool,
     selectedNodeId,
     textEditorState,
     creationDraft,
@@ -158,8 +165,17 @@ export const CanvasViewportShell = ({
         useState<ViewportSelectionBounds | null>(null);
     const [textEditorLayout, setTextEditorLayout] =
         useState<InlineTextEditorLayout | null>(null);
+    const [isSpacePanActive, setIsSpacePanActive] = useState(false);
+    const [isPanningViewport, setIsPanningViewport] = useState(false);
     const lastDocumentPointerPayloadRef =
         useRef<InteractionPointerPayload | null>(null);
+    const panSessionRef = useRef<{
+        pointerId: number;
+        startScreenX: number;
+        startScreenY: number;
+        startScrollLeft: number;
+        startScrollTop: number;
+    } | null>(null);
     const consumeShortcutWheelScrollLock = useShortcutWheelZoom({
         scrollRef,
         setState
@@ -169,6 +185,8 @@ export const CanvasViewportShell = ({
         () => getTopLevelBounds(document.children),
         [document.children]
     );
+    const isPanMode = activeTool === 'hand' || isSpacePanActive;
+    const isSelectionEnabled = selectionEnabled && !isPanMode;
 
     useEffect(() => {
         const element = scrollRef.current;
@@ -196,6 +214,20 @@ export const CanvasViewportShell = ({
 
         return () => {
             resizeObserver.disconnect();
+        };
+    }, []);
+
+    useEffect(() => {
+        const resetPanState = () => {
+            panSessionRef.current = null;
+            setIsPanningViewport(false);
+            setIsSpacePanActive(false);
+        };
+
+        window.addEventListener('blur', resetPanState);
+
+        return () => {
+            window.removeEventListener('blur', resetPanState);
         };
     }, []);
 
@@ -304,6 +336,26 @@ export const CanvasViewportShell = ({
         );
     };
 
+    const syncViewportScroll = (
+        nextScrollLeft: number,
+        nextScrollTop: number
+    ) => {
+        const element = scrollRef.current;
+
+        if (!element) {
+            return;
+        }
+
+        element.scrollLeft = nextScrollLeft;
+        element.scrollTop = nextScrollTop;
+        setState((previous) =>
+            applyScrollDelta(previous, {
+                x: element.scrollLeft - previous.scrollLeft,
+                y: element.scrollTop - previous.scrollTop
+            })
+        );
+    };
+
     const buildPointerPayload = (
         event: ReactPointerEvent<HTMLDivElement>
     ): InteractionPointerPayload | null => {
@@ -348,8 +400,23 @@ export const CanvasViewportShell = ({
             return;
         }
 
+        event.currentTarget.focus();
+
         if (typeof event.currentTarget.setPointerCapture === 'function') {
             event.currentTarget.setPointerCapture(event.pointerId);
+        }
+
+        if (isPanMode) {
+            event.preventDefault();
+            panSessionRef.current = {
+                pointerId: event.pointerId,
+                startScreenX: event.clientX,
+                startScreenY: event.clientY,
+                startScrollLeft: event.currentTarget.scrollLeft,
+                startScrollTop: event.currentTarget.scrollTop
+            };
+            setIsPanningViewport(true);
+            return;
         }
 
         const payload = buildPointerPayload(event);
@@ -382,6 +449,19 @@ export const CanvasViewportShell = ({
             return;
         }
 
+        const panSession = panSessionRef.current;
+
+        if (panSession && panSession.pointerId === event.pointerId) {
+            event.preventDefault();
+            syncViewportScroll(
+                panSession.startScrollLeft -
+                    (event.clientX - panSession.startScreenX),
+                panSession.startScrollTop -
+                    (event.clientY - panSession.startScreenY)
+            );
+            return;
+        }
+
         const payload = buildPointerPayload(event);
 
         if (payload) {
@@ -397,6 +477,24 @@ export const CanvasViewportShell = ({
         }
 
         if (isInteractiveViewportTarget(event.target)) {
+            return;
+        }
+
+        const panSession = panSessionRef.current;
+
+        if (panSession && panSession.pointerId === event.pointerId) {
+            panSessionRef.current = null;
+            setIsPanningViewport(false);
+
+            if (
+                typeof event.currentTarget.releasePointerCapture ===
+                    'function' &&
+                (typeof event.currentTarget.hasPointerCapture !== 'function' ||
+                    event.currentTarget.hasPointerCapture(event.pointerId))
+            ) {
+                event.currentTarget.releasePointerCapture(event.pointerId);
+            }
+
             return;
         }
 
@@ -419,7 +517,7 @@ export const CanvasViewportShell = ({
         event: ReactMouseEvent<HTMLDivElement>
     ) => {
         if (
-            !selectionEnabled ||
+            !isSelectionEnabled ||
             !onNodeDoubleClick ||
             !(event.target instanceof HTMLElement)
         ) {
@@ -440,6 +538,38 @@ export const CanvasViewportShell = ({
         if (nextSelectedNodeId) {
             onNodeDoubleClick(nextSelectedNodeId);
         }
+    };
+
+    const handleViewportKeyDown = (
+        event: ReactKeyboardEvent<HTMLDivElement>
+    ) => {
+        if (!isSpaceKey(event)) {
+            return;
+        }
+
+        if (
+            event.target instanceof HTMLElement &&
+            isInteractiveViewportTarget(event.target)
+        ) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (!isSpacePanActive) {
+            setIsSpacePanActive(true);
+        }
+    };
+
+    const handleViewportKeyUp = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+        if (!isSpaceKey(event)) {
+            return;
+        }
+
+        event.preventDefault();
+        panSessionRef.current = null;
+        setIsPanningViewport(false);
+        setIsSpacePanActive(false);
     };
 
     const surfaceStyle = {
@@ -496,13 +626,23 @@ export const CanvasViewportShell = ({
             </div>
             <div
                 aria-label="Canvas viewport"
-                className="absolute top-[var(--editor-ruler-thickness)] right-0 bottom-0 left-[var(--editor-ruler-thickness)] overflow-scroll"
+                className={[
+                    'absolute top-[var(--editor-ruler-thickness)] right-0 bottom-0 left-[var(--editor-ruler-thickness)] overflow-scroll outline-none',
+                    isPanningViewport
+                        ? 'cursor-grabbing'
+                        : isPanMode
+                          ? 'cursor-grab'
+                          : 'cursor-default'
+                ].join(' ')}
                 onDoubleClick={handleViewportDoubleClick}
+                onKeyDown={handleViewportKeyDown}
+                onKeyUp={handleViewportKeyUp}
                 onPointerDown={handleViewportPointerDown}
                 onPointerMove={handleViewportPointerMove}
                 onPointerUp={handleViewportPointerUp}
                 onScroll={handleScroll}
                 ref={scrollRef}
+                tabIndex={0}
             >
                 <div
                     className="relative"
@@ -527,17 +667,17 @@ export const CanvasViewportShell = ({
                             <CanvasDocumentRenderer
                                 document={document}
                                 onCanvasPointerDown={
-                                    selectionEnabled
+                                    isSelectionEnabled
                                         ? onCanvasPointerDown
                                         : undefined
                                 }
                                 onNodeDoubleClick={
-                                    selectionEnabled
+                                    isSelectionEnabled
                                         ? onNodeDoubleClick
                                         : undefined
                                 }
                                 onNodePointerDown={
-                                    selectionEnabled
+                                    isSelectionEnabled
                                         ? onNodePointerDown
                                         : undefined
                                 }

@@ -55,7 +55,6 @@ const CanvasStageInner = ({
     const snapshot = useEditorSnapshot();
     const creationBridge = useCanvasCreationBridge();
     const renderableDocument = editorDocumentToRenderable(snapshot.document);
-    const isCanvasSelectionEnabled = creationBridge.activeTool === 'pointer';
 
     return (
         <main
@@ -77,7 +76,8 @@ const CanvasStageInner = ({
                 onViewportPointerUp={creationBridge.handleViewportPointerUp}
                 onTextCancel={creationBridge.handleTextCancel}
                 onTextCommit={creationBridge.handleTextCommit}
-                selectionEnabled={isCanvasSelectionEnabled}
+                activeTool={creationBridge.activeTool}
+                selectionEnabled={creationBridge.activeTool === 'pointer'}
                 onNodeDoubleClick={creationBridge.startTextEditing}
                 onNodePointerDown={(nodeId) => {
                     session.selectNode(nodeId);
@@ -95,10 +95,6 @@ const CanvasStageInner = ({
             <CanvasToolRail
                 activeTool={creationBridge.activeTool}
                 onSelectTool={creationBridge.selectTool}
-            />
-            <div
-                aria-hidden="true"
-                className="editor-canvas-scrollbar absolute bottom-1.5 left-[min(49.85%,calc(100%_-_300px))] z-20 h-1.5 w-[276px] rounded-[3px] bg-[#bdbec3]"
             />
         </main>
     );

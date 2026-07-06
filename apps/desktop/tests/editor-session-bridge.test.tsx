@@ -530,6 +530,140 @@ describe('RightInspectorFormBridge', () => {
         }
     });
 
+    it('uses the hand tool to pan the viewport and disables node selection until pointer is reselected', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'frame-1'
+            });
+
+            const viewport = screen.getByLabelText(
+                'Canvas viewport'
+            ) as HTMLDivElement;
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            );
+
+            expect(textNode).not.toBeNull();
+
+            await user.click(screen.getByRole('button', { name: 'Hand tool' }));
+
+            const startScrollLeft = viewport.scrollLeft;
+            const startScrollTop = viewport.scrollTop;
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                clientX: 240,
+                clientY: 180,
+                pointerId: 1
+            });
+            fireEvent.pointerMove(viewport, {
+                bubbles: true,
+                button: 0,
+                buttons: 1,
+                clientX: 200,
+                clientY: 140,
+                pointerId: 1
+            });
+            fireEvent.pointerUp(viewport, {
+                bubbles: true,
+                button: 0,
+                clientX: 200,
+                clientY: 140,
+                pointerId: 1
+            });
+
+            expect(viewport.scrollLeft).not.toBe(startScrollLeft);
+            expect(viewport.scrollTop).not.toBe(startScrollTop);
+            expect(readSelectedNode().id).toBe('frame-1');
+
+            await user.click(
+                screen.getByRole('button', { name: 'Pointer tool' })
+            );
+            await user.click(textNode as HTMLElement);
+
+            expect(readSelectedNode().id).toBe('text-1');
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('temporarily pans the viewport while the space key is held and restores pointer selection on release', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'frame-1'
+            });
+
+            const viewport = screen.getByLabelText(
+                'Canvas viewport'
+            ) as HTMLDivElement;
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            );
+
+            expect(textNode).not.toBeNull();
+
+            const spaceHandled = fireEvent.keyDown(viewport, {
+                bubbles: true,
+                code: 'Space',
+                key: ' '
+            });
+            const startScrollLeft = viewport.scrollLeft;
+            const startScrollTop = viewport.scrollTop;
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                clientX: 240,
+                clientY: 180,
+                pointerId: 2
+            });
+            fireEvent.pointerMove(viewport, {
+                bubbles: true,
+                button: 0,
+                buttons: 1,
+                clientX: 210,
+                clientY: 150,
+                pointerId: 2
+            });
+            fireEvent.pointerUp(viewport, {
+                bubbles: true,
+                button: 0,
+                clientX: 210,
+                clientY: 150,
+                pointerId: 2
+            });
+
+            expect(spaceHandled).toBe(false);
+            expect(viewport.scrollLeft).not.toBe(startScrollLeft);
+            expect(viewport.scrollTop).not.toBe(startScrollTop);
+            expect(readSelectedNode().id).toBe('frame-1');
+
+            fireEvent.keyUp(viewport, {
+                bubbles: true,
+                code: 'Space',
+                key: ' '
+            });
+            await user.click(textNode as HTMLElement);
+
+            expect(readSelectedNode().id).toBe('text-1');
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
     it('keeps the right inspector header while hiding the body on empty canvas selection', async () => {
         const originalResizeObserver = globalThis.ResizeObserver;
 

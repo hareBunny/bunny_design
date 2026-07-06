@@ -40,6 +40,7 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain('data-region="left-sidebar"');
         expect(markup).toContain('data-region="canvas-stage"');
         expect(markup).toContain('data-region="right-inspector"');
+        expect(markup).not.toContain('editor-canvas-scrollbar');
         expect(markup).not.toContain('Share');
         expect(markup).not.toContain('Present');
         expect(markup).not.toContain('Ask Miaoma');
