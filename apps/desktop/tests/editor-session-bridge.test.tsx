@@ -243,6 +243,196 @@ const GAP_EDITOR_DOCUMENT: EditorDocument = {
     ]
 };
 
+const REPARENT_EDITOR_DOCUMENT: EditorDocument = {
+    version: '1.0.0',
+    children: [
+        {
+            id: 'frame-source',
+            type: 'frame',
+            name: 'Source Frame',
+            x: 0,
+            y: 0,
+            width: 180,
+            height: 180,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: [
+                {
+                    id: 'drag-text',
+                    type: 'text',
+                    name: 'Drag Text',
+                    x: 20,
+                    y: 20,
+                    content: 'Drag me',
+                    fills: [],
+                    strokes: [],
+                    effects: []
+                }
+            ]
+        },
+        {
+            id: 'frame-target-flow',
+            type: 'frame',
+            name: 'Target Flow Frame',
+            x: 260,
+            y: 0,
+            width: 200,
+            height: 220,
+            layout: 'vertical',
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: [
+                {
+                    id: 'existing-target-child',
+                    type: 'text',
+                    name: 'Existing Target Child',
+                    content: 'Existing',
+                    fills: [],
+                    strokes: [],
+                    effects: []
+                }
+            ]
+        }
+    ]
+};
+
+const ANCESTOR_REPARENT_EDITOR_DOCUMENT: EditorDocument = {
+    version: '1.0.0',
+    children: [
+        {
+            id: 'frame-outer',
+            type: 'frame',
+            name: 'Outer Frame',
+            x: 0,
+            y: 0,
+            width: 420,
+            height: 320,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: [
+                {
+                    id: 'frame-source',
+                    type: 'frame',
+                    name: 'Source Frame',
+                    x: 20,
+                    y: 20,
+                    width: 180,
+                    height: 180,
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    children: [
+                        {
+                            id: 'drag-text',
+                            type: 'text',
+                            name: 'Drag Text',
+                            x: 20,
+                            y: 20,
+                            content: 'Drag me',
+                            fills: [],
+                            strokes: [],
+                            effects: []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+};
+
+const FLEX_DRAG_EDITOR_DOCUMENT: EditorDocument = {
+    version: '1.0.0',
+    children: [
+        {
+            id: 'frame-source-flow',
+            type: 'frame',
+            name: 'Source Flow',
+            x: 0,
+            y: 0,
+            width: 160,
+            height: 220,
+            layout: 'vertical',
+            gap: 10,
+            padding: 10,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: [
+                {
+                    id: 'source-a',
+                    type: 'rectangle',
+                    name: 'Source A',
+                    width: 80,
+                    height: 30,
+                    fills: [],
+                    strokes: [],
+                    effects: []
+                },
+                {
+                    id: 'source-b',
+                    type: 'rectangle',
+                    name: 'Source B',
+                    width: 80,
+                    height: 30,
+                    fills: [],
+                    strokes: [],
+                    effects: []
+                },
+                {
+                    id: 'source-c',
+                    type: 'rectangle',
+                    name: 'Source C',
+                    width: 80,
+                    height: 30,
+                    fills: [],
+                    strokes: [],
+                    effects: []
+                }
+            ]
+        },
+        {
+            id: 'frame-target-flow-reorder',
+            type: 'frame',
+            name: 'Target Flow Reorder',
+            x: 240,
+            y: 0,
+            width: 160,
+            height: 220,
+            layout: 'vertical',
+            gap: 10,
+            padding: 10,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: [
+                {
+                    id: 'target-a',
+                    type: 'rectangle',
+                    name: 'Target A',
+                    width: 80,
+                    height: 30,
+                    fills: [],
+                    strokes: [],
+                    effects: []
+                },
+                {
+                    id: 'target-b',
+                    type: 'rectangle',
+                    name: 'Target B',
+                    width: 80,
+                    height: 30,
+                    fills: [],
+                    strokes: [],
+                    effects: []
+                }
+            ]
+        }
+    ]
+};
+
 const OVERLAPPING_EDITOR_DOCUMENT: EditorDocument = {
     version: '1.0.0',
     children: [
@@ -1512,7 +1702,7 @@ describe('RightInspectorFormBridge', () => {
         }
     });
 
-    it('stores newly created rectangle coordinates relative to the innermost absolute frame', async () => {
+    it('stores newly created rectangle coordinates relative to the selected frame when creation starts inside its active region', async () => {
         const originalResizeObserver = globalThis.ResizeObserver;
 
         globalThis.ResizeObserver = TestResizeObserver;
@@ -1557,8 +1747,8 @@ describe('RightInspectorFormBridge', () => {
             expect(readSelectedNode()).toMatchObject({
                 height: 60,
                 width: 60,
-                x: 60,
-                y: 159
+                x: 360,
+                y: 220
             });
         } finally {
             globalThis.ResizeObserver = originalResizeObserver;
@@ -1686,6 +1876,393 @@ describe('RightInspectorFormBridge', () => {
                     x: 151,
                     y: 52
                 });
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('reparents a dragged node into the hovered flow container and appends it to the end', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: REPARENT_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'drag-text'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="drag-text"]'
+            );
+            const targetFrame = document.querySelector<HTMLElement>(
+                '[data-design-node-id="frame-target-flow"]'
+            );
+
+            expect(textNode).not.toBeNull();
+            expect(targetFrame).not.toBeNull();
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 80,
+                clientY: 60,
+                pointerId: 21
+            });
+            fireEvent.pointerMove(targetFrame as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 320,
+                clientY: 120,
+                pointerId: 21
+            });
+            fireEvent.pointerUp(targetFrame as HTMLElement, {
+                button: 0,
+                buttons: 0,
+                clientX: 320,
+                clientY: 120,
+                pointerId: 21
+            });
+
+            await waitFor(() => {
+                const nextDocument = readDocument();
+                const sourceFrame = nextDocument.children.find(
+                    (node: { id: string }) => node.id === 'frame-source'
+                );
+                const targetFlowFrame = nextDocument.children.find(
+                    (node: { id: string }) => node.id === 'frame-target-flow'
+                );
+
+                expect(sourceFrame?.children).toEqual([]);
+                expect(targetFlowFrame?.children).toMatchObject([
+                    { id: 'existing-target-child' },
+                    { id: 'drag-text' }
+                ]);
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('reparents a dragged node to the document root when dropped on blank canvas', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: REPARENT_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'drag-text'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="drag-text"]'
+            );
+            const viewport = screen.getByLabelText(
+                'Canvas viewport'
+            ) as HTMLElement;
+
+            expect(textNode).not.toBeNull();
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 80,
+                clientY: 60,
+                pointerId: 22
+            });
+            fireEvent.pointerMove(window, {
+                button: 0,
+                buttons: 1,
+                clientX: 520,
+                clientY: 320,
+                pointerId: 22
+            });
+            fireEvent.pointerUp(viewport, {
+                button: 0,
+                buttons: 0,
+                clientX: 520,
+                clientY: 320,
+                pointerId: 22
+            });
+
+            await waitFor(() => {
+                const nextDocument = readDocument();
+                const sourceFrame = nextDocument.children.find(
+                    (node: { id: string }) => node.id === 'frame-source'
+                );
+                const movedNode = nextDocument.children.find(
+                    (node: { id: string }) => node.id === 'drag-text'
+                );
+
+                expect(sourceFrame?.children).toEqual([]);
+                expect(movedNode).toMatchObject({
+                    id: 'drag-text',
+                    x: 460,
+                    y: 280
+                });
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('reparents a dragged node to the hovered ancestor container when dropped on its blank area', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: ANCESTOR_REPARENT_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'drag-text'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="drag-text"]'
+            );
+            const outerFrame = document.querySelector<HTMLElement>(
+                '[data-design-node-id="frame-outer"]'
+            );
+
+            expect(textNode).not.toBeNull();
+            expect(outerFrame).not.toBeNull();
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 80,
+                clientY: 60,
+                pointerId: 23
+            });
+            fireEvent.pointerMove(outerFrame as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 280,
+                clientY: 220,
+                pointerId: 23
+            });
+            fireEvent.pointerUp(outerFrame as HTMLElement, {
+                button: 0,
+                buttons: 0,
+                clientX: 280,
+                clientY: 220,
+                pointerId: 23
+            });
+
+            await waitFor(() => {
+                const nextDocument = readDocument();
+                const outerFrameNode = nextDocument.children.find(
+                    (node: { id: string }) => node.id === 'frame-outer'
+                );
+                const sourceFrame = outerFrameNode?.children.find(
+                    (node: { id: string }) => node.id === 'frame-source'
+                );
+                const movedNode = outerFrameNode?.children.find(
+                    (node: { id: string }) => node.id === 'drag-text'
+                );
+
+                expect(sourceFrame?.children).toEqual([]);
+                expect(movedNode).toMatchObject({
+                    id: 'drag-text',
+                    x: 240,
+                    y: 200
+                });
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('reparents a flex-layout child to the document root when dropped on blank canvas', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: FLEX_DRAG_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'source-b'
+            });
+
+            const draggedNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="source-b"]'
+            );
+            const viewport = screen.getByLabelText(
+                'Canvas viewport'
+            ) as HTMLElement;
+
+            expect(draggedNode).not.toBeNull();
+
+            fireEvent.pointerDown(draggedNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 40,
+                clientY: 60,
+                pointerId: 24
+            });
+            fireEvent.pointerMove(window, {
+                button: 0,
+                buttons: 1,
+                clientX: 500,
+                clientY: 300,
+                pointerId: 24
+            });
+            fireEvent.pointerUp(viewport, {
+                button: 0,
+                buttons: 0,
+                clientX: 500,
+                clientY: 300,
+                pointerId: 24
+            });
+
+            await waitFor(() => {
+                const nextDocument = readDocument();
+                const sourceFlow = nextDocument.children.find(
+                    (node: { id: string }) => node.id === 'frame-source-flow'
+                );
+                const movedNode = nextDocument.children.find(
+                    (node: { id: string }) => node.id === 'source-b'
+                );
+
+                expect(sourceFlow?.children).toMatchObject([
+                    { id: 'source-a' },
+                    { id: 'source-c' }
+                ]);
+                expect(movedNode).toMatchObject({
+                    id: 'source-b',
+                    x: 470,
+                    y: 290
+                });
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('reorders a flex-layout child within the same flow container when dropped over a sibling', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: FLEX_DRAG_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'source-b'
+            });
+
+            const draggedNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="source-b"]'
+            );
+            const targetSibling = document.querySelector<HTMLElement>(
+                '[data-design-node-id="source-c"]'
+            );
+
+            expect(draggedNode).not.toBeNull();
+            expect(targetSibling).not.toBeNull();
+
+            fireEvent.pointerDown(draggedNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 40,
+                clientY: 60,
+                pointerId: 25
+            });
+            fireEvent.pointerMove(targetSibling as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 40,
+                clientY: 120,
+                pointerId: 25
+            });
+            fireEvent.pointerUp(targetSibling as HTMLElement, {
+                button: 0,
+                buttons: 0,
+                clientX: 40,
+                clientY: 120,
+                pointerId: 25
+            });
+
+            await waitFor(() => {
+                const nextDocument = readDocument();
+                const sourceFlow = nextDocument.children.find(
+                    (node: { id: string }) => node.id === 'frame-source-flow'
+                );
+
+                expect(sourceFlow?.children).toMatchObject([
+                    { id: 'source-a' },
+                    { id: 'source-c' },
+                    { id: 'source-b' }
+                ]);
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('inserts a flex-layout child into the hovered target flow position instead of always appending', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: FLEX_DRAG_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'source-b'
+            });
+
+            const draggedNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="source-b"]'
+            );
+            const targetSibling = document.querySelector<HTMLElement>(
+                '[data-design-node-id="target-a"]'
+            );
+
+            expect(draggedNode).not.toBeNull();
+            expect(targetSibling).not.toBeNull();
+
+            fireEvent.pointerDown(draggedNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 40,
+                clientY: 60,
+                pointerId: 26
+            });
+            fireEvent.pointerMove(targetSibling as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 260,
+                clientY: 15,
+                pointerId: 26
+            });
+            fireEvent.pointerUp(targetSibling as HTMLElement, {
+                button: 0,
+                buttons: 0,
+                clientX: 260,
+                clientY: 15,
+                pointerId: 26
+            });
+
+            await waitFor(() => {
+                const nextDocument = readDocument();
+                const sourceFlow = nextDocument.children.find(
+                    (node: { id: string }) => node.id === 'frame-source-flow'
+                );
+                const targetFlow = nextDocument.children.find(
+                    (node: { id: string }) =>
+                        node.id === 'frame-target-flow-reorder'
+                );
+
+                expect(sourceFlow?.children).toMatchObject([
+                    { id: 'source-a' },
+                    { id: 'source-c' }
+                ]);
+                expect(targetFlow?.children).toMatchObject([
+                    { id: 'source-b' },
+                    { id: 'target-a' },
+                    { id: 'target-b' }
+                ]);
             });
         } finally {
             globalThis.ResizeObserver = originalResizeObserver;
@@ -2222,6 +2799,75 @@ describe('RightInspectorFormBridge', () => {
             expect(createdTextNode).toMatchObject({
                 type: 'text'
             });
+            expect(parentNodeElement?.getAttribute('data-design-node-id')).toBe(
+                selectedTopLevelFrame?.id
+            );
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('creates a rectangle under the currently selected top-level frame instead of the deepest hit child frame', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasCreationStageHarness();
+
+            const selectedTopLevelFrame = readSelectedNode();
+
+            expect(selectedTopLevelFrame).toMatchObject({
+                type: 'frame',
+                name: 'Miaoma Editor Recreation Course'
+            });
+
+            await user.click(
+                screen.getByRole('button', { name: 'Rectangle tool' })
+            );
+
+            const nestedChildFrame = document.querySelector<HTMLElement>(
+                '[data-design-node-name="Right Inspector"]'
+            );
+
+            expect(nestedChildFrame).not.toBeNull();
+
+            fireEvent.pointerDown(nestedChildFrame as HTMLElement, {
+                button: 0,
+                clientX: 980,
+                clientY: 120,
+                pointerId: 11
+            });
+            fireEvent.pointerMove(screen.getByLabelText('Canvas viewport'), {
+                button: 0,
+                buttons: 1,
+                clientX: 1040,
+                clientY: 180,
+                pointerId: 11
+            });
+            fireEvent.pointerUp(screen.getByLabelText('Canvas viewport'), {
+                button: 0,
+                clientX: 1040,
+                clientY: 180,
+                pointerId: 11
+            });
+
+            await waitFor(() => {
+                expect(readSelectedNode()).toMatchObject({
+                    type: 'rectangle'
+                });
+            });
+
+            const createdRectangle = readSelectedNode();
+            const createdRectangleElement = document.querySelector<HTMLElement>(
+                `[data-design-node-id="${createdRectangle?.id}"]`
+            );
+            const parentNodeElement =
+                createdRectangleElement?.parentElement?.closest<HTMLElement>(
+                    '[data-design-node-id]'
+                ) ?? null;
+
             expect(parentNodeElement?.getAttribute('data-design-node-id')).toBe(
                 selectedTopLevelFrame?.id
             );

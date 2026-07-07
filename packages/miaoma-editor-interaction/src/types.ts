@@ -22,8 +22,10 @@ export type InteractionParentLayout = 'absolute' | 'horizontal' | 'vertical';
 
 export type InteractionSelectedNode = {
     nodeId: string;
+    parentId: string | null;
     parentLayout: InteractionParentLayout;
     position: { x: number; y: number };
+    worldPosition: { x: number; y: number };
 };
 
 export type InteractionPointerPayload = {
@@ -51,6 +53,14 @@ export type EditorInteractionCommand =
     | { type: 'selectNode'; nodeId: string | null }
     | { type: 'removeNode'; nodeId: string }
     | { type: 'moveNode'; nodeId: string; position: { x: number; y: number } }
+    | {
+          type: 'reparentNode';
+          nodeId: string;
+          parentId: string | null;
+          parentLayout: InteractionParentLayout;
+          dropPath?: HitPathNode[];
+          worldPosition: { x: number; y: number };
+      }
     | { type: 'clearCreationOverlay' }
     | {
           type: 'showCreationOverlay';
@@ -104,8 +114,11 @@ export type EditorInteractionState = {
         | {
               kind: 'nodeMovement';
               nodeId: string;
+              initialParentId: string | null;
+              initialParentLayout: InteractionParentLayout;
               originWorld: { x: number; y: number };
               originScreen: { x: number; y: number };
               initialPosition: { x: number; y: number };
+              initialWorldPosition: { x: number; y: number };
           };
 };

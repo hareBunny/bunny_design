@@ -45,6 +45,20 @@ const getMovePosition = ({
         y: initialPosition.y + currentWorld.y - originWorld.y
     });
 
+const getMoveWorldPosition = ({
+    currentWorld,
+    initialWorldPosition,
+    originWorld
+}: {
+    currentWorld: { x: number; y: number };
+    initialWorldPosition: { x: number; y: number };
+    originWorld: { x: number; y: number };
+}) =>
+    roundPoint({
+        x: initialWorldPosition.x + currentWorld.x - originWorld.x,
+        y: initialWorldPosition.y + currentWorld.y - originWorld.y
+    });
+
 const isNodeInPath = (nodePath: HitPathNode[], nodeId: string) =>
     nodePath.some((node) => node.id === nodeId);
 
@@ -52,7 +66,8 @@ const canMoveSelectedNode = (
     selectedNode: InteractionSelectedNode | null | undefined,
     nodePath: HitPathNode[]
 ) =>
-    selectedNode?.parentLayout === 'absolute' &&
+    selectedNode !== null &&
+    selectedNode !== undefined &&
     isNodeInPath(nodePath, selectedNode.nodeId);
 
 const resolveParent = (nodePath: HitPathNode[]) => {
@@ -69,6 +84,38 @@ const resolveParent = (nodePath: HitPathNode[]) => {
                 ? frame.layout
                 : ('absolute' as const)
     };
+};
+
+const resolveReparentTarget = ({
+    currentParentId,
+    currentParentLayout,
+    nodeId,
+    nodePath
+}: {
+    currentParentId: string | null;
+    currentParentLayout: InteractionSelectedNode['parentLayout'];
+    nodeId: string;
+    nodePath: HitPathNode[];
+}) => {
+    if (nodePath.some((node) => node.id === nodeId)) {
+        return null;
+    }
+
+    const nextParent = resolveParent(nodePath);
+
+    if (nextParent.parentId === nodeId) {
+        return null;
+    }
+
+    if (currentParentLayout !== 'absolute') {
+        return nextParent;
+    }
+
+    if (nextParent.parentId === currentParentId) {
+        return null;
+    }
+
+    return nextParent;
 };
 
 export const createInitialInteractionState = (): EditorInteractionState => ({
@@ -240,6 +287,8 @@ export const reduceInteraction = (
                     draft: {
                         kind: 'nodeMovement',
                         nodeId: selectedNode.nodeId,
+                        initialParentId: selectedNode.parentId,
+                        initialParentLayout: selectedNode.parentLayout,
                         originWorld: {
                             x: event.payload.worldX,
                             y: event.payload.worldY
@@ -248,7 +297,8 @@ export const reduceInteraction = (
                             x: event.payload.screenX,
                             y: event.payload.screenY
                         },
-                        initialPosition: selectedNode.position
+                        initialPosition: selectedNode.position,
+                        initialWorldPosition: selectedNode.worldPosition
                     }
                 },
                 commands: []
@@ -378,22 +428,56 @@ export const reduceInteraction = (
             };
         }
 
+        const nextPosition = getMovePosition({
+            currentWorld: {
+                x: event.payload.worldX,
+                y: event.payload.worldY
+            },
+            initialPosition: state.draft.initialPosition,
+            originWorld: state.draft.originWorld
+        });
+        const nextWorldPosition = getMoveWorldPosition({
+            currentWorld: {
+                x: event.payload.worldX,
+                y: event.payload.worldY
+            },
+            initialWorldPosition: state.draft.initialWorldPosition,
+            originWorld: state.draft.originWorld
+        });
+        const reparentTarget =
+            event.type === 'pointerUp'
+                ? resolveReparentTarget({
+                      currentParentId: state.draft.initialParentId,
+                      currentParentLayout: state.draft.initialParentLayout,
+                      nodeId: state.draft.nodeId,
+                      nodePath: event.payload.nodePath
+                  })
+                : null;
+        const shouldPreviewAbsoluteMove =
+            state.draft.initialParentLayout === 'absolute';
+
         return {
             state: nextState,
-            commands: [
-                {
-                    type: 'moveNode',
-                    nodeId: state.draft.nodeId,
-                    position: getMovePosition({
-                        currentWorld: {
-                            x: event.payload.worldX,
-                            y: event.payload.worldY
-                        },
-                        initialPosition: state.draft.initialPosition,
-                        originWorld: state.draft.originWorld
-                    })
-                }
-            ]
+            commands: reparentTarget
+                ? [
+                      {
+                          type: 'reparentNode',
+                          nodeId: state.draft.nodeId,
+                          parentId: reparentTarget.parentId,
+                          parentLayout: reparentTarget.parentLayout,
+                          dropPath: event.payload.nodePath,
+                          worldPosition: nextWorldPosition
+                      }
+                  ]
+                : shouldPreviewAbsoluteMove
+                  ? [
+                        {
+                            type: 'moveNode',
+                            nodeId: state.draft.nodeId,
+                            position: nextPosition
+                        }
+                    ]
+                  : []
         };
     }
 

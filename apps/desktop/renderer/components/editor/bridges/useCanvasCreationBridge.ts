@@ -16,6 +16,7 @@ import {
 import type {
     CanvasToolId,
     EditorInteractionCommand,
+    HitPathNode,
     InteractionPointerPayload,
     InteractionSelectedNode
 } from '@miaoma-design-ai/miaoma-editor-interaction';
@@ -23,7 +24,10 @@ import type {
 import { useEditorInteraction } from '../state/useEditorInteraction';
 import { useEditorSession } from '../state/useEditorSession';
 import { useEditorSnapshot } from '../state/useEditorSnapshot';
-import { findFrameRectInRenderer } from '../viewport/extractDesignNodePath';
+import {
+    findFrameRectInRenderer,
+    findNodeRectInRenderer
+} from '../viewport/extractDesignNodePath';
 
 type CreationDraft = {
     x: number;
@@ -40,6 +44,7 @@ type TextEditorState = {
 
 const DEFAULT_TEXT_DRAFT_WIDTH = 64;
 const DEFAULT_TEXT_DRAFT_HEIGHT = 24;
+const SHAPE_TOOLS: CanvasToolId[] = ['frame', 'rectangle', 'ellipse'];
 
 const toInteractionParentLayout = (
     layout: 'none' | 'horizontal' | 'vertical' | undefined
@@ -179,6 +184,69 @@ export const useCanvasCreationBridge = () => {
         [interaction, resolveAbsolutePosition, session]
     );
 
+    const resolveFlowReparentIndex = useCallback(
+        (
+            command: Extract<EditorInteractionCommand, { type: 'reparentNode' }>
+        ) => {
+            if (
+                !command.parentId ||
+                (command.parentLayout !== 'horizontal' &&
+                    command.parentLayout !== 'vertical')
+            ) {
+                return undefined;
+            }
+
+            const parentNode = session.getNodeById(command.parentId);
+
+            if (!parentNode || parentNode.type !== 'frame') {
+                return undefined;
+            }
+
+            const siblingNodes = parentNode.children.filter(
+                (child) => child.id !== command.nodeId
+            );
+            const parentPathIndex =
+                command.dropPath?.findIndex(
+                    (node: HitPathNode) => node.id === command.parentId
+                ) ?? -1;
+            const directChildId =
+                parentPathIndex === -1
+                    ? null
+                    : (command.dropPath?.[parentPathIndex + 1]?.id ?? null);
+
+            if (!directChildId) {
+                return siblingNodes.length;
+            }
+
+            const targetIndex = siblingNodes.findIndex(
+                (child) => child.id === directChildId
+            );
+
+            if (targetIndex === -1) {
+                return siblingNodes.length;
+            }
+
+            const targetRect = findNodeRectInRenderer(
+                renderableDocument,
+                directChildId
+            );
+
+            if (!targetRect) {
+                return siblingNodes.length;
+            }
+
+            const shouldInsertAfter =
+                command.parentLayout === 'horizontal'
+                    ? command.worldPosition.x >=
+                      targetRect.x + targetRect.width / 2
+                    : command.worldPosition.y >=
+                      targetRect.y + targetRect.height / 2;
+
+            return targetIndex + (shouldInsertAfter ? 1 : 0);
+        },
+        [renderableDocument, session]
+    );
+
     const applyInteractionCommands = useCallback(
         (commands: EditorInteractionCommand[]) => {
             commands.forEach((command) => {
@@ -202,15 +270,44 @@ export const useCanvasCreationBridge = () => {
                         session.patchNode(command.nodeId, command.position);
                         session.selectNode(command.nodeId);
                         break;
+                    case 'reparentNode': {
+                        const absolutePosition =
+                            command.parentLayout === 'absolute'
+                                ? resolveAbsolutePosition({
+                                      parentId: command.parentId,
+                                      x: command.worldPosition.x,
+                                      y: command.worldPosition.y
+                                  })
+                                : null;
+                        const flowInsertIndex =
+                            resolveFlowReparentIndex(command);
+
+                        session.reparentNode(
+                            command.nodeId,
+                            command.parentId,
+                            {
+                                x: absolutePosition?.x,
+                                y: absolutePosition?.y
+                            },
+                            flowInsertIndex
+                        );
+                        session.selectNode(command.nodeId);
+                        break;
+                    }
                     case 'setActiveTool':
                         break;
                 }
             });
         },
-        [applyCreateNodeCommand, session]
+        [
+            applyCreateNodeCommand,
+            resolveAbsolutePosition,
+            resolveFlowReparentIndex,
+            session
+        ]
     );
 
-    const scopeTextCreationPayload = useCallback(
+    const scopeCreationPayloadToSelectedFrame = useCallback(
         (payload: InteractionPointerPayload) => {
             if (!selectedNodeId) {
                 return payload;
@@ -262,18 +359,31 @@ export const useCanvasCreationBridge = () => {
                 return null;
             }
 
+            const selectedNodeWorldRect = findNodeRectInRenderer(
+                renderableDocument,
+                targetNodeId
+            );
+
             return {
                 nodeId: targetNodeId,
+                parentId:
+                    selectedNodeIndex > 0
+                        ? (payload.nodePath[selectedNodeIndex - 1]?.id ?? null)
+                        : null,
                 parentLayout: toInteractionParentLayout(
                     payload.nodePath[selectedNodeIndex - 1]?.layout
                 ),
                 position: {
                     x: selectedNode.x ?? 0,
                     y: selectedNode.y ?? 0
+                },
+                worldPosition: {
+                    x: selectedNodeWorldRect?.x ?? selectedNode.x ?? 0,
+                    y: selectedNodeWorldRect?.y ?? selectedNode.y ?? 0
                 }
             };
         },
-        [session]
+        [renderableDocument, session]
     );
 
     const dispatchPointerEvent = useCallback(
@@ -282,15 +392,17 @@ export const useCanvasCreationBridge = () => {
             payload: InteractionPointerPayload
         ) => {
             const activeTool = interaction.getState().activeTool;
-            const nextPayload =
-                type === 'pointerDown' && activeTool === 'text'
-                    ? scopeTextCreationPayload(payload)
-                    : type === 'pointerDown' && activeTool === 'pointer'
-                      ? {
-                            ...payload,
-                            selectedNode: resolveSelectedNodeForMove(payload)
-                        }
-                      : payload;
+            const shouldScopeCreationTarget =
+                type === 'pointerDown' &&
+                (activeTool === 'text' || SHAPE_TOOLS.includes(activeTool));
+            const nextPayload = shouldScopeCreationTarget
+                ? scopeCreationPayloadToSelectedFrame(payload)
+                : type === 'pointerDown' && activeTool === 'pointer'
+                  ? {
+                        ...payload,
+                        selectedNode: resolveSelectedNodeForMove(payload)
+                    }
+                  : payload;
             const commands = interaction.dispatch({
                 payload: nextPayload,
                 type
@@ -302,7 +414,7 @@ export const useCanvasCreationBridge = () => {
             applyInteractionCommands,
             interaction,
             resolveSelectedNodeForMove,
-            scopeTextCreationPayload
+            scopeCreationPayloadToSelectedFrame
         ]
     );
 

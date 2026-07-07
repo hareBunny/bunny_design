@@ -69,6 +69,12 @@ export type EditorSession = {
     appendNode(node: EditorNode): void;
     appendChildNode(parentId: string, node: EditorNode): void;
     insertChildNode(parentId: string, index: number, node: EditorNode): void;
+    reparentNode(
+        nodeId: string,
+        parentId: string | null,
+        patch?: EditorNodePatch,
+        index?: number
+    ): void;
     removeNode(nodeId: string): void;
     patchNode(nodeId: string, patch: EditorNodePatch): void;
     replaceNode(nodeId: string, nextNode: EditorNode): void;

@@ -8,6 +8,7 @@ import { appendChildNode } from '../commands/appendChildNode';
 import { appendNode } from '../commands/appendNode';
 import { insertChildNode } from '../commands/insertChildNode';
 import { removeNode } from '../commands/removeNode';
+import { reparentNode } from '../commands/reparentNode';
 import type { EditorDocument } from '../model/document';
 import type { EditorNode } from '../model/node';
 import type { EditorStyleArrayField, EditorStyleItem } from '../model/style';
@@ -174,6 +175,28 @@ export const createEditorSession = (
                     parentId,
                     index,
                     node
+                )
+            };
+            notify();
+        },
+        reparentNode: (nodeId, parentId, patch, index) => {
+            const currentNode = selectNodeById(snapshot.document, nodeId);
+
+            if (!currentNode) {
+                return;
+            }
+
+            snapshot = {
+                ...snapshot,
+                document: reparentNode(
+                    snapshot.document,
+                    nodeId,
+                    parentId,
+                    {
+                        ...currentNode,
+                        ...patch
+                    },
+                    index
                 )
             };
             notify();

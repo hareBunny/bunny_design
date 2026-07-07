@@ -32,6 +32,30 @@ const horizontalNodePath = [
     }
 ];
 
+const horizontalSiblingNodePath = [
+    {
+        id: 'frame-1',
+        type: 'frame' as const,
+        layout: 'horizontal' as const
+    },
+    {
+        id: 'rectangle-2',
+        type: 'rectangle' as const
+    }
+];
+
+const verticalTargetFramePath = [
+    {
+        id: 'frame-target',
+        type: 'frame' as const,
+        layout: 'vertical' as const
+    },
+    {
+        id: 'existing-child',
+        type: 'text' as const
+    }
+];
+
 describe('editor interaction movement reducer', () => {
     it('moves the selected absolute-layout node after drag passes threshold', () => {
         const interaction = createEditorInteraction();
@@ -47,8 +71,13 @@ describe('editor interaction movement reducer', () => {
                 nodePath: absoluteNodePath,
                 selectedNode: {
                     nodeId: 'rectangle-1',
+                    parentId: 'frame-1',
                     parentLayout: 'absolute',
                     position: {
+                        x: 20,
+                        y: 30
+                    },
+                    worldPosition: {
                         x: 20,
                         y: 30
                     }
@@ -117,8 +146,13 @@ describe('editor interaction movement reducer', () => {
                 nodePath: absoluteNodePath,
                 selectedNode: {
                     nodeId: 'rectangle-1',
+                    parentId: 'frame-1',
                     parentLayout: 'absolute',
                     position: {
+                        x: 20,
+                        y: 30
+                    },
+                    worldPosition: {
                         x: 20,
                         y: 30
                     }
@@ -155,8 +189,13 @@ describe('editor interaction movement reducer', () => {
                 nodePath: horizontalNodePath,
                 selectedNode: {
                     nodeId: 'rectangle-1',
+                    parentId: 'frame-1',
                     parentLayout: 'horizontal',
                     position: {
+                        x: 20,
+                        y: 30
+                    },
+                    worldPosition: {
                         x: 20,
                         y: 30
                     }
@@ -177,5 +216,225 @@ describe('editor interaction movement reducer', () => {
         });
 
         expect(commands).toEqual([]);
+    });
+
+    it('reparents the moved node into the hovered frame on pointer up', () => {
+        const interaction = createEditorInteraction();
+
+        interaction.dispatch({
+            type: 'pointerDown',
+            payload: {
+                worldX: 105,
+                worldY: 125,
+                screenX: 305,
+                screenY: 325,
+                button: 0,
+                nodePath: absoluteNodePath,
+                selectedNode: {
+                    nodeId: 'rectangle-1',
+                    parentId: 'frame-1',
+                    parentLayout: 'absolute',
+                    position: {
+                        x: 20,
+                        y: 30
+                    },
+                    worldPosition: {
+                        x: 20,
+                        y: 30
+                    }
+                }
+            }
+        });
+
+        const commands = interaction.dispatch({
+            type: 'pointerUp',
+            payload: {
+                worldX: 245,
+                worldY: 185,
+                screenX: 445,
+                screenY: 385,
+                button: 0,
+                nodePath: verticalTargetFramePath
+            }
+        });
+
+        expect(commands).toEqual([
+            {
+                type: 'reparentNode',
+                nodeId: 'rectangle-1',
+                parentId: 'frame-target',
+                parentLayout: 'vertical',
+                dropPath: verticalTargetFramePath,
+                worldPosition: {
+                    x: 160,
+                    y: 90
+                }
+            }
+        ]);
+    });
+
+    it('reparents the moved node back to the document root when pointer up lands on blank canvas', () => {
+        const interaction = createEditorInteraction();
+
+        interaction.dispatch({
+            type: 'pointerDown',
+            payload: {
+                worldX: 105,
+                worldY: 125,
+                screenX: 305,
+                screenY: 325,
+                button: 0,
+                nodePath: absoluteNodePath,
+                selectedNode: {
+                    nodeId: 'rectangle-1',
+                    parentId: 'frame-1',
+                    parentLayout: 'absolute',
+                    position: {
+                        x: 20,
+                        y: 30
+                    },
+                    worldPosition: {
+                        x: 20,
+                        y: 30
+                    }
+                }
+            }
+        });
+
+        const commands = interaction.dispatch({
+            type: 'pointerUp',
+            payload: {
+                worldX: 245,
+                worldY: 185,
+                screenX: 445,
+                screenY: 385,
+                button: 0,
+                nodePath: []
+            }
+        });
+
+        expect(commands).toEqual([
+            {
+                type: 'reparentNode',
+                nodeId: 'rectangle-1',
+                parentId: null,
+                parentLayout: 'absolute',
+                dropPath: [],
+                worldPosition: {
+                    x: 160,
+                    y: 90
+                }
+            }
+        ]);
+    });
+
+    it('reparents a flex-layout child back to the document root when pointer up lands on blank canvas', () => {
+        const interaction = createEditorInteraction();
+
+        interaction.dispatch({
+            type: 'pointerDown',
+            payload: {
+                worldX: 120,
+                worldY: 140,
+                screenX: 320,
+                screenY: 340,
+                button: 0,
+                nodePath: horizontalNodePath,
+                selectedNode: {
+                    nodeId: 'rectangle-1',
+                    parentId: 'frame-1',
+                    parentLayout: 'horizontal',
+                    position: {
+                        x: 0,
+                        y: 0
+                    },
+                    worldPosition: {
+                        x: 40,
+                        y: 60
+                    }
+                }
+            }
+        });
+
+        const commands = interaction.dispatch({
+            type: 'pointerUp',
+            payload: {
+                worldX: 260,
+                worldY: 210,
+                screenX: 460,
+                screenY: 410,
+                button: 0,
+                nodePath: []
+            }
+        });
+
+        expect(commands).toEqual([
+            {
+                type: 'reparentNode',
+                nodeId: 'rectangle-1',
+                parentId: null,
+                parentLayout: 'absolute',
+                dropPath: [],
+                worldPosition: {
+                    x: 180,
+                    y: 130
+                }
+            }
+        ]);
+    });
+
+    it('keeps a flex-layout child drag as a reparent command when it is dropped over a sibling in the same flow parent', () => {
+        const interaction = createEditorInteraction();
+
+        interaction.dispatch({
+            type: 'pointerDown',
+            payload: {
+                worldX: 120,
+                worldY: 140,
+                screenX: 320,
+                screenY: 340,
+                button: 0,
+                nodePath: horizontalNodePath,
+                selectedNode: {
+                    nodeId: 'rectangle-1',
+                    parentId: 'frame-1',
+                    parentLayout: 'horizontal',
+                    position: {
+                        x: 0,
+                        y: 0
+                    },
+                    worldPosition: {
+                        x: 40,
+                        y: 60
+                    }
+                }
+            }
+        });
+
+        const commands = interaction.dispatch({
+            type: 'pointerUp',
+            payload: {
+                worldX: 210,
+                worldY: 145,
+                screenX: 410,
+                screenY: 345,
+                button: 0,
+                nodePath: horizontalSiblingNodePath
+            }
+        });
+
+        expect(commands).toEqual([
+            {
+                type: 'reparentNode',
+                nodeId: 'rectangle-1',
+                parentId: 'frame-1',
+                parentLayout: 'horizontal',
+                dropPath: horizontalSiblingNodePath,
+                worldPosition: {
+                    x: 130,
+                    y: 65
+                }
+            }
+        ]);
     });
 });

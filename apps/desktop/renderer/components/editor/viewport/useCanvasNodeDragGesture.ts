@@ -231,6 +231,40 @@ const resetDragPreview = (memo: NodeDragMemo) => {
     }
 };
 
+const resolveDropTargetElement = ({
+    clientX,
+    clientY,
+    fallbackTarget,
+    memo
+}: {
+    clientX: number;
+    clientY: number;
+    fallbackTarget: EventTarget | null;
+    memo: NodeDragMemo;
+}) => {
+    if (
+        fallbackTarget instanceof HTMLElement &&
+        !memo.nodeElement.contains(fallbackTarget)
+    ) {
+        return fallbackTarget;
+    }
+
+    const ownerDocument = memo.nodeElement.ownerDocument;
+
+    if (typeof ownerDocument.elementFromPoint !== 'function') {
+        return fallbackTarget;
+    }
+
+    const previousPointerEvents = memo.nodeElement.style.pointerEvents;
+    memo.nodeElement.style.pointerEvents = 'none';
+
+    const resolvedTarget = ownerDocument.elementFromPoint(clientX, clientY);
+
+    memo.nodeElement.style.pointerEvents = previousPointerEvents;
+
+    return resolvedTarget ?? fallbackTarget;
+};
+
 export const useCanvasNodeDragGesture = ({
     activeTool,
     buildPointerPayloadFromClientPoint,
@@ -338,12 +372,29 @@ export const useCanvasNodeDragGesture = ({
                 zoom
             });
 
+            const fallbackTarget =
+                event.target instanceof EventTarget ? event.target : target;
+            const resolvedTarget = last
+                ? resolveDropTargetElement({
+                      clientX: xy[0],
+                      clientY: xy[1],
+                      fallbackTarget,
+                      memo: nextMemo
+                  })
+                : fallbackTarget;
+            const shouldResolveHoverPath =
+                last &&
+                resolvedTarget instanceof HTMLElement &&
+                resolvedTarget.closest('[data-document-renderer="true"]') !==
+                    null;
+            const finalNodePath =
+                last && !shouldResolveHoverPath ? [] : nextMemo.nodePath;
             const payload = buildPointerPayloadFromClientPoint({
                 button: 0,
                 clientX: xy[0],
                 clientY: xy[1],
-                nodePath: nextMemo.nodePath,
-                target
+                nodePath: shouldResolveHoverPath ? undefined : finalNodePath,
+                target: resolvedTarget
             });
 
             if (!payload) {

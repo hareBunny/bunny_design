@@ -10,6 +10,7 @@ export { appendChildNode } from './commands/appendChildNode';
 export { appendNode } from './commands/appendNode';
 export { insertChildNode } from './commands/insertChildNode';
 export { removeNode } from './commands/removeNode';
+export { reparentNode } from './commands/reparentNode';
 export { createDefaultEllipseNode } from './factories/createDefaultEllipseNode';
 export { createDefaultFrameNode } from './factories/createDefaultFrameNode';
 export { createDefaultRectangleNode } from './factories/createDefaultRectangleNode';

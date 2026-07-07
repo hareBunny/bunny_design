@@ -154,7 +154,7 @@ describe('editor session', () => {
         });
     });
 
-    it('appends inserted children to the end of auto layout frames', () => {
+    it('inserts children at the requested index inside auto layout frames', () => {
         const session = createEditorSession({
             version: '1.0.0',
             children: [
@@ -186,10 +186,206 @@ describe('editor session', () => {
 
         expect(session.getNodeById('frame-flow')).toMatchObject({
             children: [
-                expect.anything(),
-                expect.objectContaining({ id: inserted.id })
+                expect.objectContaining({ id: inserted.id }),
+                expect.anything()
             ]
         });
+    });
+
+    it('reparents a node into another absolute frame with relative coordinates', () => {
+        const session = createEditorSession({
+            version: '1.0.0',
+            children: [
+                {
+                    id: 'frame-source',
+                    type: 'frame',
+                    name: 'Source',
+                    x: 40,
+                    y: 50,
+                    width: 180,
+                    height: 140,
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    children: [
+                        createDefaultRectangleNode({
+                            x: 20,
+                            y: 30,
+                            width: 32,
+                            height: 24
+                        })
+                    ]
+                },
+                {
+                    id: 'frame-target',
+                    type: 'frame',
+                    name: 'Target',
+                    x: 260,
+                    y: 80,
+                    width: 200,
+                    height: 160,
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    children: []
+                }
+            ]
+        });
+        const movedNodeId = (
+            session.getNodeById('frame-source') as {
+                children: { id: string }[];
+            }
+        ).children[0].id;
+
+        session.reparentNode(movedNodeId, 'frame-target', {
+            x: 36,
+            y: 44
+        });
+
+        expect(session.getNodeById('frame-source')).toMatchObject({
+            children: []
+        });
+        expect(session.getNodeById('frame-target')).toMatchObject({
+            children: [
+                expect.objectContaining({
+                    id: movedNodeId,
+                    x: 36,
+                    y: 44
+                })
+            ]
+        });
+    });
+
+    it('appends a reparented node to the end of a flow frame children list', () => {
+        const session = createEditorSession({
+            version: '1.0.0',
+            children: [
+                {
+                    id: 'frame-source',
+                    type: 'frame',
+                    name: 'Source',
+                    x: 0,
+                    y: 0,
+                    width: 180,
+                    height: 140,
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    children: [
+                        createDefaultTextNode({
+                            x: 20,
+                            y: 30,
+                            content: 'Move me'
+                        })
+                    ]
+                },
+                {
+                    id: 'frame-flow',
+                    type: 'frame',
+                    name: 'Flow',
+                    x: 260,
+                    y: 0,
+                    width: 200,
+                    height: 160,
+                    layout: 'vertical',
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    children: [
+                        createDefaultTextNode({
+                            content: 'Existing'
+                        })
+                    ]
+                }
+            ]
+        });
+        const movedNodeId = (
+            session.getNodeById('frame-source') as {
+                children: { id: string }[];
+            }
+        ).children[0].id;
+
+        session.reparentNode(movedNodeId, 'frame-flow', {
+            x: undefined,
+            y: undefined
+        });
+
+        expect(session.getNodeById('frame-source')).toMatchObject({
+            children: []
+        });
+        expect(session.getNodeById('frame-flow')).toMatchObject({
+            children: [
+                expect.anything(),
+                expect.objectContaining({
+                    id: movedNodeId,
+                    x: undefined,
+                    y: undefined
+                })
+            ]
+        });
+    });
+
+    it('reparents a child node back to the document root', () => {
+        const session = createEditorSession({
+            version: '1.0.0',
+            children: [
+                {
+                    id: 'frame-source',
+                    type: 'frame',
+                    name: 'Source',
+                    x: 0,
+                    y: 0,
+                    width: 180,
+                    height: 140,
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    children: [
+                        createDefaultTextNode({
+                            x: 20,
+                            y: 30,
+                            content: 'Move me'
+                        })
+                    ]
+                },
+                {
+                    id: 'frame-sibling',
+                    type: 'frame',
+                    name: 'Sibling',
+                    x: 260,
+                    y: 0,
+                    width: 200,
+                    height: 160,
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    children: []
+                }
+            ]
+        });
+        const movedNodeId = (
+            session.getNodeById('frame-source') as {
+                children: { id: string }[];
+            }
+        ).children[0].id;
+
+        session.reparentNode(movedNodeId, null, {
+            x: 300,
+            y: 120
+        });
+
+        expect(session.getNodeById('frame-source')).toMatchObject({
+            children: []
+        });
+        expect(session.getSnapshot().document.children).toMatchObject([
+            { id: 'frame-source' },
+            { id: 'frame-sibling' },
+            {
+                id: movedNodeId,
+                x: 300,
+                y: 120
+            }
+        ]);
     });
 
     it('removes a temporary text node after cancellation', () => {
