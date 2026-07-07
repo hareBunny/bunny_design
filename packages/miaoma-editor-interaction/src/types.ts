@@ -18,6 +18,14 @@ export type HitPathNode = {
     layout?: 'none' | 'horizontal' | 'vertical';
 };
 
+export type InteractionParentLayout = 'absolute' | 'horizontal' | 'vertical';
+
+export type InteractionSelectedNode = {
+    nodeId: string;
+    parentLayout: InteractionParentLayout;
+    position: { x: number; y: number };
+};
+
 export type InteractionPointerPayload = {
     worldX: number;
     worldY: number;
@@ -25,6 +33,7 @@ export type InteractionPointerPayload = {
     screenY: number;
     button: number;
     nodePath: HitPathNode[];
+    selectedNode?: InteractionSelectedNode | null;
 };
 
 export type EditorInteractionEvent =
@@ -41,6 +50,7 @@ export type EditorInteractionCommand =
     | { type: 'setActiveTool'; tool: CanvasToolId }
     | { type: 'selectNode'; nodeId: string | null }
     | { type: 'removeNode'; nodeId: string }
+    | { type: 'moveNode'; nodeId: string; position: { x: number; y: number } }
     | { type: 'clearCreationOverlay' }
     | {
           type: 'showCreationOverlay';
@@ -52,7 +62,7 @@ export type EditorInteractionCommand =
               | {
                     nodeType: 'frame' | 'rectangle' | 'ellipse';
                     parentId: string | null;
-                    parentLayout: 'absolute' | 'horizontal' | 'vertical';
+                    parentLayout: InteractionParentLayout;
                     bounds: {
                         x: number;
                         y: number;
@@ -65,7 +75,7 @@ export type EditorInteractionCommand =
               | {
                     nodeType: 'text';
                     parentId: string | null;
-                    parentLayout: 'absolute' | 'horizontal' | 'vertical';
+                    parentLayout: InteractionParentLayout;
                     position: { x: number; y: number };
                     selectAfterCreate: boolean;
                     startTextEditAfterCreate: true;
@@ -74,22 +84,28 @@ export type EditorInteractionCommand =
 
 export type EditorInteractionState = {
     activeTool: CanvasToolId;
-    mode: 'idle' | 'creatingShape';
+    mode: 'idle' | 'creatingShape' | 'movingNode';
     textEditingNodeId: string | null;
-    pendingNewText:
-        | null
-        | {
-              nodeId: string | null;
-              parentId: string | null;
-          };
+    pendingNewText: null | {
+        nodeId: string | null;
+        parentId: string | null;
+    };
     draft:
         | null
         | {
+              kind: 'shapeCreation';
               tool: 'frame' | 'rectangle' | 'ellipse';
               originWorld: { x: number; y: number };
               originScreen: { x: number; y: number };
               currentWorld: { x: number; y: number };
               targetParentId: string | null;
-              targetParentLayout: 'absolute' | 'horizontal' | 'vertical';
+              targetParentLayout: InteractionParentLayout;
+          }
+        | {
+              kind: 'nodeMovement';
+              nodeId: string;
+              originWorld: { x: number; y: number };
+              originScreen: { x: number; y: number };
+              initialPosition: { x: number; y: number };
           };
 };

@@ -16,6 +16,7 @@ import {
 } from '@miaoma-design-ai/miaoma-editor-core';
 import type { CanvasToolId } from '@miaoma-design-ai/miaoma-editor-interaction';
 import {
+    act,
     fireEvent,
     render,
     screen,
@@ -242,6 +243,38 @@ const GAP_EDITOR_DOCUMENT: EditorDocument = {
     ]
 };
 
+const OVERLAPPING_EDITOR_DOCUMENT: EditorDocument = {
+    version: '1.0.0',
+    children: [
+        {
+            id: 'overlap-back',
+            type: 'frame',
+            name: 'Overlap Back',
+            x: 120,
+            y: 100,
+            width: 200,
+            height: 160,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: []
+        },
+        {
+            id: 'overlap-front',
+            type: 'frame',
+            name: 'Overlap Front',
+            x: 150,
+            y: 130,
+            width: 200,
+            height: 160,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: []
+        }
+    ]
+};
+
 const SelectionControls = () => {
     const session = useEditorSession();
 
@@ -398,6 +431,27 @@ const renderCanvasStageHarnessForDocument = ({
         >
             <EditorInteractionProvider>
                 <CanvasStage activeSidebarTab="layers" />
+                <SelectedNodeDebug />
+                <DocumentDebug />
+            </EditorInteractionProvider>
+        </EditorSessionProvider>
+    );
+
+const renderCanvasStageWithInspectorHarness = ({
+    document,
+    initialSelectedNodeId
+}: {
+    document: EditorDocument;
+    initialSelectedNodeId?: string | null;
+}) =>
+    render(
+        <EditorSessionProvider
+            initialDocument={document}
+            initialSelectedNodeId={initialSelectedNodeId ?? null}
+        >
+            <EditorInteractionProvider>
+                <CanvasStage activeSidebarTab="layers" />
+                <RightInspector />
                 <SelectedNodeDebug />
                 <DocumentDebug />
             </EditorInteractionProvider>
@@ -789,7 +843,13 @@ describe('RightInspectorFormBridge', () => {
 
             fireEvent.pointerDown(screen.getByLabelText('Canvas viewport'), {
                 bubbles: true,
-                button: 0
+                button: 0,
+                pointerId: 1
+            });
+            fireEvent.pointerUp(screen.getByLabelText('Canvas viewport'), {
+                bubbles: true,
+                button: 0,
+                pointerId: 1
             });
 
             await waitFor(() => {
@@ -815,7 +875,13 @@ describe('RightInspectorFormBridge', () => {
 
             fireEvent.pointerDown(screen.getByText('MIAOMAEDU'), {
                 bubbles: true,
-                button: 0
+                button: 0,
+                pointerId: 2
+            });
+            fireEvent.pointerUp(screen.getByText('MIAOMAEDU'), {
+                bubbles: true,
+                button: 0,
+                pointerId: 2
             });
 
             await waitFor(() => {
@@ -975,7 +1041,13 @@ describe('RightInspectorFormBridge', () => {
             fireEvent.pointerDown(textNode as HTMLElement, {
                 bubbles: true,
                 button: 0,
-                detail: 0
+                detail: 0,
+                pointerId: 1
+            });
+            fireEvent.pointerUp(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                pointerId: 1
             });
             await waitFor(() => {
                 expect(readSelectedNode()).toMatchObject({
@@ -1452,21 +1524,30 @@ describe('RightInspectorFormBridge', () => {
                 screen.getByRole('button', { name: 'Rectangle tool' })
             );
 
-            const viewport = screen.getByLabelText('Canvas viewport');
-            fireEvent.pointerDown(viewport, {
+            const canvasStageFrame = document.querySelector<HTMLElement>(
+                '[data-design-node-name="Canvas Stage"]'
+            );
+
+            expect(canvasStageFrame).not.toBeNull();
+
+            fireEvent.pointerDown(canvasStageFrame as HTMLElement, {
                 button: 0,
                 clientX: 360,
-                clientY: 220
+                clientY: 220,
+                pointerId: 1
             });
-            fireEvent.pointerMove(viewport, {
+            fireEvent.pointerMove(screen.getByLabelText('Canvas viewport'), {
+                button: 0,
+                buttons: 1,
+                clientX: 420,
+                clientY: 280,
+                pointerId: 1
+            });
+            fireEvent.pointerUp(screen.getByLabelText('Canvas viewport'), {
                 button: 0,
                 clientX: 420,
-                clientY: 280
-            });
-            fireEvent.pointerUp(viewport, {
-                button: 0,
-                clientX: 420,
-                clientY: 280
+                clientY: 280,
+                pointerId: 1
             });
 
             await waitFor(() => {
@@ -1525,6 +1606,387 @@ describe('RightInspectorFormBridge', () => {
             });
             expect(Number.isInteger(selectedNode.x)).toBe(true);
             expect(Number.isInteger(selectedNode.y)).toBe(true);
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('moves the selected canvas node by dragging it with the pointer tool', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'text-1'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            );
+
+            expect(textNode).not.toBeNull();
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 200,
+                clientY: 220,
+                pointerId: 1
+            });
+            fireEvent.pointerMove(window, {
+                button: 0,
+                buttons: 1,
+                clientX: 230.4,
+                clientY: 235.6,
+                pointerId: 1
+            });
+
+            expect(readSelectedNode()).toMatchObject({
+                id: 'text-1',
+                x: 90,
+                y: 12
+            });
+            expect((textNode as HTMLElement).style.transform).toContain(
+                'translate('
+            );
+
+            const firstPreviewTransform = (textNode as HTMLElement).style
+                .transform;
+
+            fireEvent.pointerMove(window, {
+                button: 0,
+                buttons: 1,
+                clientX: 260.9,
+                clientY: 260.2,
+                pointerId: 1
+            });
+
+            expect(readSelectedNode()).toMatchObject({
+                id: 'text-1',
+                x: 90,
+                y: 12
+            });
+            expect((textNode as HTMLElement).style.transform).not.toBe(
+                firstPreviewTransform
+            );
+
+            fireEvent.pointerUp(window, {
+                button: 0,
+                buttons: 0,
+                clientX: 260.9,
+                clientY: 260.2,
+                pointerId: 1
+            });
+
+            await waitFor(() => {
+                expect(readSelectedNode()).toMatchObject({
+                    id: 'text-1',
+                    x: 151,
+                    y: 52
+                });
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('moves the selected node even when it is covered by an overlapping sibling', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: OVERLAPPING_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'overlap-back'
+            });
+
+            const frontFrame = document.querySelector<HTMLElement>(
+                '[data-design-node-id="overlap-front"]'
+            );
+
+            expect(frontFrame).not.toBeNull();
+            expect(readSelectedNode()).toMatchObject({
+                id: 'overlap-back',
+                x: 120,
+                y: 100
+            });
+
+            fireEvent.pointerDown(frontFrame as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 180,
+                clientY: 160,
+                pointerId: 5
+            });
+            fireEvent.pointerMove(window, {
+                button: 0,
+                buttons: 1,
+                clientX: 240,
+                clientY: 190,
+                pointerId: 5
+            });
+            fireEvent.pointerUp(window, {
+                button: 0,
+                buttons: 0,
+                clientX: 240,
+                clientY: 190,
+                pointerId: 5
+            });
+
+            await waitFor(() => {
+                expect(readSelectedNode()).toMatchObject({
+                    id: 'overlap-back',
+                    x: 180,
+                    y: 130
+                });
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('hides the active selection overlay while dragging and restores it after pointer up', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'text-1'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            );
+            const readSelectionOverlay = () =>
+                document.querySelector<HTMLElement>(
+                    '[data-viewport-selection-node-id="text-1"]'
+                );
+
+            expect(textNode).not.toBeNull();
+            expect(readSelectionOverlay()).not.toBeNull();
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 200,
+                clientY: 220,
+                pointerId: 3
+            });
+            fireEvent.pointerMove(window, {
+                button: 0,
+                buttons: 1,
+                clientX: 230.4,
+                clientY: 235.6,
+                pointerId: 3
+            });
+
+            expect(readSelectionOverlay()).toBeNull();
+
+            fireEvent.pointerUp(window, {
+                button: 0,
+                buttons: 0,
+                clientX: 260.9,
+                clientY: 260.2,
+                pointerId: 3
+            });
+
+            await waitFor(() => {
+                expect(readSelectionOverlay()).not.toBeNull();
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('recreates the selection overlay only after drag preview cleanup finishes', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const originalRequestAnimationFrame = window.requestAnimationFrame;
+        const queuedAnimationFrameCallbacks: FrameRequestCallback[] = [];
+
+        globalThis.ResizeObserver = TestResizeObserver;
+        window.requestAnimationFrame = ((callback: FrameRequestCallback) => {
+            queuedAnimationFrameCallbacks.push(callback);
+
+            return queuedAnimationFrameCallbacks.length;
+        }) as typeof window.requestAnimationFrame;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'text-1'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            );
+            const readSelectionOverlay = () =>
+                document.querySelector<HTMLElement>(
+                    '[data-viewport-selection-node-id="text-1"]'
+                );
+
+            expect(textNode).not.toBeNull();
+            expect(readSelectionOverlay()).not.toBeNull();
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 200,
+                clientY: 220,
+                pointerId: 4
+            });
+            fireEvent.pointerMove(window, {
+                button: 0,
+                buttons: 1,
+                clientX: 230.4,
+                clientY: 235.6,
+                pointerId: 4
+            });
+
+            expect(readSelectionOverlay()).toBeNull();
+
+            fireEvent.pointerUp(window, {
+                button: 0,
+                buttons: 0,
+                clientX: 260.9,
+                clientY: 260.2,
+                pointerId: 4
+            });
+
+            expect(readSelectionOverlay()).toBeNull();
+            expect(queuedAnimationFrameCallbacks).toHaveLength(1);
+
+            await act(async () => {
+                queuedAnimationFrameCallbacks.shift()?.(0);
+            });
+
+            await waitFor(() => {
+                expect(readSelectionOverlay()).not.toBeNull();
+            });
+        } finally {
+            window.requestAnimationFrame = originalRequestAnimationFrame;
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('keeps the dragged node position when the right inspector is mounted', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageWithInspectorHarness({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'text-1'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            );
+            const xInput = screen.getByLabelText(
+                'X position'
+            ) as HTMLInputElement;
+            const yInput = screen.getByLabelText(
+                'Y position'
+            ) as HTMLInputElement;
+
+            expect(textNode).not.toBeNull();
+            expect(xInput.value).toBe('90');
+            expect(yInput.value).toBe('12');
+
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 200,
+                clientY: 220,
+                pointerId: 1
+            });
+            fireEvent.pointerMove(window, {
+                button: 0,
+                buttons: 1,
+                clientX: 260.9,
+                clientY: 260.2,
+                pointerId: 1
+            });
+            fireEvent.pointerUp(window, {
+                button: 0,
+                buttons: 0,
+                clientX: 260.9,
+                clientY: 260.2,
+                pointerId: 1
+            });
+
+            await waitFor(() => {
+                expect(readSelectedNode()).toMatchObject({
+                    id: 'text-1',
+                    x: 151,
+                    y: 52
+                });
+                expect(xInput.value).toBe('151');
+                expect(yInput.value).toBe('52');
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('keeps the selected parent active when dragging from a child node area', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageHarnessForDocument({
+                document: NESTED_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'group-1'
+            });
+
+            const nestedText = document.querySelector<HTMLElement>(
+                '[data-design-node-id="nested-text"]'
+            );
+
+            expect(nestedText).not.toBeNull();
+
+            fireEvent.pointerDown(nestedText as HTMLElement, {
+                button: 0,
+                buttons: 1,
+                clientX: 100,
+                clientY: 100,
+                pointerId: 2
+            });
+
+            expect(readSelectedNode()).toMatchObject({
+                id: 'group-1',
+                x: 0,
+                y: 0
+            });
+
+            fireEvent.pointerMove(window, {
+                button: 0,
+                buttons: 1,
+                clientX: 150,
+                clientY: 130,
+                pointerId: 2
+            });
+            fireEvent.pointerUp(window, {
+                button: 0,
+                buttons: 0,
+                clientX: 150,
+                clientY: 130,
+                pointerId: 2
+            });
+
+            await waitFor(() => {
+                expect(readSelectedNode()).toMatchObject({
+                    id: 'group-1',
+                    x: 50,
+                    y: 30
+                });
+            });
         } finally {
             globalThis.ResizeObserver = originalResizeObserver;
         }
@@ -1905,7 +2367,13 @@ describe('RightInspectorFormBridge', () => {
 
             await user.click(screen.getByRole('button', { name: 'Text tool' }));
 
-            fireEvent.pointerDown(screen.getByLabelText('Canvas viewport'), {
+            const rootFrame = document.querySelector<HTMLElement>(
+                '[data-design-node-name="Miaoma Editor Recreation Course"]'
+            );
+
+            expect(rootFrame).not.toBeNull();
+
+            fireEvent.pointerDown(rootFrame as HTMLElement, {
                 button: 0,
                 clientX: 300,
                 clientY: 260

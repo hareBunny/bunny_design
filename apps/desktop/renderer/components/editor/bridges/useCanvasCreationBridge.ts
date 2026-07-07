@@ -16,7 +16,8 @@ import {
 import type {
     CanvasToolId,
     EditorInteractionCommand,
-    InteractionPointerPayload
+    InteractionPointerPayload,
+    InteractionSelectedNode
 } from '@miaoma-design-ai/miaoma-editor-interaction';
 
 import { useEditorInteraction } from '../state/useEditorInteraction';
@@ -39,6 +40,11 @@ type TextEditorState = {
 
 const DEFAULT_TEXT_DRAFT_WIDTH = 64;
 const DEFAULT_TEXT_DRAFT_HEIGHT = 24;
+
+const toInteractionParentLayout = (
+    layout: 'none' | 'horizontal' | 'vertical' | undefined
+): InteractionSelectedNode['parentLayout'] =>
+    layout === 'horizontal' || layout === 'vertical' ? layout : 'absolute';
 
 export const useCanvasCreationBridge = () => {
     const session = useEditorSession();
@@ -192,6 +198,10 @@ export const useCanvasCreationBridge = () => {
                     case 'removeNode':
                         session.removeNode(command.nodeId);
                         break;
+                    case 'moveNode':
+                        session.patchNode(command.nodeId, command.position);
+                        session.selectNode(command.nodeId);
+                        break;
                     case 'setActiveTool':
                         break;
                 }
@@ -228,6 +238,44 @@ export const useCanvasCreationBridge = () => {
         [selectedNodeId, session]
     );
 
+    const resolveSelectedNodeForMove = useCallback(
+        (
+            payload: InteractionPointerPayload
+        ): InteractionSelectedNode | null => {
+            const targetNodeId = payload.nodePath.at(-1)?.id;
+
+            if (!targetNodeId) {
+                return null;
+            }
+
+            const selectedNode = session.getNodeById(targetNodeId);
+
+            if (!selectedNode) {
+                return null;
+            }
+
+            const selectedNodeIndex = payload.nodePath.findIndex(
+                (node) => node.id === targetNodeId
+            );
+
+            if (selectedNodeIndex === -1) {
+                return null;
+            }
+
+            return {
+                nodeId: targetNodeId,
+                parentLayout: toInteractionParentLayout(
+                    payload.nodePath[selectedNodeIndex - 1]?.layout
+                ),
+                position: {
+                    x: selectedNode.x ?? 0,
+                    y: selectedNode.y ?? 0
+                }
+            };
+        },
+        [session]
+    );
+
     const dispatchPointerEvent = useCallback(
         (
             type: 'pointerDown' | 'pointerMove' | 'pointerUp',
@@ -237,7 +285,12 @@ export const useCanvasCreationBridge = () => {
             const nextPayload =
                 type === 'pointerDown' && activeTool === 'text'
                     ? scopeTextCreationPayload(payload)
-                    : payload;
+                    : type === 'pointerDown' && activeTool === 'pointer'
+                      ? {
+                            ...payload,
+                            selectedNode: resolveSelectedNodeForMove(payload)
+                        }
+                      : payload;
             const commands = interaction.dispatch({
                 payload: nextPayload,
                 type
@@ -245,7 +298,12 @@ export const useCanvasCreationBridge = () => {
 
             applyInteractionCommands(commands);
         },
-        [applyInteractionCommands, interaction, scopeTextCreationPayload]
+        [
+            applyInteractionCommands,
+            interaction,
+            resolveSelectedNodeForMove,
+            scopeTextCreationPayload
+        ]
     );
 
     const handleTextCommit = useCallback(

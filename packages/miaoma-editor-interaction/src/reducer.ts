@@ -8,7 +8,8 @@ import type {
     EditorInteractionCommand,
     EditorInteractionEvent,
     EditorInteractionState,
-    HitPathNode
+    HitPathNode,
+    InteractionSelectedNode
 } from './types';
 
 const DRAG_THRESHOLD = 4;
@@ -17,6 +18,42 @@ const roundPoint = (point: { x: number; y: number }) => ({
     x: Math.round(point.x),
     y: Math.round(point.y)
 });
+
+const getDistanceFromOrigin = ({
+    currentScreen,
+    originScreen
+}: {
+    currentScreen: { x: number; y: number };
+    originScreen: { x: number; y: number };
+}) =>
+    Math.hypot(
+        currentScreen.x - originScreen.x,
+        currentScreen.y - originScreen.y
+    );
+
+const getMovePosition = ({
+    currentWorld,
+    initialPosition,
+    originWorld
+}: {
+    currentWorld: { x: number; y: number };
+    initialPosition: { x: number; y: number };
+    originWorld: { x: number; y: number };
+}) =>
+    roundPoint({
+        x: initialPosition.x + currentWorld.x - originWorld.x,
+        y: initialPosition.y + currentWorld.y - originWorld.y
+    });
+
+const isNodeInPath = (nodePath: HitPathNode[], nodeId: string) =>
+    nodePath.some((node) => node.id === nodeId);
+
+const canMoveSelectedNode = (
+    selectedNode: InteractionSelectedNode | null | undefined,
+    nodePath: HitPathNode[]
+) =>
+    selectedNode?.parentLayout === 'absolute' &&
+    isNodeInPath(nodePath, selectedNode.nodeId);
 
 const resolveParent = (nodePath: HitPathNode[]) => {
     const frame = [...nodePath].reverse().find((node) => node.type === 'frame');
@@ -165,6 +202,7 @@ export const reduceInteraction = (
                     ...state,
                     mode: 'creatingShape',
                     draft: {
+                        kind: 'shapeCreation',
                         tool: state.activeTool,
                         originWorld: {
                             x: event.payload.worldX,
@@ -186,13 +224,44 @@ export const reduceInteraction = (
             };
         }
 
+        if (
+            state.activeTool === 'pointer' &&
+            canMoveSelectedNode(
+                event.payload.selectedNode,
+                event.payload.nodePath
+            )
+        ) {
+            const selectedNode = event.payload.selectedNode;
+
+            return {
+                state: {
+                    ...state,
+                    mode: 'movingNode',
+                    draft: {
+                        kind: 'nodeMovement',
+                        nodeId: selectedNode.nodeId,
+                        originWorld: {
+                            x: event.payload.worldX,
+                            y: event.payload.worldY
+                        },
+                        originScreen: {
+                            x: event.payload.screenX,
+                            y: event.payload.screenY
+                        },
+                        initialPosition: selectedNode.position
+                    }
+                },
+                commands: []
+            };
+        }
+
         return { state, commands: [] };
     }
 
     if (
         event.type === 'pointerMove' &&
         state.mode === 'creatingShape' &&
-        state.draft
+        state.draft?.kind === 'shapeCreation'
     ) {
         const x = Math.min(state.draft.originWorld.x, event.payload.worldX);
         const y = Math.min(state.draft.originWorld.y, event.payload.worldY);
@@ -226,7 +295,7 @@ export const reduceInteraction = (
     if (
         event.type === 'pointerUp' &&
         state.mode === 'creatingShape' &&
-        state.draft
+        state.draft?.kind === 'shapeCreation'
     ) {
         const deltaX = event.payload.screenX - state.draft.originScreen.x;
         const deltaY = event.payload.screenY - state.draft.originScreen.y;
@@ -277,6 +346,53 @@ export const reduceInteraction = (
                 },
                 { type: 'clearCreationOverlay' },
                 { type: 'setActiveTool', tool: 'pointer' }
+            ]
+        };
+    }
+
+    if (
+        (event.type === 'pointerMove' || event.type === 'pointerUp') &&
+        state.mode === 'movingNode' &&
+        state.draft?.kind === 'nodeMovement'
+    ) {
+        const distance = getDistanceFromOrigin({
+            currentScreen: {
+                x: event.payload.screenX,
+                y: event.payload.screenY
+            },
+            originScreen: state.draft.originScreen
+        });
+        const nextState =
+            event.type === 'pointerUp'
+                ? {
+                      ...state,
+                      mode: 'idle' as const,
+                      draft: null
+                  }
+                : state;
+
+        if (distance <= DRAG_THRESHOLD) {
+            return {
+                state: nextState,
+                commands: []
+            };
+        }
+
+        return {
+            state: nextState,
+            commands: [
+                {
+                    type: 'moveNode',
+                    nodeId: state.draft.nodeId,
+                    position: getMovePosition({
+                        currentWorld: {
+                            x: event.payload.worldX,
+                            y: event.payload.worldY
+                        },
+                        initialPosition: state.draft.initialPosition,
+                        originWorld: state.draft.originWorld
+                    })
+                }
             ]
         };
     }

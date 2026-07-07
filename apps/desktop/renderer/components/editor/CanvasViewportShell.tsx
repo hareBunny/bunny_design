@@ -33,13 +33,19 @@ import { CanvasDocumentRenderer } from '../document/CanvasDocumentRenderer';
 import { getTopLevelBounds } from '../document/CanvasNodeRenderers';
 import {
     type DoubleClickSelectionTarget,
-    getNextDoubleClickSelectionTarget
+    findDesignNodePathById,
+    getNextDoubleClickSelectionTarget,
+    getNextSelectedNodeIdFromPath
 } from '../document/documentSelectionUtils';
 
 import { CanvasCreationOverlay } from './creation/CanvasCreationOverlay';
 import { CanvasInlineTextEditor } from './creation/CanvasInlineTextEditor';
 import { DEFAULT_INITIAL_ZOOM, ZOOM_PRESETS } from './viewport/constants';
-import { extractDesignNodePath } from './viewport/extractDesignNodePath';
+import {
+    extractDesignNodePath,
+    findNodeRectInRenderer
+} from './viewport/extractDesignNodePath';
+import { useCanvasNodeDragGesture } from './viewport/useCanvasNodeDragGesture';
 import { useShortcutWheelZoom } from './viewport/useShortcutWheelZoom';
 import {
     measureViewportSelectionBounds,
@@ -114,6 +120,20 @@ type InlineTextEditorLayout = {
     textAlign?: CSSProperties['textAlign'];
 };
 
+type ViewportPointerSession = {
+    clickCount: number;
+    pointerId: number;
+    tool: CanvasToolId;
+    nodePath: HitPathNode[];
+    originScreen: {
+        x: number;
+        y: number;
+    };
+    selectedNodeId: string | null;
+    selectedNodePath: string[] | null;
+    moved: boolean;
+};
+
 const buildNodeLookup = (document: MiaomaDesignDocument) => {
     const entries = new Map<
         string,
@@ -169,10 +189,12 @@ export const CanvasViewportShell = ({
         useState<ViewportSelectionBounds | null>(null);
     const [textEditorLayout, setTextEditorLayout] =
         useState<InlineTextEditorLayout | null>(null);
+    const [isDraggingSelection, setIsDraggingSelection] = useState(false);
     const [isSpacePanActive, setIsSpacePanActive] = useState(false);
     const [isPanningViewport, setIsPanningViewport] = useState(false);
     const lastDocumentPointerPayloadRef =
         useRef<InteractionPointerPayload | null>(null);
+    const pointerSessionRef = useRef<ViewportPointerSession | null>(null);
     const doubleClickTargetRef = useRef<DoubleClickSelectionTarget | null>(
         null
     );
@@ -191,6 +213,31 @@ export const CanvasViewportShell = ({
     const documentBounds = useMemo(
         () => getTopLevelBounds(document.children),
         [document.children]
+    );
+    const selectedNodePath = useMemo(
+        () =>
+            selectedNodeId
+                ? findDesignNodePathById(document.children, selectedNodeId)
+                : null,
+        [document.children, selectedNodeId]
+    );
+    const selectedNodeHitPath = useMemo(() => {
+        if (!selectedNodePath) {
+            return null;
+        }
+
+        const hitPath = selectedNodePath
+            .map((nodeId) => nodeLookup.get(nodeId))
+            .filter((node): node is HitPathNode => node !== undefined);
+
+        return hitPath.length === selectedNodePath.length ? hitPath : null;
+    }, [nodeLookup, selectedNodePath]);
+    const selectedNodeWorldRect = useMemo(
+        () =>
+            selectedNodeId
+                ? findNodeRectInRenderer(document, selectedNodeId)
+                : null,
+        [document, selectedNodeId]
     );
     const isPanMode = activeTool === 'hand' || isSpacePanActive;
     const isSelectionEnabled = selectionEnabled && !isPanMode;
@@ -226,7 +273,9 @@ export const CanvasViewportShell = ({
 
     useEffect(() => {
         const resetPanState = () => {
+            pointerSessionRef.current = null;
             panSessionRef.current = null;
+            setIsDraggingSelection(false);
             setIsPanningViewport(false);
             setIsSpacePanActive(false);
         };
@@ -253,7 +302,7 @@ export const CanvasViewportShell = ({
     useIsomorphicLayoutEffect(() => {
         const element = scrollRef.current;
 
-        if (!element || !selectedNodeId) {
+        if (!element || !selectedNodeId || isDraggingSelection) {
             setSelectionBounds(null);
             return;
         }
@@ -267,6 +316,7 @@ export const CanvasViewportShell = ({
         );
     }, [
         document,
+        isDraggingSelection,
         selectedNodeId,
         state.cameraX,
         state.cameraY,
@@ -363,38 +413,120 @@ export const CanvasViewportShell = ({
         );
     };
 
-    const buildPointerPayload = (
-        event: ReactPointerEvent<HTMLDivElement>
-    ): InteractionPointerPayload | null => {
+    const buildPointerPayloadFromClientPoint = ({
+        button,
+        clientX,
+        clientY,
+        nodePath,
+        target
+    }: {
+        button: number;
+        clientX: number;
+        clientY: number;
+        target: EventTarget | null;
+        nodePath?: HitPathNode[];
+    }): InteractionPointerPayload | null => {
         const viewportElement = scrollRef.current;
 
-        if (!viewportElement || !(event.target instanceof HTMLElement)) {
+        if (!viewportElement) {
             return null;
         }
 
         const rect = viewportElement.getBoundingClientRect();
         const worldPoint = screenToWorld(state, {
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top
+            x: clientX - rect.left,
+            y: clientY - rect.top
         });
-        const nodePath: HitPathNode[] = extractDesignNodePath({
-            document,
-            lookup: nodeLookup,
-            rendererRoot: viewportElement,
-            target: event.target,
-            worldX: worldPoint.x,
-            worldY: worldPoint.y
-        });
+        const shouldResolveNodePath =
+            nodePath !== undefined ||
+            (target instanceof HTMLElement &&
+                target.closest('[data-document-renderer="true"]') !== null);
+        const nextNodePath: HitPathNode[] =
+            nodePath ??
+            (shouldResolveNodePath
+                ? extractDesignNodePath({
+                      document,
+                      lookup: nodeLookup,
+                      rendererRoot: viewportElement,
+                      target,
+                      worldX: worldPoint.x,
+                      worldY: worldPoint.y
+                  })
+                : []);
 
         return {
-            button: event.button,
-            nodePath,
-            screenX: event.clientX,
-            screenY: event.clientY,
+            button,
+            nodePath: nextNodePath,
+            screenX: clientX,
+            screenY: clientY,
             worldX: worldPoint.x,
             worldY: worldPoint.y
         };
     };
+
+    const buildPointerPayload = (
+        event: ReactPointerEvent<HTMLDivElement>,
+        options?: {
+            nodePath?: HitPathNode[];
+        }
+    ): InteractionPointerPayload | null =>
+        buildPointerPayloadFromClientPoint({
+            button: event.button,
+            clientX: event.clientX,
+            clientY: event.clientY,
+            nodePath: options?.nodePath,
+            target: event.target
+        });
+
+    const commitPointerClickSelection = (
+        pointerSession: ViewportPointerSession
+    ) => {
+        if (!isSelectionEnabled) {
+            return;
+        }
+
+        if (pointerSession.nodePath.length === 0) {
+            onCanvasPointerDown?.();
+            return;
+        }
+
+        const nextSelectedNodeId = getNextSelectedNodeIdFromPath({
+            clickCount: pointerSession.clickCount,
+            nodePath: pointerSession.nodePath.map((node) => node.id),
+            selectedNodeId: pointerSession.selectedNodeId,
+            selectedNodePath: pointerSession.selectedNodePath
+        });
+
+        if (nextSelectedNodeId) {
+            onNodePointerDown?.(nextSelectedNodeId);
+        }
+    };
+
+    const markPointerSessionMoved = () => {
+        if (pointerSessionRef.current) {
+            pointerSessionRef.current.moved = true;
+        }
+    };
+
+    const handleNodeDragGestureStart = (payload: InteractionPointerPayload) => {
+        markPointerSessionMoved();
+        onViewportPointerDown?.(payload);
+    };
+
+    useCanvasNodeDragGesture({
+        activeTool,
+        buildPointerPayloadFromClientPoint,
+        isSelectionEnabled,
+        onDragStateChange: setIsDraggingSelection,
+        selectedNodeHitPath,
+        selectedNodePath,
+        selectedNodeWorldRect,
+        onViewportPointerDown: handleNodeDragGestureStart,
+        onViewportPointerUp,
+        scrollRef,
+        selectedNodeId,
+        zoom: state.zoom
+    });
 
     const handleViewportPointerDown = (
         event: ReactPointerEvent<HTMLDivElement>
@@ -409,7 +541,10 @@ export const CanvasViewportShell = ({
 
         event.currentTarget.focus();
 
-        if (typeof event.currentTarget.setPointerCapture === 'function') {
+        if (
+            activeTool !== 'pointer' &&
+            typeof event.currentTarget.setPointerCapture === 'function'
+        ) {
             event.currentTarget.setPointerCapture(event.pointerId);
         }
 
@@ -429,6 +564,19 @@ export const CanvasViewportShell = ({
         const payload = buildPointerPayload(event);
 
         if (payload) {
+            pointerSessionRef.current = {
+                clickCount: event.detail,
+                pointerId: event.pointerId,
+                tool: activeTool,
+                nodePath: payload.nodePath,
+                originScreen: {
+                    x: event.clientX,
+                    y: event.clientY
+                },
+                selectedNodeId: selectedNodeId ?? null,
+                selectedNodePath,
+                moved: false
+            };
             lastDocumentPointerPayloadRef.current =
                 payload.nodePath.length > 0 ? payload : null;
 
@@ -442,7 +590,11 @@ export const CanvasViewportShell = ({
                 selectedNodeId
             });
 
-            onViewportPointerDown?.(payload);
+            if (activeTool !== 'pointer') {
+                onViewportPointerDown?.(payload);
+            } else {
+                return;
+            }
         }
 
         if (event.target.closest('[data-document-renderer="true"]')) {
@@ -468,6 +620,7 @@ export const CanvasViewportShell = ({
         }
 
         const panSession = panSessionRef.current;
+        const pointerSession = pointerSessionRef.current;
 
         if (panSession && panSession.pointerId === event.pointerId) {
             event.preventDefault();
@@ -477,6 +630,40 @@ export const CanvasViewportShell = ({
                 panSession.startScrollTop -
                     (event.clientY - panSession.startScreenY)
             );
+            return;
+        }
+
+        if (pointerSession && pointerSession.pointerId === event.pointerId) {
+            const distance = Math.hypot(
+                event.clientX - pointerSession.originScreen.x,
+                event.clientY - pointerSession.originScreen.y
+            );
+
+            if (distance > 4) {
+                pointerSession.moved = true;
+                event.preventDefault();
+            }
+
+            if (pointerSession.tool === 'pointer') {
+                return;
+            }
+
+            if (activeTool === 'pointer') {
+                return;
+            }
+
+            const payload = buildPointerPayload(event, {
+                nodePath: pointerSession.nodePath
+            });
+
+            if (payload) {
+                onViewportPointerMove?.(payload);
+            }
+
+            return;
+        }
+
+        if (activeTool === 'pointer') {
             return;
         }
 
@@ -499,6 +686,7 @@ export const CanvasViewportShell = ({
         }
 
         const panSession = panSessionRef.current;
+        const pointerSession = pointerSessionRef.current;
 
         if (panSession && panSession.pointerId === event.pointerId) {
             panSessionRef.current = null;
@@ -513,6 +701,49 @@ export const CanvasViewportShell = ({
                 event.currentTarget.releasePointerCapture(event.pointerId);
             }
 
+            return;
+        }
+
+        if (pointerSession && pointerSession.pointerId === event.pointerId) {
+            pointerSessionRef.current = null;
+
+            if (pointerSession.moved) {
+                event.preventDefault();
+            }
+
+            if (pointerSession.tool === 'pointer') {
+                if (!pointerSession.moved) {
+                    commitPointerClickSelection(pointerSession);
+                }
+
+                return;
+            }
+
+            if (activeTool === 'pointer') {
+                return;
+            }
+
+            const payload = buildPointerPayload(event, {
+                nodePath: pointerSession.nodePath
+            });
+
+            if (payload) {
+                onViewportPointerUp?.(payload);
+            }
+
+            if (
+                typeof event.currentTarget.releasePointerCapture ===
+                    'function' &&
+                (typeof event.currentTarget.hasPointerCapture !== 'function' ||
+                    event.currentTarget.hasPointerCapture(event.pointerId))
+            ) {
+                event.currentTarget.releasePointerCapture(event.pointerId);
+            }
+
+            return;
+        }
+
+        if (activeTool === 'pointer') {
             return;
         }
 
@@ -543,10 +774,6 @@ export const CanvasViewportShell = ({
         }
 
         if (isInteractiveViewportTarget(event.target)) {
-            return;
-        }
-
-        if (event.target.closest('[data-document-renderer="true"]')) {
             return;
         }
 
@@ -592,6 +819,8 @@ export const CanvasViewportShell = ({
 
         event.preventDefault();
         panSessionRef.current = null;
+        pointerSessionRef.current = null;
+        setIsDraggingSelection(false);
         setIsPanningViewport(false);
         setIsSpacePanActive(false);
     };
@@ -691,21 +920,9 @@ export const CanvasViewportShell = ({
                             <CanvasDocumentRenderer
                                 document={document}
                                 editingTextNodeId={textEditorState?.nodeId}
-                                onCanvasPointerDown={
-                                    isSelectionEnabled
-                                        ? onCanvasPointerDown
-                                        : undefined
-                                }
-                                onNodeDoubleClick={
-                                    isSelectionEnabled
-                                        ? onNodeDoubleClick
-                                        : undefined
-                                }
-                                onNodePointerDown={
-                                    isSelectionEnabled
-                                        ? onNodePointerDown
-                                        : undefined
-                                }
+                                onCanvasPointerDown={undefined}
+                                onNodeDoubleClick={undefined}
+                                onNodePointerDown={undefined}
                                 renderSelectionOverlay={false}
                                 resolveAsset={resolveAsset}
                                 selectedNodeId={selectedNodeId}
@@ -713,7 +930,7 @@ export const CanvasViewportShell = ({
                             />
                         </div>
                     </div>
-                    {selectionBounds ? (
+                    {!isDraggingSelection && selectionBounds ? (
                         <div
                             aria-hidden="true"
                             className="editor-viewport-selection-layer absolute inset-0 z-20 overflow-visible"

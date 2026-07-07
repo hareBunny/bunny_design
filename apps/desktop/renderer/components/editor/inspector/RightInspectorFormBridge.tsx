@@ -15,7 +15,7 @@ import {
     Square,
     Type
 } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 
 import type { EditorNode } from '@miaoma-design-ai/miaoma-editor-core';
@@ -46,6 +46,49 @@ const NODE_ICON_BY_TYPE = {
     rectangle: Square,
     text: Type
 } satisfies Record<EditorNode['type'], typeof Frame>;
+
+const getNodeDimensionValue = (node: EditorNode, axis: 'height' | 'width') => {
+    if (!(axis in node)) {
+        return undefined;
+    }
+
+    return node[axis];
+};
+
+const getInspectorNodeSyncKey = (node: EditorNode | null) => {
+    if (!node) {
+        return 'none';
+    }
+
+    // Style arrays own their field-array state locally; scalar fields need external node sync.
+    return JSON.stringify({
+        id: node.id,
+        type: node.type,
+        name: node.name,
+        opacity: node.opacity,
+        x: node.x,
+        y: node.y,
+        rotation: node.rotation,
+        width: getNodeDimensionValue(node, 'width'),
+        height: getNodeDimensionValue(node, 'height'),
+        cornerRadius:
+            node.type === 'frame' || node.type === 'rectangle'
+                ? node.cornerRadius
+                : undefined,
+        clip: node.type === 'frame' ? node.clip : undefined,
+        layout: node.type === 'frame' ? node.layout : undefined,
+        gap: node.type === 'frame' ? node.gap : undefined,
+        padding: node.type === 'frame' ? node.padding : undefined,
+        justifyContent: node.type === 'frame' ? node.justifyContent : undefined,
+        alignItems: node.type === 'frame' ? node.alignItems : undefined,
+        fontSize: node.type === 'text' ? node.fontSize : undefined,
+        textGrowth: node.type === 'text' ? node.textGrowth : undefined,
+        textAlign: node.type === 'text' ? node.textAlign : undefined,
+        fontFamily: node.type === 'text' ? node.fontFamily : undefined,
+        fontWeight: node.type === 'text' ? node.fontWeight : undefined,
+        lineHeight: node.type === 'text' ? node.lineHeight : undefined
+    });
+};
 
 const SelectedObjectBlock = ({
     nodeType
@@ -121,25 +164,37 @@ const ExportSection = () => (
 export const RightInspectorFormBridge = () => {
     const session = useEditorSession();
     const selectedNode = useSelectedNode();
+    const selectedNodeRef = useRef<EditorNode | null>(selectedNode);
+    selectedNodeRef.current = selectedNode;
     const form = useForm<InspectorFormValues>({
         defaultValues: selectedNode
             ? nodeToFormValues(selectedNode)
             : createEmptyInspectorFormValues()
     });
+    const skipNextInspectorPatchRef = useRef(false);
+    const selectedNodeSyncKey = getInspectorNodeSyncKey(selectedNode);
     const watchedValues = useWatch({
         control: form.control
     }) as InspectorFormValues;
 
     useEffect(() => {
+        const nextSelectedNode = selectedNodeRef.current;
+
+        skipNextInspectorPatchRef.current = true;
         form.reset(
-            selectedNode
-                ? nodeToFormValues(selectedNode)
+            nextSelectedNode
+                ? nodeToFormValues(nextSelectedNode)
                 : createEmptyInspectorFormValues()
         );
-    }, [form, selectedNode?.id]);
+    }, [form, selectedNodeSyncKey]);
 
     useEffect(() => {
         if (!selectedNode || watchedValues.nodeId !== selectedNode.id) {
+            return;
+        }
+
+        if (skipNextInspectorPatchRef.current) {
+            skipNextInspectorPatchRef.current = false;
             return;
         }
 

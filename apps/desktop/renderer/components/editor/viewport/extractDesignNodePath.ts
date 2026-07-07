@@ -31,6 +31,7 @@ type Rect = {
 };
 
 export type FrameRect = Rect;
+export type NodeRect = Rect;
 
 type MeasureContext = {
     availableWidth?: number;
@@ -508,6 +509,32 @@ const findFrameRectAtId = (
     return null;
 };
 
+const findNodeRectAtId = (
+    node: MiaomaDesignNode,
+    nodeRect: Rect,
+    nodeId: string
+): NodeRect | null => {
+    if (node.id === nodeId) {
+        return nodeRect;
+    }
+
+    if (node.type !== 'frame') {
+        return null;
+    }
+
+    const childRects = getChildRects(node, nodeRect);
+
+    for (const child of childRects) {
+        const nestedRect = findNodeRectAtId(child.node, child.rect, nodeId);
+
+        if (nestedRect) {
+            return nestedRect;
+        }
+    }
+
+    return null;
+};
+
 export const findFrameRectInRenderer = (
     document: MiaomaDesignDocument,
     frameId: string
@@ -527,6 +554,30 @@ export const findFrameRectInRenderer = (
             y: node.y ?? 0
         };
         const nestedRect = findFrameRectAtId(node, frameRect, frameId);
+
+        if (nestedRect) {
+            return nestedRect;
+        }
+    }
+
+    return null;
+};
+
+export const findNodeRectInRenderer = (
+    document: MiaomaDesignDocument,
+    nodeId: string
+): NodeRect | null => {
+    for (const node of document.children) {
+        const size = measureNodeSize(node, {
+            parentLayout: 'absolute'
+        });
+        const nodeRect = {
+            height: size.height,
+            width: size.width,
+            x: node.x ?? 0,
+            y: node.y ?? 0
+        };
+        const nestedRect = findNodeRectAtId(node, nodeRect, nodeId);
 
         if (nestedRect) {
             return nestedRect;
