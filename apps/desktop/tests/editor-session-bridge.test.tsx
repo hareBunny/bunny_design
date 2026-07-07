@@ -140,6 +140,76 @@ const NESTED_EDITOR_DOCUMENT: EditorDocument = {
     ]
 };
 
+const SIBLING_NESTED_EDITOR_DOCUMENT: EditorDocument = {
+    version: '1.0.0',
+    children: [
+        {
+            id: 'group-1',
+            type: 'frame',
+            name: 'Group 1',
+            x: 0,
+            y: 0,
+            width: 260,
+            height: 180,
+            fills: [],
+            strokes: [],
+            effects: [],
+            children: [
+                {
+                    id: 'nested-frame-a',
+                    type: 'frame',
+                    name: 'Nested Frame A',
+                    x: 20,
+                    y: 20,
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    width: 100,
+                    height: 50,
+                    children: [
+                        {
+                            id: 'nested-text-a',
+                            type: 'text',
+                            name: 'Nested Text A',
+                            x: 8,
+                            y: 8,
+                            content: 'Nested A',
+                            fills: [],
+                            strokes: [],
+                            effects: []
+                        }
+                    ]
+                },
+                {
+                    id: 'nested-frame-b',
+                    type: 'frame',
+                    name: 'Nested Frame B',
+                    x: 20,
+                    y: 90,
+                    fills: [],
+                    strokes: [],
+                    effects: [],
+                    width: 100,
+                    height: 50,
+                    children: [
+                        {
+                            id: 'nested-text-b',
+                            type: 'text',
+                            name: 'Nested Text B',
+                            x: 8,
+                            y: 8,
+                            content: 'Nested B',
+                            fills: [],
+                            strokes: [],
+                            effects: []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+};
+
 const GAP_EDITOR_DOCUMENT: EditorDocument = {
     version: '1.0.0',
     children: [
@@ -286,6 +356,13 @@ const renderNestedCanvasHarness = () =>
         </EditorSessionProvider>
     );
 
+const renderSiblingNestedCanvasHarness = () =>
+    render(
+        <EditorSessionProvider initialDocument={SIBLING_NESTED_EDITOR_DOCUMENT}>
+            <NestedCanvasDebug />
+        </EditorSessionProvider>
+    );
+
 const CanvasCreationStageDebug = () => (
     <>
         <CanvasStage activeSidebarTab="layers" />
@@ -332,6 +409,37 @@ const readSelectedNode = () =>
 
 const readDocument = () =>
     JSON.parse(screen.getByTestId('document-json').textContent ?? 'null');
+
+const expectInlineTextEditor = (editor: HTMLElement) => {
+    expect(editor.tagName).toBe('DIV');
+    expect(editor.getAttribute('contenteditable')).toBe('true');
+};
+
+const fireCanvasDoubleClick = ({
+    clickTarget,
+    pointerDownTarget,
+    point
+}: {
+    pointerDownTarget: HTMLElement;
+    clickTarget?: HTMLElement;
+    point?: { x: number; y: number };
+}) => {
+    const target = clickTarget ?? pointerDownTarget;
+    const eventInit = (detail?: number) => ({
+        bubbles: true,
+        button: 0,
+        ...(point ? { clientX: point.x, clientY: point.y } : {}),
+        ...(detail === undefined ? {} : { detail })
+    });
+
+    fireEvent.pointerDown(pointerDownTarget, eventInit(1));
+    fireEvent.pointerUp(target, eventInit());
+    fireEvent.click(target, eventInit(1));
+    fireEvent.pointerDown(pointerDownTarget, eventInit(2));
+    fireEvent.pointerUp(target, eventInit());
+    fireEvent.click(target, eventInit(2));
+    fireEvent.doubleClick(target, eventInit(2));
+};
 
 const readCheckboxBox = (button: HTMLElement) =>
     button.querySelector('.editor-check-box') as HTMLElement | null;
@@ -832,9 +940,23 @@ describe('RightInspectorFormBridge', () => {
         expect(readSelectedNode().id).toBe('nested-text');
     });
 
-    it('opens inline editing when double clicking an existing text node', async () => {
-        const originalResizeObserver = globalThis.ResizeObserver;
+    it('switches directly to a sibling node after drilling into a child', async () => {
         const user = userEvent.setup();
+
+        renderSiblingNestedCanvasHarness();
+
+        await user.click(screen.getByText('Nested A'));
+        expect(readSelectedNode().id).toBe('group-1');
+
+        await user.click(screen.getByText('Nested A'));
+        expect(readSelectedNode().id).toBe('nested-frame-a');
+
+        await user.click(screen.getByText('Nested B'));
+        expect(readSelectedNode().id).toBe('nested-frame-b');
+    });
+
+    it('does not open inline editing when double clicking a text node before it is selected', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
 
         globalThis.ResizeObserver = TestResizeObserver;
 
@@ -850,25 +972,62 @@ describe('RightInspectorFormBridge', () => {
 
             expect(textNode).not.toBeNull();
 
-            await user.dblClick(textNode as HTMLElement);
-
-            const editor = await screen.findByRole('textbox', {
-                name: 'Canvas inline text editor'
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                detail: 0
+            });
+            await waitFor(() => {
+                expect(readSelectedNode()).toMatchObject({
+                    id: 'text-1',
+                    type: 'text'
+                });
+            });
+            fireEvent.mouseDown(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                detail: 1
+            });
+            fireEvent.pointerUp(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0
+            });
+            fireEvent.click(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                detail: 1
+            });
+            fireEvent.pointerDown(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                detail: 0
+            });
+            fireEvent.pointerUp(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0
+            });
+            fireEvent.click(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                detail: 2
+            });
+            fireEvent.doubleClick(textNode as HTMLElement, {
+                bubbles: true,
+                button: 0,
+                detail: 2
             });
 
-            expect(readSelectedNode()).toMatchObject({
-                id: 'text-1',
-                type: 'text'
-            });
-            expect((editor as HTMLTextAreaElement).value).toBe('Hello');
-            expect(editor.getAttribute('style')).toContain('box-shadow');
-            expect(editor.getAttribute('style')).toContain('caret-color');
+            expect(
+                screen.queryByRole('textbox', {
+                    name: 'Canvas inline text editor'
+                })
+            ).toBeNull();
         } finally {
             globalThis.ResizeObserver = originalResizeObserver;
         }
     });
 
-    it('opens inline editing when the viewport owns the double click after pointer capture', async () => {
+    it('opens inline editing when the viewport owns a selected text double click after pointer capture', async () => {
         const originalResizeObserver = globalThis.ResizeObserver;
 
         globalThis.ResizeObserver = TestResizeObserver;
@@ -876,8 +1035,7 @@ describe('RightInspectorFormBridge', () => {
         try {
             renderCanvasStageHarnessForDocument({
                 document: CANVAS_SAMPLE_EDITOR_DOCUMENT,
-                initialSelectedNodeId:
-                    CANVAS_SAMPLE_EDITOR_DOCUMENT.children[0]?.id ?? null
+                initialSelectedNodeId: 'fX4RY'
             });
 
             const viewport = screen.getByLabelText('Canvas viewport');
@@ -887,52 +1045,10 @@ describe('RightInspectorFormBridge', () => {
 
             expect(textNode).not.toBeNull();
 
-            fireEvent.pointerDown(textNode as HTMLElement, {
-                bubbles: true,
-                button: 0,
-                clientX: 2800,
-                clientY: 420,
-                detail: 1
-            });
-            fireEvent.pointerUp(viewport, {
-                bubbles: true,
-                button: 0,
-                clientX: 2800,
-                clientY: 420
-            });
-            fireEvent.click(viewport, {
-                bubbles: true,
-                button: 0,
-                clientX: 2800,
-                clientY: 420,
-                detail: 1
-            });
-            fireEvent.pointerDown(textNode as HTMLElement, {
-                bubbles: true,
-                button: 0,
-                clientX: 2800,
-                clientY: 420,
-                detail: 2
-            });
-            fireEvent.pointerUp(viewport, {
-                bubbles: true,
-                button: 0,
-                clientX: 2800,
-                clientY: 420
-            });
-            fireEvent.click(viewport, {
-                bubbles: true,
-                button: 0,
-                clientX: 2800,
-                clientY: 420,
-                detail: 2
-            });
-            fireEvent.doubleClick(viewport, {
-                bubbles: true,
-                button: 0,
-                clientX: 2800,
-                clientY: 420,
-                detail: 2
+            fireCanvasDoubleClick({
+                clickTarget: viewport,
+                pointerDownTarget: textNode as HTMLElement,
+                point: { x: 2800, y: 420 }
             });
 
             const editor = await screen.findByRole('textbox', {
@@ -943,7 +1059,8 @@ describe('RightInspectorFormBridge', () => {
                 id: 'fX4RY',
                 type: 'text'
             });
-            expect((editor as HTMLTextAreaElement).value).toBe('MIAOMAEDU');
+            expectInlineTextEditor(editor);
+            expect(editor.textContent).toBe('MIAOMAEDU');
         } finally {
             globalThis.ResizeObserver = originalResizeObserver;
         }
@@ -1367,6 +1484,52 @@ describe('RightInspectorFormBridge', () => {
         }
     });
 
+    it('rounds newly created shape numeric bounds before storing it in the document', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasCreationStageHarness();
+
+            fireEvent.click(
+                screen.getByRole('button', { name: 'Rectangle tool' })
+            );
+
+            const viewport = screen.getByLabelText('Canvas viewport');
+            fireEvent.pointerDown(viewport, {
+                button: 0,
+                clientX: 360.2,
+                clientY: 220.1
+            });
+            fireEvent.pointerMove(viewport, {
+                button: 0,
+                clientX: 420.8,
+                clientY: 279.7
+            });
+            fireEvent.pointerUp(viewport, {
+                button: 0,
+                clientX: 420.8,
+                clientY: 279.7
+            });
+
+            await waitFor(() => {
+                expect(readSelectedNode()?.name).toBe('Rectangle');
+            });
+
+            const selectedNode = readSelectedNode();
+
+            expect(selectedNode).toMatchObject({
+                height: 60,
+                width: 61
+            });
+            expect(Number.isInteger(selectedNode.x)).toBe(true);
+            expect(Number.isInteger(selectedNode.y)).toBe(true);
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
     it('keeps frame hit rects in document world coordinates after root bounds expand left', () => {
         const document = editorDocumentToRenderable({
             version: '1.0.0',
@@ -1493,6 +1656,7 @@ describe('RightInspectorFormBridge', () => {
                 name: 'Canvas inline text editor'
             });
 
+            expectInlineTextEditor(editor);
             await user.type(editor, 'Text create smoke{enter}');
 
             await waitFor(() => {
@@ -1638,6 +1802,7 @@ describe('RightInspectorFormBridge', () => {
                 type: 'text'
             });
             expect(topLevelTextNode).toBeDefined();
+            expectInlineTextEditor(editor);
             expect(editor.getAttribute('style')).toContain('box-shadow');
             expect(editor.getAttribute('style')).toContain('caret-color');
         } finally {
@@ -1694,14 +1859,13 @@ describe('RightInspectorFormBridge', () => {
 
     it('opens inline editing when double clicking a text node that is already selected', async () => {
         const originalResizeObserver = globalThis.ResizeObserver;
-        const user = userEvent.setup();
 
         globalThis.ResizeObserver = TestResizeObserver;
 
         try {
             renderCanvasStageHarnessForDocument({
                 document: SAMPLE_EDITOR_DOCUMENT,
-                initialSelectedNodeId: 'frame-1'
+                initialSelectedNodeId: 'text-1'
             });
 
             const textNode = document.querySelector<HTMLElement>(
@@ -1709,22 +1873,22 @@ describe('RightInspectorFormBridge', () => {
             );
 
             expect(textNode).not.toBeNull();
-
-            await user.click(textNode as HTMLElement);
-            await user.click(textNode as HTMLElement);
-
             expect(readSelectedNode()).toMatchObject({
                 id: 'text-1',
                 type: 'text'
             });
 
-            await user.dblClick(textNode as HTMLElement);
+            fireCanvasDoubleClick({
+                pointerDownTarget: textNode as HTMLElement
+            });
 
             const editor = await screen.findByRole('textbox', {
                 name: 'Canvas inline text editor'
             });
 
-            expect((editor as HTMLTextAreaElement).value).toBe('Hello');
+            expectInlineTextEditor(editor);
+            expect(editor.textContent).toBe('Hello');
+            expect(textNode?.style.visibility).toBe('hidden');
         } finally {
             globalThis.ResizeObserver = originalResizeObserver;
         }
@@ -1751,6 +1915,7 @@ describe('RightInspectorFormBridge', () => {
                 name: 'Canvas inline text editor'
             });
 
+            expectInlineTextEditor(editor);
             const createdTextNodeId = readSelectedNode()?.id;
 
             fireEvent.keyDown(editor, { key: 'Escape' });

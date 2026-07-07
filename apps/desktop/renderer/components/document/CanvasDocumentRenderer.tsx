@@ -24,6 +24,12 @@ import {
     type NodeRendererRegistry
 } from './CanvasNodeRenderers';
 import {
+    type DoubleClickSelectionTarget,
+    findDesignNodePathById,
+    getNextDoubleClickSelectionTarget,
+    getNextSelectedNodeIdFromPath
+} from './documentSelectionUtils';
+import {
     escapeDesignNodeSelectorValue,
     getSelectionOverlayBounds,
     type SelectionOverlayBounds,
@@ -36,6 +42,7 @@ type CanvasDocumentRendererProps = {
     className?: string;
     nodeRenderers?: Partial<NodeRendererRegistry>;
     selectedNodeId?: string | null;
+    editingTextNodeId?: string | null;
     onNodePointerDown?: (nodeId: string) => void;
     onNodeDoubleClick?: (nodeId: string) => void;
     onCanvasPointerDown?: () => void;
@@ -74,38 +81,10 @@ const getDesignNodePathFromTarget = (
     return nodePath;
 };
 
-const getNextSelectedNodeIdFromPath = ({
-    clickCount,
-    nodePath,
-    selectedNodeId
-}: {
-    nodePath: string[];
-    selectedNodeId?: string | null;
-    clickCount: number;
-}) => {
-    if (nodePath.length === 0) {
-        return null;
-    }
-
-    if (clickCount >= 2) {
-        return nodePath.at(-1) ?? nodePath[0];
-    }
-
-    const selectedIndex =
-        selectedNodeId === undefined || selectedNodeId === null
-            ? -1
-            : nodePath.indexOf(selectedNodeId);
-
-    if (selectedIndex === -1) {
-        return nodePath[0];
-    }
-
-    return nodePath[Math.min(selectedIndex + 1, nodePath.length - 1)];
-};
-
 export const CanvasDocumentRenderer = ({
     className,
     document,
+    editingTextNodeId,
     nodeRenderers,
     resolveAsset = defaultAssetResolver,
     selectedNodeId,
@@ -117,6 +96,9 @@ export const CanvasDocumentRenderer = ({
 }: CanvasDocumentRendererProps) => {
     const bounds = getTopLevelBounds(document.children);
     const rendererRef = useRef<HTMLDivElement>(null);
+    const doubleClickTargetRef = useRef<DoubleClickSelectionTarget | null>(
+        null
+    );
     const selectedNodeIds = useMemo(
         () => (selectedNodeId ? [selectedNodeId] : []),
         [selectedNodeId]
@@ -147,6 +129,13 @@ export const CanvasDocumentRenderer = ({
         ...defaultNodeRenderers,
         ...nodeRenderers
     };
+    const selectedNodePath = useMemo(
+        () =>
+            selectedNodeId
+                ? findDesignNodePathById(document.children, selectedNodeId)
+                : null,
+        [document.children, selectedNodeId]
+    );
     const selectionBounds =
         measuredSelectionBounds?.selectionKey === selectionKey
             ? measuredSelectionBounds.bounds
@@ -224,11 +213,22 @@ export const CanvasDocumentRenderer = ({
         );
 
         if (nodePath.length === 0) {
+            doubleClickTargetRef.current = null;
             onCanvasPointerDown?.();
             return;
         }
 
         event.preventDefault();
+
+        const deepestNodeId = nodePath.at(-1);
+
+        doubleClickTargetRef.current = getNextDoubleClickSelectionTarget({
+            clickCount: event.detail,
+            currentTarget: doubleClickTargetRef.current,
+            eventTimeStamp: event.timeStamp,
+            nodeId: deepestNodeId,
+            selectedNodeId
+        });
 
         if (!onNodePointerDown) {
             return;
@@ -237,6 +237,7 @@ export const CanvasDocumentRenderer = ({
         const nextSelectedNodeId = getNextSelectedNodeIdFromPath({
             nodePath,
             selectedNodeId,
+            selectedNodePath,
             clickCount: event.detail
         });
 
@@ -266,11 +267,19 @@ export const CanvasDocumentRenderer = ({
         const nextSelectedNodeId = getNextSelectedNodeIdFromPath({
             nodePath,
             selectedNodeId,
+            selectedNodePath,
             clickCount: 2
         });
 
         if (nextSelectedNodeId) {
-            onNodeDoubleClick(nextSelectedNodeId);
+            const doubleClickTarget = doubleClickTargetRef.current;
+
+            if (
+                doubleClickTarget?.nodeId === nextSelectedNodeId &&
+                doubleClickTarget.wasSelectedAtSequenceStart
+            ) {
+                onNodeDoubleClick(nextSelectedNodeId);
+            }
         }
     };
 
@@ -292,6 +301,7 @@ export const CanvasDocumentRenderer = ({
             {document.children.map((node) => (
                 <CanvasRenderNode
                     key={node.id}
+                    editingTextNodeId={editingTextNodeId}
                     node={node}
                     nodeRenderers={rendererRegistry}
                     onNodePointerDown={onNodePointerDown}

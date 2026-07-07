@@ -25,6 +25,7 @@ export type ParentLayout = 'absolute' | Exclude<LayoutDirection, 'none'>;
 export type NodeRendererProps<TNode extends DesignNode = DesignNode> = {
     node: TNode;
     nodeRenderers: NodeRendererRegistry;
+    editingTextNodeId?: string | null;
     onNodePointerDown?: (nodeId: string) => void;
     parentLayout: ParentLayout;
     resolveAsset: AssetResolver;

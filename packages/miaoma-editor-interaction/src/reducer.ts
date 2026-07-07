@@ -13,6 +13,11 @@ import type {
 
 const DRAG_THRESHOLD = 4;
 
+const roundPoint = (point: { x: number; y: number }) => ({
+    x: Math.round(point.x),
+    y: Math.round(point.y)
+});
+
 const resolveParent = (nodePath: HitPathNode[]) => {
     const frame = [...nodePath].reverse().find((node) => node.type === 'frame');
 
@@ -87,7 +92,8 @@ export const reduceInteraction = (
         const isNewTextNode = state.pendingNewText?.nodeId === event.nodeId;
         const shouldRemoveNewText =
             isNewTextNode &&
-            (event.type === 'textEditCancel' || event.content.trim().length === 0);
+            (event.type === 'textEditCancel' ||
+                event.content.trim().length === 0);
 
         return {
             state: {
@@ -134,10 +140,10 @@ export const reduceInteraction = (
                             nodeType: 'text',
                             parentId: parent.parentId,
                             parentLayout: parent.parentLayout,
-                            position: {
+                            position: roundPoint({
                                 x: event.payload.worldX,
                                 y: event.payload.worldY
-                            },
+                            }),
                             selectAfterCreate: true,
                             startTextEditAfterCreate: true
                         }
@@ -190,8 +196,12 @@ export const reduceInteraction = (
     ) {
         const x = Math.min(state.draft.originWorld.x, event.payload.worldX);
         const y = Math.min(state.draft.originWorld.y, event.payload.worldY);
-        const width = Math.abs(event.payload.worldX - state.draft.originWorld.x);
-        const height = Math.abs(event.payload.worldY - state.draft.originWorld.y);
+        const width = Math.abs(
+            event.payload.worldX - state.draft.originWorld.x
+        );
+        const height = Math.abs(
+            event.payload.worldY - state.draft.originWorld.y
+        );
 
         return {
             state: {
@@ -235,8 +245,12 @@ export const reduceInteraction = (
 
         const x = Math.min(state.draft.originWorld.x, event.payload.worldX);
         const y = Math.min(state.draft.originWorld.y, event.payload.worldY);
-        const width = Math.abs(event.payload.worldX - state.draft.originWorld.x);
-        const height = Math.abs(event.payload.worldY - state.draft.originWorld.y);
+        const width = Math.abs(
+            event.payload.worldX - state.draft.originWorld.x
+        );
+        const height = Math.abs(
+            event.payload.worldY - state.draft.originWorld.y
+        );
 
         return {
             state: {
@@ -252,7 +266,11 @@ export const reduceInteraction = (
                         nodeType: state.draft.tool,
                         parentId: state.draft.targetParentId,
                         parentLayout: state.draft.targetParentLayout,
-                        bounds: { x, y, width, height },
+                        bounds: {
+                            ...roundPoint({ x, y }),
+                            width: Math.round(width),
+                            height: Math.round(height)
+                        },
                         selectAfterCreate: true,
                         startTextEditAfterCreate: false
                     }

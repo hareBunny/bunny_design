@@ -31,6 +31,10 @@ import type {
 
 import { CanvasDocumentRenderer } from '../document/CanvasDocumentRenderer';
 import { getTopLevelBounds } from '../document/CanvasNodeRenderers';
+import {
+    type DoubleClickSelectionTarget,
+    getNextDoubleClickSelectionTarget
+} from '../document/documentSelectionUtils';
 
 import { CanvasCreationOverlay } from './creation/CanvasCreationOverlay';
 import { CanvasInlineTextEditor } from './creation/CanvasInlineTextEditor';
@@ -169,6 +173,9 @@ export const CanvasViewportShell = ({
     const [isPanningViewport, setIsPanningViewport] = useState(false);
     const lastDocumentPointerPayloadRef =
         useRef<InteractionPointerPayload | null>(null);
+    const doubleClickTargetRef = useRef<DoubleClickSelectionTarget | null>(
+        null
+    );
     const panSessionRef = useRef<{
         pointerId: number;
         startScreenX: number;
@@ -424,6 +431,17 @@ export const CanvasViewportShell = ({
         if (payload) {
             lastDocumentPointerPayloadRef.current =
                 payload.nodePath.length > 0 ? payload : null;
+
+            const deepestNodeId = payload.nodePath.at(-1)?.id;
+
+            doubleClickTargetRef.current = getNextDoubleClickSelectionTarget({
+                clickCount: event.detail,
+                currentTarget: doubleClickTargetRef.current,
+                eventTimeStamp: event.timeStamp,
+                nodeId: deepestNodeId,
+                selectedNodeId
+            });
+
             onViewportPointerDown?.(payload);
         }
 
@@ -535,7 +553,13 @@ export const CanvasViewportShell = ({
         const nextSelectedNodeId =
             lastDocumentPointerPayloadRef.current?.nodePath.at(-1)?.id;
 
-        if (nextSelectedNodeId) {
+        const doubleClickTarget = doubleClickTargetRef.current;
+
+        if (
+            nextSelectedNodeId &&
+            doubleClickTarget?.nodeId === nextSelectedNodeId &&
+            doubleClickTarget.wasSelectedAtSequenceStart
+        ) {
             onNodeDoubleClick(nextSelectedNodeId);
         }
     };
@@ -666,6 +690,7 @@ export const CanvasViewportShell = ({
                         >
                             <CanvasDocumentRenderer
                                 document={document}
+                                editingTextNodeId={textEditorState?.nodeId}
                                 onCanvasPointerDown={
                                     isSelectionEnabled
                                         ? onCanvasPointerDown

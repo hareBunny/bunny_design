@@ -4,26 +4,71 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 const INLINE_TEXT_EDITOR_ACCENT = '#4592FF';
 
+type InlineTextEditorLayout = {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+    color?: string;
+    fontFamily?: string;
+    fontSize?: number;
+    fontWeight?: string;
+    lineHeight?: number;
+    textAlign?: 'center' | 'justify' | 'left' | 'right' | 'start';
+};
+
 type CanvasInlineTextEditorProps = {
     initialValue: string;
-    layout: {
-        left: number;
-        top: number;
-        width: number;
-        height: number;
-        color?: string;
-        fontFamily?: string;
-        fontSize?: number;
-        fontWeight?: string;
-        lineHeight?: number;
-        textAlign?: 'center' | 'justify' | 'left' | 'right' | 'start';
-    };
+    layout: InlineTextEditorLayout;
     onCancel: () => void;
     onCommit: (value: string) => void;
+};
+
+const resizeEditorToContent = (
+    element: HTMLDivElement,
+    layout: InlineTextEditorLayout
+) => {
+    element.style.width = `${layout.width}px`;
+    element.style.height = `${layout.height}px`;
+    element.style.width = `${Math.max(layout.width, element.scrollWidth)}px`;
+    element.style.height = `${Math.max(layout.height, element.scrollHeight)}px`;
+};
+
+const moveCaretToEnd = (element: HTMLDivElement) => {
+    const selection = window.getSelection();
+
+    if (!selection) {
+        return;
+    }
+
+    const range = document.createRange();
+
+    range.selectNodeContents(element);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+};
+
+const insertTextAtCaret = (text: string) => {
+    const selection = window.getSelection();
+
+    if (!selection || selection.rangeCount === 0) {
+        return;
+    }
+
+    const range = selection.getRangeAt(0);
+    const textNode = document.createTextNode(text);
+
+    range.deleteContents();
+    range.insertNode(textNode);
+    range.setStartAfter(textNode);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
 };
 
 export const CanvasInlineTextEditor = ({
@@ -32,9 +77,20 @@ export const CanvasInlineTextEditor = ({
     onCancel,
     onCommit
 }: CanvasInlineTextEditorProps) => {
-    const [value, setValue] = useState(initialValue);
-    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const editorRef = useRef<HTMLDivElement | null>(null);
     const finishedRef = useRef(false);
+
+    const resizeEditor = () => {
+        const element = editorRef.current;
+
+        if (!element) {
+            return;
+        }
+
+        resizeEditorToContent(element, layout);
+    };
+
+    const getEditorValue = () => editorRef.current?.textContent ?? '';
 
     useEffect(() => {
         let cancelled = false;
@@ -43,7 +99,7 @@ export const CanvasInlineTextEditor = ({
                 return;
             }
 
-            const element = textareaRef.current;
+            const element = editorRef.current;
 
             if (!element) {
                 return;
@@ -54,7 +110,7 @@ export const CanvasInlineTextEditor = ({
             }
 
             element.focus();
-            element.setSelectionRange(value.length, value.length);
+            moveCaretToEnd(element);
         });
 
         return () => {
@@ -64,20 +120,8 @@ export const CanvasInlineTextEditor = ({
     }, []);
 
     useLayoutEffect(() => {
-        const element = textareaRef.current;
-
-        if (!element) {
-            return;
-        }
-
-        element.style.width = `${layout.width}px`;
-        element.style.height = `${layout.height}px`;
-        element.style.width = `${Math.max(layout.width, element.scrollWidth)}px`;
-        element.style.height = `${Math.max(
-            layout.height,
-            element.scrollHeight
-        )}px`;
-    }, [layout.height, layout.width, value]);
+        resizeEditor();
+    }, [layout.height, layout.width]);
 
     const commit = () => {
         if (finishedRef.current) {
@@ -85,7 +129,7 @@ export const CanvasInlineTextEditor = ({
         }
 
         finishedRef.current = true;
-        onCommit(value);
+        onCommit(getEditorValue());
     };
 
     const cancel = () => {
@@ -98,12 +142,13 @@ export const CanvasInlineTextEditor = ({
     };
 
     return (
-        <textarea
+        <div
             aria-label="Canvas inline text editor"
-            className="absolute resize-none overflow-hidden rounded-[2px] border-0 bg-transparent p-0 outline-none"
+            className="absolute overflow-hidden rounded-[2px] border-0 bg-transparent p-0 outline-none"
+            contentEditable
             onBlur={commit}
-            onChange={(event) => {
-                setValue(event.target.value);
+            onInput={() => {
+                resizeEditor();
             }}
             onKeyDown={(event) => {
                 if (event.key === 'Escape') {
@@ -112,16 +157,30 @@ export const CanvasInlineTextEditor = ({
                     return;
                 }
 
-                if (event.key === 'Enter' && !event.shiftKey) {
+                if (event.key === ' ') {
                     event.preventDefault();
+                    insertTextAtCaret(' ');
+                    resizeEditor();
+                    return;
+                }
+
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+
+                    if (event.shiftKey) {
+                        insertTextAtCaret('\n');
+                        resizeEditor();
+                        return;
+                    }
+
                     commit();
                 }
             }}
             onPointerDown={(event) => {
                 event.stopPropagation();
             }}
-            ref={textareaRef}
-            rows={1}
+            ref={editorRef}
+            role="textbox"
             spellCheck={false}
             style={{
                 left: `${layout.left}px`,
@@ -141,9 +200,12 @@ export const CanvasInlineTextEditor = ({
                     layout.lineHeight === undefined
                         ? undefined
                         : `${layout.lineHeight}px`,
-                textAlign: layout.textAlign
+                textAlign: layout.textAlign,
+                whiteSpace: 'pre-wrap'
             }}
-            value={value}
-        />
+            suppressContentEditableWarning
+        >
+            {initialValue}
+        </div>
     );
 };

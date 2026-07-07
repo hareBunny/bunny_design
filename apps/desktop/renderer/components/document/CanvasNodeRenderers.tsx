@@ -70,6 +70,7 @@ const getNodeInteractionProps = (
 });
 
 const CanvasTextNode = ({
+    editingTextNodeId,
     node,
     parentLayout,
     resolveAsset,
@@ -94,6 +95,7 @@ const CanvasTextNode = ({
         fontWeight: node.fontWeight,
         lineHeight,
         textAlign: node.textAlign,
+        visibility: editingTextNodeId === node.id ? 'hidden' : undefined,
         whiteSpace:
             node.textGrowth === 'fixed-width' ||
             node.textGrowth === 'fixed-width-height'
@@ -214,6 +216,7 @@ const CanvasIconNode = ({
 const CanvasFrameNode = ({
     node,
     nodeRenderers,
+    editingTextNodeId,
     onNodePointerDown,
     parentLayout,
     resolveAsset,
@@ -259,6 +262,7 @@ const CanvasFrameNode = ({
             {children.map((child) => (
                 <CanvasRenderNode
                     key={child.id}
+                    editingTextNodeId={editingTextNodeId}
                     node={child}
                     nodeRenderers={nodeRenderers}
                     onNodePointerDown={onNodePointerDown}
@@ -282,6 +286,7 @@ export const defaultNodeRenderers: NodeRendererRegistry = {
 export const CanvasRenderNode = ({
     node,
     nodeRenderers,
+    editingTextNodeId,
     onNodePointerDown,
     parentLayout,
     resolveAsset,
@@ -294,6 +299,7 @@ export const CanvasRenderNode = ({
         <Renderer
             node={node}
             nodeRenderers={nodeRenderers}
+            editingTextNodeId={editingTextNodeId}
             onNodePointerDown={onNodePointerDown}
             parentLayout={parentLayout}
             resolveAsset={resolveAsset}

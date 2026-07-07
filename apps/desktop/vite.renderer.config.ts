@@ -26,6 +26,10 @@ export default defineConfig({
                 __dirname,
                 '../../packages/miaoma-editor-core/src'
             ),
+            '@miaoma-design-ai/miaoma-editor-interaction': path.resolve(
+                __dirname,
+                '../../packages/miaoma-editor-interaction/src'
+            ),
             '@/renderer': path.resolve(__dirname, 'renderer')
         }
     }

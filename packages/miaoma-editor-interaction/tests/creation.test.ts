@@ -116,6 +116,52 @@ describe('editor interaction creation reducer', () => {
         ]);
     });
 
+    it('rounds created shape bounds to integers', () => {
+        const interaction = createEditorInteraction();
+
+        interaction.dispatch({ type: 'selectTool', tool: 'frame' });
+        interaction.dispatch({
+            type: 'pointerDown',
+            payload: {
+                worldX: 12.25,
+                worldY: 18.5,
+                screenX: 100,
+                screenY: 120,
+                button: 0,
+                nodePath: absoluteFramePath
+            }
+        });
+
+        const commands = interaction.dispatch({
+            type: 'pointerUp',
+            payload: {
+                worldX: 62.85,
+                worldY: 58.1,
+                screenX: 150,
+                screenY: 160,
+                button: 0,
+                nodePath: absoluteFramePath
+            }
+        });
+
+        expect(commands[0]).toEqual({
+            type: 'createNode',
+            payload: {
+                nodeType: 'frame',
+                parentId: 'frame-1',
+                parentLayout: 'absolute',
+                bounds: {
+                    x: 12,
+                    y: 19,
+                    width: 51,
+                    height: 40
+                },
+                selectAfterCreate: true,
+                startTextEditAfterCreate: false
+            }
+        });
+    });
+
     it('does not create a shape when drag distance equals the threshold', () => {
         const interaction = createEditorInteraction();
 
@@ -182,6 +228,39 @@ describe('editor interaction creation reducer', () => {
             },
             { type: 'setActiveTool', tool: 'pointer' }
         ]);
+    });
+
+    it('rounds created text position to integers', () => {
+        const interaction = createEditorInteraction();
+
+        interaction.dispatch({ type: 'selectTool', tool: 'text' });
+
+        const commands = interaction.dispatch({
+            type: 'pointerDown',
+            payload: {
+                worldX: 24.4,
+                worldY: 40.5,
+                screenX: 220,
+                screenY: 180,
+                button: 0,
+                nodePath: absoluteFramePath
+            }
+        });
+
+        expect(commands[0]).toEqual({
+            type: 'createNode',
+            payload: {
+                nodeType: 'text',
+                parentId: 'frame-1',
+                parentLayout: 'absolute',
+                position: {
+                    x: 24,
+                    y: 41
+                },
+                selectAfterCreate: true,
+                startTextEditAfterCreate: true
+            }
+        });
     });
 
     it('targets the innermost frame and preserves layout in create commands', () => {

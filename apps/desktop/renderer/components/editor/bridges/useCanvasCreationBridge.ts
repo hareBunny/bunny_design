@@ -296,6 +296,10 @@ export const useCanvasCreationBridge = () => {
 
     const startTextEditing = useCallback(
         (nodeId: string) => {
+            if (selectedNodeId !== nodeId) {
+                return;
+            }
+
             const node = session.getNodeById(nodeId);
 
             if (!node || node.type !== 'text') {
@@ -312,7 +316,7 @@ export const useCanvasCreationBridge = () => {
                 nodeId
             });
         },
-        [interaction, session]
+        [interaction, selectedNodeId, session]
     );
 
     return useMemo(
