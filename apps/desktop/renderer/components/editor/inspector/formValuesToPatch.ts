@@ -9,6 +9,11 @@ import type {
     EditorNodePatch
 } from '@miaoma-design-ai/miaoma-editor-core';
 
+import {
+    getAabbFromCenter,
+    getCenterFromAabb
+} from '../../../utils/rotationAabb';
+
 import type { InspectorFormValues } from './formTypes';
 import {
     getDimensionValueFromControls,
@@ -120,9 +125,17 @@ const hasDimensions = (node: EditorNode) =>
     node.type === 'icon' ||
     node.type === 'text';
 
+const roundToTwoDecimals = (value: number) => Math.round(value * 100) / 100;
+
+const getNumericNodeDimension = (node: EditorNode, axis: 'height' | 'width') =>
+    axis in node && typeof node[axis] === 'number' ? node[axis] : undefined;
+
 export const formValuesToPatch = (
     node: EditorNode,
-    values: InspectorFormValues
+    values: InspectorFormValues,
+    options?: {
+        measuredSize?: { width: number; height: number } | null;
+    }
 ): EditorNodePatch => {
     const patch: EditorNodePatch = {};
 
@@ -131,18 +144,56 @@ export const formValuesToPatch = (
     }
 
     const x = parseOptionalNumber(values.x);
-    if (x !== null && x !== node.x) {
-        patch.x = x;
-    }
-
     const y = parseOptionalNumber(values.y);
-    if (y !== null && y !== node.y) {
-        patch.y = y;
-    }
-
     const rotation = parseOptionalNumber(values.rotation);
-    if (rotation !== null && rotation !== node.rotation) {
+    const nodeWidth = getNumericNodeDimension(node, 'width');
+    const nodeHeight = getNumericNodeDimension(node, 'height');
+    const measuredWidth = nodeWidth ?? options?.measuredSize?.width;
+    const measuredHeight = nodeHeight ?? options?.measuredSize?.height;
+    const rotationChanged = rotation !== null && rotation !== node.rotation;
+    const xWasExplicitlyEdited = x !== null && x !== node.x;
+    const yWasExplicitlyEdited = y !== null && y !== node.y;
+    const canRecomputeAabb =
+        rotationChanged &&
+        measuredWidth !== undefined &&
+        measuredHeight !== undefined;
+
+    if (canRecomputeAabb && !xWasExplicitlyEdited && !yWasExplicitlyEdited) {
+        const center = getCenterFromAabb({
+            x: node.x ?? 0,
+            y: node.y ?? 0,
+            width: measuredWidth,
+            height: measuredHeight,
+            rotation: node.rotation
+        });
+        const nextAabb = getAabbFromCenter({
+            centerX: center.x,
+            centerY: center.y,
+            width: measuredWidth,
+            height: measuredHeight,
+            rotation
+        });
+
         patch.rotation = rotation;
+        patch.x = roundToTwoDecimals(nextAabb.x);
+        patch.y = roundToTwoDecimals(nextAabb.y);
+
+        if (nodeWidth === undefined || nodeHeight === undefined) {
+            patch.width = roundToTwoDecimals(measuredWidth);
+            patch.height = roundToTwoDecimals(measuredHeight);
+        }
+    } else {
+        if (xWasExplicitlyEdited) {
+            patch.x = x;
+        }
+
+        if (yWasExplicitlyEdited) {
+            patch.y = y;
+        }
+
+        if (rotationChanged) {
+            patch.rotation = rotation;
+        }
     }
 
     const opacity = parseOptionalNumber(values.opacity);

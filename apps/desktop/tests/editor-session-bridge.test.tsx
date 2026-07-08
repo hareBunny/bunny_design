@@ -39,6 +39,7 @@ import { useEditorSession } from '../renderer/components/editor/state/useEditorS
 import { useEditorSnapshot } from '../renderer/components/editor/state/useEditorSnapshot';
 import { findFrameRectInRenderer } from '../renderer/components/editor/viewport/extractDesignNodePath';
 import { CANVAS_SAMPLE_EDITOR_DOCUMENT } from '../renderer/fixtures/canvasSampleDocument';
+import { getCenterFromAabb } from '../renderer/utils/rotationAabb';
 
 const SAMPLE_EDITOR_DOCUMENT: EditorDocument = {
     version: '1.0.0',
@@ -2446,6 +2447,134 @@ describe('RightInspectorFormBridge', () => {
             });
         } finally {
             window.requestAnimationFrame = originalRequestAnimationFrame;
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('keeps the selection overlay rotation in sync with inspector rotation edits', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageWithInspectorHarness({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'text-1'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            );
+            const readSelectionOverlay = () =>
+                document.querySelector<HTMLElement>(
+                    '[data-viewport-selection-node-id="text-1"]'
+                );
+            const rotationInput = screen.getByLabelText(
+                'Rotation'
+            ) as HTMLInputElement;
+
+            expect(textNode).not.toBeNull();
+            expect(readSelectionOverlay()).not.toBeNull();
+            expect((textNode as HTMLElement).style.transformOrigin).toBe(
+                'center center'
+            );
+            expect(readSelectionOverlay()?.style.transform).toBe(
+                (textNode as HTMLElement).style.transform
+            );
+            expect(readSelectionOverlay()?.style.transformOrigin).toBe(
+                'center center'
+            );
+
+            await user.clear(rotationInput);
+            await user.type(rotationInput, '45');
+
+            await waitFor(() => {
+                expect(readSelectedNode()).toMatchObject({
+                    id: 'text-1',
+                    rotation: 45
+                });
+                expect((textNode as HTMLElement).style.transform).toBe(
+                    'rotate(-45deg)'
+                );
+                expect((textNode as HTMLElement).style.transformOrigin).toBe(
+                    'center center'
+                );
+                expect(readSelectionOverlay()?.style.transform).toBe(
+                    (textNode as HTMLElement).style.transform
+                );
+                expect(readSelectionOverlay()?.style.transformOrigin).toBe(
+                    'center center'
+                );
+            });
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('recomputes and materializes the rotated aabb when inspector rotation changes auto-size text', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const user = userEvent.setup();
+
+        globalThis.ResizeObserver = TestResizeObserver;
+
+        try {
+            renderCanvasStageWithInspectorHarness({
+                document: SAMPLE_EDITOR_DOCUMENT,
+                initialSelectedNodeId: 'text-1'
+            });
+
+            const textNode = document.querySelector<HTMLElement>(
+                '[data-design-node-id="text-1"]'
+            )!;
+            Object.defineProperty(textNode, 'offsetWidth', {
+                configurable: true,
+                value: 120
+            });
+            Object.defineProperty(textNode, 'offsetHeight', {
+                configurable: true,
+                value: 24
+            });
+
+            const before = readSelectedNode();
+            const rotationInput = screen.getByLabelText(
+                'Rotation'
+            ) as HTMLInputElement;
+
+            await user.clear(rotationInput);
+            await user.type(rotationInput, '45');
+
+            await waitFor(() => {
+                const after = readSelectedNode();
+
+                expect(after).toMatchObject({
+                    id: 'text-1',
+                    rotation: 45,
+                    width: 120,
+                    height: 24
+                });
+                expect(after.x).not.toBe(before.x);
+                expect(after.y).not.toBe(before.y);
+
+                const beforeCenter = getCenterFromAabb({
+                    x: before.x,
+                    y: before.y,
+                    width: 120,
+                    height: 24,
+                    rotation: before.rotation
+                });
+                const afterCenter = getCenterFromAabb({
+                    x: after.x,
+                    y: after.y,
+                    width: after.width,
+                    height: after.height,
+                    rotation: after.rotation
+                });
+
+                expect(afterCenter.x).toBeCloseTo(beforeCenter.x, 2);
+                expect(afterCenter.y).toBeCloseTo(beforeCenter.y, 2);
+            });
+        } finally {
             globalThis.ResizeObserver = originalResizeObserver;
         }
     });

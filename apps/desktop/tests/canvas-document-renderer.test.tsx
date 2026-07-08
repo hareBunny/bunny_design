@@ -140,6 +140,34 @@ const coverDocument: MiaomaDesignDocument = {
 };
 
 describe('CanvasDocumentRenderer', () => {
+    it('renders a rotated top-level node from aabb coordinates instead of raw top-left coordinates', () => {
+        const markup = renderToStaticMarkup(
+            <CanvasDocumentRenderer
+                document={{
+                    version: '2.14',
+                    children: [
+                        {
+                            id: 'rotated-frame',
+                            type: 'frame',
+                            x: 20,
+                            y: 30,
+                            width: 100,
+                            height: 50,
+                            rotation: 90,
+                            children: []
+                        }
+                    ]
+                }}
+            />
+        );
+
+        expect(markup).toContain('width:50px');
+        expect(markup).toContain('height:100px');
+        expect(markup).toContain('left:-25px');
+        expect(markup).toContain('top:25px');
+        expect(markup).toContain('transform-origin:center center');
+    });
+
     it('renders the 01-cover render tree with Pencil-like geometry and fills', () => {
         const markup = renderToStaticMarkup(
             <CanvasDocumentRenderer

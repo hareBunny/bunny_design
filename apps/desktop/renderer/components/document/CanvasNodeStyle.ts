@@ -17,6 +17,11 @@ import type {
     MiaomaSpacing as Spacing
 } from '@miaoma-design-ai/miaoma-design-schema';
 
+import {
+    getRenderOriginFromAabb,
+    getRotatedBoundingBoxSize
+} from '../../utils/rotationAabb';
+
 import type {
     AssetResolver,
     Bounds,
@@ -252,14 +257,27 @@ export const getTopLevelBounds = (nodes: DesignNode[]): Bounds => {
         return { x: 0, y: 0, width: 0, height: 0 };
     }
 
-    const minX = Math.min(...nodes.map((node) => node.x ?? 0));
-    const minY = Math.min(...nodes.map((node) => node.y ?? 0));
-    const maxX = Math.max(
-        ...nodes.map((node) => (node.x ?? 0) + getNodeWidth(node))
-    );
-    const maxY = Math.max(
-        ...nodes.map((node) => (node.y ?? 0) + getNodeHeight(node))
-    );
+    const boxes = nodes.map((node) => {
+        const width = getNodeWidth(node);
+        const height = getNodeHeight(node);
+        const bbox = getRotatedBoundingBoxSize({
+            width,
+            height,
+            rotation: node.rotation
+        });
+
+        return {
+            minX: node.x ?? 0,
+            minY: node.y ?? 0,
+            maxX: (node.x ?? 0) + bbox.width,
+            maxY: (node.y ?? 0) + bbox.height
+        };
+    });
+
+    const minX = Math.min(...boxes.map((box) => box.minX));
+    const minY = Math.min(...boxes.map((box) => box.minY));
+    const maxX = Math.max(...boxes.map((box) => box.maxX));
+    const maxY = Math.max(...boxes.map((box) => box.maxY));
 
     return {
         x: minX,
@@ -318,13 +336,20 @@ const getNodePlacementStyle = (
         return { position: 'relative' };
     }
 
-    const x = node.x ?? 0;
-    const y = node.y ?? 0;
+    const width = getNodeWidth(node);
+    const height = getNodeHeight(node);
+    const origin = getRenderOriginFromAabb({
+        x: node.x ?? 0,
+        y: node.y ?? 0,
+        width,
+        height,
+        rotation: node.rotation
+    });
 
     return {
         position: 'absolute',
-        left: px(bounds ? x - bounds.x : x),
-        top: px(bounds ? y - bounds.y : y)
+        left: px(bounds ? origin.x - bounds.x : origin.x),
+        top: px(bounds ? origin.y - bounds.y : origin.y)
     };
 };
 
@@ -349,7 +374,8 @@ export const getNodeBoxStyle = ({
             node.rotation === undefined
                 ? undefined
                 : toCssNodeRotation(node.rotation),
-        transformOrigin: node.rotation === undefined ? undefined : 'top left'
+        transformOrigin:
+            node.rotation === undefined ? undefined : 'center center'
     };
 
     applyDimensionStyle({

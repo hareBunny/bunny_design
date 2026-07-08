@@ -33,6 +33,26 @@ const selectionDocument: MiaomaDesignDocument = {
     ]
 };
 
+const rotatedSelectionDocument: MiaomaDesignDocument = {
+    version: '2.14',
+    children: [
+        {
+            id: 'rotated-frame',
+            type: 'frame',
+            x: 20,
+            y: 30,
+            width: 100,
+            height: 50,
+            rotation: 90,
+            fill: {
+                type: 'color',
+                color: '#ffffff'
+            },
+            children: []
+        }
+    ]
+};
+
 const domRect = ({
     height,
     left,
@@ -109,6 +129,30 @@ describe('Canvas selection overlay', () => {
         });
     });
 
+    it('uses rotated bounding-box dimensions for fallback document selection overlays', async () => {
+        const { container, rerender } = render(
+            <CanvasDocumentRenderer document={rotatedSelectionDocument} />
+        );
+
+        rerender(
+            <CanvasDocumentRenderer
+                document={rotatedSelectionDocument}
+                selectedNodeId="rotated-frame"
+            />
+        );
+
+        await waitFor(() => {
+            const selectionFrame = container.querySelector(
+                '[data-selection-node-id="rotated-frame"]'
+            ) as HTMLElement;
+
+            expect(selectionFrame.style.left).toBe('0px');
+            expect(selectionFrame.style.top).toBe('0px');
+            expect(selectionFrame.style.width).toBe('50px');
+            expect(selectionFrame.style.height).toBe('100px');
+        });
+    });
+
     it('renders viewport selection chrome with fixed screen-space sizes', async () => {
         const { container, rerender } = render(
             <CanvasViewportShell
@@ -151,14 +195,82 @@ describe('Canvas selection overlay', () => {
             expect(
                 Number.parseFloat(selectionFrame.style.top) - viewport.scrollTop
             ).toBe(150);
-            expect(selectionFrame.style.width).toBe('200px');
-            expect(selectionFrame.style.height).toBe('100px');
+            expect(selectionFrame.style.width).toBe('100px');
+            expect(selectionFrame.style.height).toBe('50px');
             expect(selectionFrame.style.borderWidth).toBe('3px');
             expect(selectionFrame.style.borderStyle).toBe('solid');
             expect(selectionHandle.style.width).toBe('10px');
             expect(selectionHandle.style.height).toBe('10px');
             expect(selectionHandle.style.borderWidth).toBe('2px');
             expect(selectionHandle.style.borderStyle).toBe('solid');
+        });
+    });
+
+    it('keeps the rotated selection frame and size label in the render-origin coordinate system', async () => {
+        const { container, rerender } = render(
+            <CanvasViewportShell
+                document={rotatedSelectionDocument}
+                resolveAsset={(url) => url}
+            />
+        );
+        const viewport = container.querySelector(
+            '[aria-label="Canvas viewport"]'
+        ) as HTMLElement;
+        const targetNode = container.querySelector(
+            '[data-design-node-id="rotated-frame"]'
+        ) as HTMLElement;
+
+        viewport.getBoundingClientRect = () =>
+            domRect({ left: 10, top: 20, width: 1200, height: 800 });
+        targetNode.getBoundingClientRect = () =>
+            domRect({ left: 55, top: 25, width: 50, height: 100 });
+
+        Object.defineProperty(targetNode, 'offsetWidth', {
+            configurable: true,
+            value: 100
+        });
+        Object.defineProperty(targetNode, 'offsetHeight', {
+            configurable: true,
+            value: 50
+        });
+
+        rerender(
+            <CanvasViewportShell
+                document={rotatedSelectionDocument}
+                resolveAsset={(url) => url}
+                selectedNodeId="rotated-frame"
+            />
+        );
+
+        await waitFor(() => {
+            const selectionFrame = container.querySelector(
+                '[data-viewport-selection-node-id="rotated-frame"]'
+            ) as HTMLElement;
+            const selectionLabel = container.querySelector(
+                '[data-viewport-selection-size-label="true"]'
+            ) as HTMLElement;
+
+            expect(targetNode.style.transform).toBe('rotate(-90deg)');
+            expect(targetNode.style.transformOrigin).toBe('center center');
+            expect(
+                Number.parseFloat(selectionFrame.style.left) -
+                    viewport.scrollLeft
+            ).toBe(20);
+            expect(
+                Number.parseFloat(selectionFrame.style.top) - viewport.scrollTop
+            ).toBe(30);
+            expect(selectionFrame.style.width).toBe('100px');
+            expect(selectionFrame.style.height).toBe('50px');
+            expect(selectionFrame.style.transform).toBe('rotate(-90deg)');
+            expect(selectionFrame.style.transformOrigin).toBe('center center');
+            expect(
+                Number.parseFloat(selectionLabel.style.left) -
+                    viewport.scrollLeft
+            ).toBe(70);
+            expect(
+                Number.parseFloat(selectionLabel.style.top) - viewport.scrollTop
+            ).toBe(111);
+            expect(selectionLabel.style.transform).toBe('translate(-50%, 0)');
         });
     });
 

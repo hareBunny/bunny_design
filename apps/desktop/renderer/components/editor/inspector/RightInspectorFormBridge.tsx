@@ -55,6 +55,31 @@ const getNodeDimensionValue = (node: EditorNode, axis: 'height' | 'width') => {
     return node[axis];
 };
 
+const resolveMeasuredSize = (node: EditorNode) => {
+    if (
+        typeof window === 'undefined' ||
+        (typeof getNodeDimensionValue(node, 'width') === 'number' &&
+            typeof getNodeDimensionValue(node, 'height') === 'number')
+    ) {
+        return null;
+    }
+
+    const element = document.querySelector<HTMLElement>(
+        `[data-design-node-id="${node.id}"]`
+    );
+
+    if (!element) {
+        return null;
+    }
+
+    const rect = element.getBoundingClientRect();
+
+    return {
+        width: element.offsetWidth || rect.width,
+        height: element.offsetHeight || rect.height
+    };
+};
+
 const getInspectorNodeSyncKey = (node: EditorNode | null) => {
     if (!node) {
         return 'none';
@@ -198,7 +223,9 @@ export const RightInspectorFormBridge = () => {
             return;
         }
 
-        const patch = formValuesToPatch(selectedNode, watchedValues);
+        const patch = formValuesToPatch(selectedNode, watchedValues, {
+            measuredSize: resolveMeasuredSize(selectedNode)
+        });
 
         if (Object.keys(patch).length === 0) {
             return;

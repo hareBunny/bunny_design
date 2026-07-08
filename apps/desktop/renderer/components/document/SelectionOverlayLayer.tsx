@@ -12,6 +12,8 @@ import type {
     MiaomaLayoutDirection as LayoutDirection
 } from '@miaoma-design-ai/miaoma-design-schema';
 
+import { getRotatedBoundingBoxSize } from '../../utils/rotationAabb';
+
 type Bounds = {
     x: number;
     y: number;
@@ -44,6 +46,13 @@ const getNodeWidth = (node: DesignNode) =>
 
 const getNodeHeight = (node: DesignNode) =>
     'height' in node ? getNumericDimension(node.height) : 0;
+
+const getNodeBoundsSize = (node: DesignNode) =>
+    getRotatedBoundingBoxSize({
+        width: getNodeWidth(node),
+        height: getNodeHeight(node),
+        rotation: node.rotation
+    });
 
 const getFlowLayout = (
     layout: LayoutDirection | undefined
@@ -78,14 +87,15 @@ export const getSelectionOverlayBounds = ({
             x: parentOffset.x + nodeOffset.x,
             y: parentOffset.y + nodeOffset.y
         };
+        const nodeBoundsSize = getNodeBoundsSize(node);
         const currentBounds = selectedNodeIds.has(node.id)
             ? [
                   {
                       nodeId: node.id,
                       x: absoluteOffset.x,
                       y: absoluteOffset.y,
-                      width: getNodeWidth(node),
-                      height: getNodeHeight(node)
+                      width: nodeBoundsSize.width,
+                      height: nodeBoundsSize.height
                   }
               ]
             : [];
