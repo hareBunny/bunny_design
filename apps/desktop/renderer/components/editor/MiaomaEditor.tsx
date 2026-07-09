@@ -7,6 +7,8 @@
 import { Bot, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
+import type { EditorDocument } from '@miaoma-design-ai/miaoma-editor-core';
+
 import { EDITOR_DESIGN_METRICS } from '../../constants/editor';
 import { CANVAS_SAMPLE_EDITOR_DOCUMENT } from '../../fixtures/canvasSampleDocument';
 import type { SidebarTab } from '../../types/editor';
@@ -18,10 +20,14 @@ import { CanvasStage } from './CanvasStage';
 import { LeftSidebar } from './LeftSidebar';
 import { RightInspector } from './RightInspector';
 
-const MainHeader = () => (
+type MainHeaderProps = {
+    documentTitle: string;
+};
+
+const MainHeader = ({ documentTitle }: MainHeaderProps) => (
     <header className="editor-main-header col-start-1 row-start-1 flex h-[var(--editor-header-height)] min-w-0 items-center justify-between border-b border-[#ededed] bg-[#f6f6f6] px-6 [-webkit-app-region:drag]">
         <p className="editor-document-title m-0 min-w-0 overflow-hidden text-[13px] leading-none font-medium overflow-ellipsis whitespace-nowrap text-[#1a1a1a]">
-            miaoma-magicut.miaomadesign — Edited
+            {documentTitle}
         </p>
         <button
             className="editor-agent-control flex h-7 cursor-default items-center gap-1.5 rounded-full border border-[#e5e7eb] bg-white px-2.5 py-1.5 text-[12px] leading-none font-medium text-[#4b5563] [-webkit-app-region:no-drag]"
@@ -34,17 +40,23 @@ const MainHeader = () => (
     </header>
 );
 
-export const MiaomaEditor = () => {
+type MiaomaEditorProps = {
+    initialDocument?: EditorDocument;
+    documentTitle?: string;
+};
+
+export const MiaomaEditor = ({
+    initialDocument = CANVAS_SAMPLE_EDITOR_DOCUMENT,
+    documentTitle = 'miaoma-magicut.miaomadesign — Edited'
+}: MiaomaEditorProps) => {
     const [activeSidebarTab, setActiveSidebarTab] =
         useState<SidebarTab>('agent');
     const [isInspectorBodyVisible, setIsInspectorBodyVisible] = useState(true);
 
     return (
         <EditorSessionProvider
-            initialDocument={CANVAS_SAMPLE_EDITOR_DOCUMENT}
-            initialSelectedNodeId={
-                CANVAS_SAMPLE_EDITOR_DOCUMENT.children[0]?.id
-            }
+            initialDocument={initialDocument}
+            initialSelectedNodeId={initialDocument.children[0]?.id}
         >
             <EditorInteractionProvider>
                 <div
@@ -71,7 +83,7 @@ export const MiaomaEditor = () => {
                             isInspectorBodyVisible ? 'true' : 'false'
                         }
                     >
-                        <MainHeader />
+                        <MainHeader documentTitle={documentTitle} />
                         <CanvasStage
                             activeSidebarTab={activeSidebarTab}
                             onCanvasBlankSelect={() => {

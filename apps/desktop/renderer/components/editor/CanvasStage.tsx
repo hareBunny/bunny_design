@@ -6,10 +6,9 @@
 
 import { editorDocumentToRenderable } from '@miaoma-design-ai/miaoma-editor-core';
 
-import faviconUrl from '../../assets/brand/favicon@152.png';
-import coverImageUrl from '../../assets/dSqyy.png';
 import type { SidebarTab } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
+import { resolveCanvasAsset } from '../document/canvasAssets';
 
 import { useCanvasCreationBridge } from './bridges/useCanvasCreationBridge';
 import { useEditorSession } from './state/useEditorSession';
@@ -17,12 +16,6 @@ import { useEditorSnapshot } from './state/useEditorSnapshot';
 import { CanvasToolRail } from './CanvasToolRail';
 import { CanvasViewportShell } from './CanvasViewportShell';
 import { PromptDock } from './PromptDock';
-
-const canvasAssets: Record<string, string> = {
-    'favicon%40167.png': faviconUrl,
-    'image-import.png': coverImageUrl
-};
-const resolveCanvasAsset = (url: string) => canvasAssets[url] ?? url;
 
 type CanvasStageProps = {
     activeSidebarTab: SidebarTab;

@@ -32,6 +32,7 @@
     "include": [
         "renderer/**/*",
         "client/**/*",
+        "shared/**/*",
         "tests/**/*",
         "miaoma.env.d.ts",
         "forge.env.d.ts"

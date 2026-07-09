@@ -1,0 +1,245 @@
+/*
+- Copyright (c) 2026 妙码学院 @Heyi
+- All rights reserved.
+- 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
+  */
+
+// @vitest-environment jsdom
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+import { DashboardScreen } from '../renderer/pages/DashboardScreen';
+import type {
+    MiaomaProjectListResult,
+    MiaomaProjectResult,
+    MiaomaProjectSummary
+} from '../shared/projects';
+
+const sampleProject: MiaomaProjectSummary = {
+    id: 'project-1',
+    title: '妙码官网首页',
+    createdAt: '2026-07-12T09:00:00.000Z',
+    updatedAt: '2026-07-12T10:30:00.000Z',
+    document: {
+        version: '2.14',
+        fileToken: 'project-1',
+        children: [
+            {
+                id: 'frame-1',
+                type: 'frame',
+                name: 'Home',
+                x: 0,
+                y: 0,
+                width: 1440,
+                height: 900,
+                clip: true,
+                layout: 'none',
+                fill: {
+                    type: 'color',
+                    color: '#f8fafcff'
+                },
+                children: [
+                    {
+                        id: 'text-1',
+                        type: 'text',
+                        name: 'Hero',
+                        x: 80,
+                        y: 80,
+                        content: 'Miaoma Design',
+                        fontSize: 48,
+                        fill: {
+                            type: 'color',
+                            color: '#111827ff'
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+const listProjects = vi.fn<() => Promise<MiaomaProjectListResult>>();
+const createProject =
+    vi.fn<
+        (input?: {
+            title?: string;
+        }) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>
+    >();
+const openProject =
+    vi.fn<
+        (
+            projectId: string
+        ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>
+    >();
+const deleteProject =
+    vi.fn<
+        (projectId: string) => Promise<{ success: boolean; error?: string }>
+    >();
+
+beforeEach(() => {
+    listProjects.mockReset();
+    createProject.mockReset();
+    openProject.mockReset();
+    deleteProject.mockReset();
+
+    window.miaomaAPI = {
+        ping: vi.fn(async () => ({ success: true })),
+        projects: {
+            list: listProjects,
+            create: createProject,
+            get: vi.fn(),
+            open: openProject,
+            delete: deleteProject
+        }
+    };
+});
+
+describe('DashboardScreen', () => {
+    it('renders a full-width Dashboard heading and an empty state when there are no local projects', async () => {
+        listProjects.mockResolvedValue({
+            success: true,
+            projects: []
+        });
+
+        const { container } = render(<DashboardScreen />);
+
+        expect(
+            await screen.findByRole('heading', {
+                name: '妙笔AI - Dashboard'
+            })
+        ).toBeTruthy();
+        expect(screen.getByAltText('Miaoma logo')).toBeTruthy();
+        const content = container.querySelector('main > div');
+
+        expect(content?.className).not.toContain('mx-auto');
+        expect(content?.className).not.toContain('max-w-');
+        expect(content?.className).toContain('px-5');
+        expect(
+            screen.getByRole('button', { name: 'New Project' }).className
+        ).toContain('bg-[#111827]');
+        expect(
+            screen.getByRole('button', { name: 'New Project' }).className
+        ).toContain('h-8');
+        expect(
+            screen.getByRole('button', { name: 'New Project' }).className
+        ).toContain('rounded-xl');
+        const headerControls = screen
+            .getByRole('banner')
+            .querySelector('.right-0.left-0');
+
+        expect(headerControls?.className).toContain('top-[10px]');
+        expect(screen.getByRole('banner').querySelector('.top-2')).toBeTruthy();
+        expect(screen.getByRole('banner').className).toContain(
+            '[-webkit-app-region:drag]'
+        );
+        expect(screen.getByRole('banner').className).toContain('min-h-[84px]');
+        expect(await screen.findByText('No local projects yet')).toBeTruthy();
+    });
+
+    it('renders project cards with preview metadata and opens a project on click', async () => {
+        listProjects.mockResolvedValue({
+            success: true,
+            projects: [sampleProject]
+        });
+        openProject.mockResolvedValue({
+            success: true,
+            project: sampleProject
+        });
+
+        render(<DashboardScreen />);
+
+        expect(
+            await screen.findByRole('button', { name: 'Open 妙码官网首页' })
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Open 妙码官网首页' }).className
+        ).toContain('rounded-xl');
+        const grid = screen
+            .getByRole('button', { name: 'Open 妙码官网首页' })
+            .closest('section');
+
+        expect(grid?.className).toContain('grid-cols-2');
+        expect(grid?.className).toContain('min-[1000px]:grid-cols-3');
+        expect(grid?.className).toContain('min-[1400px]:grid-cols-4');
+        expect(grid?.className).toContain('gap-5');
+        expect(screen.getByText('妙码官网首页')).toBeTruthy();
+        expect(screen.getByText('Edited 2026-07-12 18:30')).toBeTruthy();
+        expect(screen.getByText('Miaoma Design')).toBeTruthy();
+
+        await userEvent.click(
+            screen.getByRole('button', { name: 'Open 妙码官网首页' })
+        );
+
+        await waitFor(() => {
+            expect(openProject).toHaveBeenCalledWith('project-1');
+        });
+    });
+
+    it('creates a new project from the New Project button', async () => {
+        listProjects.mockResolvedValue({
+            success: true,
+            projects: []
+        });
+        createProject.mockResolvedValue({
+            success: true,
+            project: sampleProject
+        });
+
+        render(<DashboardScreen />);
+
+        await userEvent.click(
+            await screen.findByRole('button', { name: 'New Project' })
+        );
+
+        await waitFor(() => {
+            expect(createProject).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    it('opens a custom delete confirmation dialog and removes a project after confirmation', async () => {
+        listProjects.mockResolvedValue({
+            success: true,
+            projects: [sampleProject]
+        });
+        deleteProject.mockResolvedValue({
+            success: true
+        });
+
+        render(<DashboardScreen />);
+
+        await userEvent.click(
+            await screen.findByRole('button', { name: 'Delete 妙码官网首页' })
+        );
+
+        expect(
+            await screen.findByRole('dialog', { name: 'Delete project' })
+        ).toBeTruthy();
+        expect(
+            screen.getByText('This will permanently remove this local project.')
+        ).toBeTruthy();
+        expect(
+            screen.getByRole('button', { name: 'Cancel' }).className
+        ).toContain('h-8');
+        expect(
+            screen.getByRole('button', { name: 'Cancel' }).className
+        ).toContain('rounded-xl');
+        expect(
+            screen.getByRole('button', { name: 'Delete' }).className
+        ).toContain('h-8');
+        expect(
+            screen.getByRole('button', { name: 'Delete' }).className
+        ).toContain('rounded-xl');
+
+        await userEvent.click(screen.getByRole('button', { name: 'Delete' }));
+
+        await waitFor(() => {
+            expect(deleteProject).toHaveBeenCalledWith('project-1');
+        });
+        await waitFor(() => {
+            expect(screen.queryByText('妙码官网首页')).toBeNull();
+        });
+    });
+});

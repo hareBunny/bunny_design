@@ -4,8 +4,21 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
+
+import { MIAOMA_PROJECT_IPC_CHANNELS } from '../shared/projects';
 
 contextBridge.exposeInMainWorld('miaomaAPI', {
-    ping: async () => ({ success: true })
+    ping: async () => ({ success: true }),
+    projects: {
+        list: () => ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.list),
+        create: (input?: { title?: string }) =>
+            ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.create, input),
+        get: (projectId: string) =>
+            ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.get, projectId),
+        open: (projectId: string) =>
+            ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.open, projectId),
+        delete: (projectId: string) =>
+            ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.delete, projectId)
+    }
 });
