@@ -96,8 +96,9 @@ export const MiaomaEditorScreen = () => {
 
     return (
         <MiaomaEditor
-            documentTitle={`${project.title}.miaomadesign — Edited`}
             initialDocument={schemaToEditorDocument(project.document)}
+            initialProjectTitle={project.title}
+            projectId={project.id}
         />
     );
 };

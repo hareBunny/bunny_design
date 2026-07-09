@@ -14,6 +14,7 @@ export const MIAOMA_PROJECT_IPC_CHANNELS = {
     create: 'miaoma:projects:create',
     get: 'miaoma:projects:get',
     open: 'miaoma:projects:open',
+    update: 'miaoma:projects:update',
     delete: 'miaoma:projects:delete'
 } as const;
 
@@ -32,6 +33,16 @@ export type MiaomaProjectSummary = {
     createdAt: string;
     updatedAt: string;
     document: MiaomaDesignDocument;
+};
+
+export type MiaomaProjectCreateInput = {
+    title?: string;
+    document?: MiaomaDesignDocument;
+};
+
+export type MiaomaProjectUpdateInput = {
+    title?: string;
+    document?: MiaomaDesignDocument;
 };
 
 export type MiaomaProjectResult<T> =

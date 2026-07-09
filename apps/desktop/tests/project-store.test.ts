@@ -89,6 +89,58 @@ describe('project store', () => {
         }
     });
 
+    it('creates a project from a provided design document', async () => {
+        const projectsDirectory = await createTempProjectsDirectory();
+
+        try {
+            const store = createProjectStore({
+                projectsDirectory,
+                now: () => new Date('2026-07-12T09:35:00.000Z'),
+                createId: () => 'project-document'
+            });
+
+            const project = await store.createProject({
+                title: 'Cover',
+                document: {
+                    version: '2.14',
+                    children: [
+                        {
+                            id: 'document-frame',
+                            type: 'frame',
+                            name: '01-cover',
+                            x: 12,
+                            y: 24,
+                            width: 595,
+                            height: 842,
+                            fill: { type: 'color', color: '#293975ff' },
+                            children: []
+                        }
+                    ]
+                }
+            });
+            const stored = JSON.parse(
+                await readFile(
+                    path.join(
+                        projectsDirectory,
+                        `project-document${MIAOMA_PROJECT_FILE_EXTENSION}`
+                    ),
+                    'utf8'
+                )
+            ) as MiaomaProjectFile;
+
+            expect(project.title).toBe('Cover');
+            expect(stored.document.fileToken).toBe('project-document');
+            expect(stored.document.children).toHaveLength(1);
+            expect(stored.document.children[0]).toMatchObject({
+                id: 'document-frame',
+                name: '01-cover',
+                width: 595
+            });
+        } finally {
+            await cleanupTempDirectory(projectsDirectory);
+        }
+    });
+
     it('lists valid project files only and sorts by updated time descending', async () => {
         const projectsDirectory = await createTempProjectsDirectory();
 
@@ -169,6 +221,75 @@ describe('project store', () => {
             expect(project?.title).toBe('Loaded Project');
             expect(project?.document.children[0]?.name).toBe('Loaded Project');
             expect(missing).toBeNull();
+        } finally {
+            await cleanupTempDirectory(projectsDirectory);
+        }
+    });
+
+    it('updates a project title and design document in its .miaomadesign file', async () => {
+        const projectsDirectory = await createTempProjectsDirectory();
+        const timestamps = [
+            '2026-07-12T09:30:00.000Z',
+            '2026-07-12T09:45:00.000Z'
+        ];
+        let timestampIndex = 0;
+
+        try {
+            const store = createProjectStore({
+                projectsDirectory,
+                now: () =>
+                    new Date(
+                        timestamps[timestampIndex++] ?? timestamps.at(-1) ?? ''
+                    ),
+                createId: () => 'project-4'
+            });
+
+            await store.createProject({ title: 'Before Rename' });
+
+            const nextDocument: MiaomaProjectFile['document'] = {
+                version: '2.14',
+                fileToken: 'project-4',
+                children: [
+                    {
+                        id: 'project-4-frame',
+                        type: 'frame',
+                        name: 'Updated Frame',
+                        x: 42,
+                        y: 16,
+                        width: 640,
+                        height: 360,
+                        fill: { type: 'color', color: '#f4f6f8ff' },
+                        children: []
+                    }
+                ]
+            };
+
+            const updated = await store.updateProject('project-4', {
+                title: 'After Rename',
+                document: nextDocument
+            });
+            const stored = JSON.parse(
+                await readFile(
+                    path.join(
+                        projectsDirectory,
+                        `project-4${MIAOMA_PROJECT_FILE_EXTENSION}`
+                    ),
+                    'utf8'
+                )
+            ) as MiaomaProjectFile;
+
+            expect(updated).toMatchObject({
+                id: 'project-4',
+                title: 'After Rename',
+                updatedAt: '2026-07-12T09:45:00.000Z'
+            });
+            expect(stored.title).toBe('After Rename');
+            expect(stored.updatedAt).toBe('2026-07-12T09:45:00.000Z');
+            expect(stored.document.children[0]).toMatchObject({
+                id: 'project-4-frame',
+                name: 'Updated Frame',
+                x: 42
+            });
         } finally {
             await cleanupTempDirectory(projectsDirectory);
         }

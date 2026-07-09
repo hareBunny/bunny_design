@@ -11,10 +11,12 @@ import path from 'node:path';
 import {
     MIAOMA_PROJECT_IPC_CHANNELS,
     MIAOMA_PROJECTS_DIRECTORY_NAME,
+    type MiaomaProjectCreateInput,
     type MiaomaProjectDeleteResult,
     type MiaomaProjectListResult,
     type MiaomaProjectResult,
-    type MiaomaProjectSummary
+    type MiaomaProjectSummary,
+    type MiaomaProjectUpdateInput
 } from '../shared/projects';
 
 import { createProjectStore, type ProjectStore } from './projects/projectStore';
@@ -171,7 +173,7 @@ const registerProjectIpcHandlers = (projectStore: ProjectStore) => {
         MIAOMA_PROJECT_IPC_CHANNELS.create,
         async (
             event,
-            input?: { title?: string }
+            input?: MiaomaProjectCreateInput
         ): Promise<MiaomaProjectResult<MiaomaProjectSummary>> => {
             try {
                 const project = await projectStore.createProject(input);
@@ -223,6 +225,29 @@ const registerProjectIpcHandlers = (projectStore: ProjectStore) => {
             }
 
             return toProjectResult(project);
+        }
+    );
+
+    ipcMain.handle(
+        MIAOMA_PROJECT_IPC_CHANNELS.update,
+        async (
+            _event,
+            projectId: string,
+            input: MiaomaProjectUpdateInput
+        ): Promise<MiaomaProjectResult<MiaomaProjectSummary>> => {
+            try {
+                return toProjectResult(
+                    await projectStore.updateProject(projectId, input ?? {})
+                );
+            } catch (error) {
+                return {
+                    success: false,
+                    error:
+                        error instanceof Error
+                            ? error.message
+                            : 'Failed to update project.'
+                };
+            }
         }
     );
 

@@ -20,7 +20,6 @@ type ProjectCardProps = {
 
 const PREVIEW_WIDTH = 280;
 const PREVIEW_HEIGHT = 188;
-const PREVIEW_PADDING = 16;
 
 const formatEditedAt = (value: string) => {
     const date = new Date(value);
@@ -45,9 +44,8 @@ export const ProjectCard = ({
     const safeWidth = Math.max(bounds.width, 1);
     const safeHeight = Math.max(bounds.height, 1);
     const scale = Math.min(
-        (PREVIEW_WIDTH - PREVIEW_PADDING * 2) / safeWidth,
-        (PREVIEW_HEIGHT - PREVIEW_PADDING * 2) / safeHeight,
-        1
+        PREVIEW_WIDTH / safeWidth,
+        PREVIEW_HEIGHT / safeHeight
     );
 
     return (
@@ -60,28 +58,24 @@ export const ProjectCard = ({
                 }}
                 type="button"
             >
-                <div className="flex h-[188px] items-center justify-center overflow-hidden border-b border-[#eef0f2] bg-[#f5f7fa] px-4 py-4">
+                <div
+                    className="relative h-[188px] overflow-hidden border-b border-[#eef0f2] bg-[#f5f7fa]"
+                    data-dashboard-preview-viewport="true"
+                >
                     <div
-                        className="pointer-events-none relative overflow-hidden rounded-lg border border-[#dbe0e6] bg-white shadow-[0_12px_32px_#11182714]"
+                        className="pointer-events-none absolute top-1/2 left-1/2 origin-center overflow-visible"
+                        data-dashboard-preview-content="true"
                         style={{
-                            width: `${safeWidth * scale}px`,
-                            height: `${safeHeight * scale}px`
+                            width: `${safeWidth}px`,
+                            height: `${safeHeight}px`,
+                            transform: `translate(-50%, -50%) scale(${scale})`
                         }}
                     >
-                        <div
-                            style={{
-                                transform: `scale(${scale})`,
-                                transformOrigin: 'top left',
-                                width: `${safeWidth}px`,
-                                height: `${safeHeight}px`
-                            }}
-                        >
-                            <CanvasDocumentRenderer
-                                document={project.document}
-                                renderSelectionOverlay={false}
-                                resolveAsset={resolveCanvasAsset}
-                            />
-                        </div>
+                        <CanvasDocumentRenderer
+                            document={project.document}
+                            renderSelectionOverlay={false}
+                            resolveAsset={resolveCanvasAsset}
+                        />
                     </div>
                 </div>
                 <div className="flex min-h-[84px] flex-col gap-1 px-4 py-3">

@@ -15,8 +15,10 @@ import {
     isSafeMiaomaProjectId,
     MIAOMA_PROJECT_FILE_EXTENSION,
     MIAOMA_PROJECT_FORMAT_VERSION,
+    type MiaomaProjectCreateInput,
     type MiaomaProjectFile,
-    type MiaomaProjectSummary
+    type MiaomaProjectSummary,
+    type MiaomaProjectUpdateInput
 } from '../../shared/projects';
 
 type ProjectStoreOptions = {
@@ -25,14 +27,16 @@ type ProjectStoreOptions = {
     createId?: () => string;
 };
 
-type CreateProjectInput = {
-    title?: string;
-};
-
 export type ProjectStore = {
     listProjects(): Promise<MiaomaProjectSummary[]>;
-    createProject(input?: CreateProjectInput): Promise<MiaomaProjectSummary>;
+    createProject(
+        input?: MiaomaProjectCreateInput
+    ): Promise<MiaomaProjectSummary>;
     getProject(projectId: string): Promise<MiaomaProjectSummary | null>;
+    updateProject(
+        projectId: string,
+        input: MiaomaProjectUpdateInput
+    ): Promise<MiaomaProjectSummary | null>;
     deleteProject(projectId: string): Promise<boolean>;
 };
 
@@ -121,6 +125,17 @@ const createBlankDesignDocument = ({
     ]
 });
 
+const toProjectDocument = ({
+    document,
+    projectId
+}: {
+    document: MiaomaDesignDocument;
+    projectId: string;
+}): MiaomaDesignDocument => ({
+    ...document,
+    fileToken: projectId
+});
+
 export const createProjectStore = ({
     projectsDirectory,
     now = () => new Date(),
@@ -128,6 +143,13 @@ export const createProjectStore = ({
 }: ProjectStoreOptions): ProjectStore => {
     const ensureProjectsDirectory = () =>
         mkdir(projectsDirectory, { recursive: true });
+
+    const writeProjectFile = (project: MiaomaProjectFile) =>
+        writeFile(
+            toProjectPath(projectsDirectory, project.id),
+            `${JSON.stringify(project, null, 2)}\n`,
+            'utf8'
+        );
 
     const readProjectFile = async (
         filePath: string
@@ -175,21 +197,38 @@ export const createProjectStore = ({
             }
 
             const timestamp = now().toISOString();
-            const title = input.title?.trim() || DEFAULT_PROJECT_TITLE;
+            let document = createBlankDesignDocument({
+                projectId,
+                title: input.title?.trim() || DEFAULT_PROJECT_TITLE
+            });
+
+            if (input.document) {
+                const validation = strictValidateDesignDocument(input.document);
+
+                if (!validation.success) {
+                    throw new Error('Project document is not valid.');
+                }
+
+                document = toProjectDocument({
+                    document: validation.document,
+                    projectId
+                });
+            }
+
+            const title =
+                input.title?.trim() ||
+                document.children[0]?.name ||
+                DEFAULT_PROJECT_TITLE;
             const project: MiaomaProjectFile = {
                 formatVersion: MIAOMA_PROJECT_FORMAT_VERSION,
                 id: projectId,
                 title,
                 createdAt: timestamp,
                 updatedAt: timestamp,
-                document: createBlankDesignDocument({ projectId, title })
+                document
             };
 
-            await writeFile(
-                toProjectPath(projectsDirectory, projectId),
-                `${JSON.stringify(project, null, 2)}\n`,
-                'utf8'
-            );
+            await writeProjectFile(project);
 
             return toProjectSummary(project);
         },
@@ -205,6 +244,48 @@ export const createProjectStore = ({
             );
 
             return project === null ? null : toProjectSummary(project);
+        },
+        async updateProject(projectId, input) {
+            if (!isSafeMiaomaProjectId(projectId)) {
+                return null;
+            }
+
+            await ensureProjectsDirectory();
+
+            const project = await readProjectFile(
+                toProjectPath(projectsDirectory, projectId)
+            );
+
+            if (project === null) {
+                return null;
+            }
+
+            const title =
+                input.title === undefined
+                    ? project.title
+                    : input.title.trim() || DEFAULT_PROJECT_TITLE;
+            let nextDocument = project.document;
+
+            if (input.document !== undefined) {
+                const validation = strictValidateDesignDocument(input.document);
+
+                if (!validation.success) {
+                    throw new Error('Project document is not valid.');
+                }
+
+                nextDocument = validation.document;
+            }
+
+            const nextProject: MiaomaProjectFile = {
+                ...project,
+                title,
+                updatedAt: now().toISOString(),
+                document: nextDocument
+            };
+
+            await writeProjectFile(nextProject);
+
+            return toProjectSummary(nextProject);
         },
         async deleteProject(projectId) {
             if (!isSafeMiaomaProjectId(projectId)) {

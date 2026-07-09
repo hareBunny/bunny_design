@@ -61,13 +61,42 @@ const sampleProject: MiaomaProjectSummary = {
     }
 };
 
+const updatedSampleProject: MiaomaProjectSummary = {
+    ...sampleProject,
+    title: '更新后的官网首页',
+    updatedAt: '2026-07-12T11:20:00.000Z',
+    document: {
+        ...sampleProject.document,
+        children: [
+            {
+                ...sampleProject.document.children[0],
+                name: 'Updated Home',
+                children:
+                    sampleProject.document.children[0]?.type === 'frame'
+                        ? [
+                              {
+                                  id: 'text-1',
+                                  type: 'text',
+                                  name: 'Hero',
+                                  x: 160,
+                                  y: 96,
+                                  content: 'Updated Miaoma Design',
+                                  fontSize: 56,
+                                  fill: {
+                                      type: 'color',
+                                      color: '#111827ff'
+                                  }
+                              }
+                          ]
+                        : []
+            }
+        ]
+    }
+};
+
 const listProjects = vi.fn<() => Promise<MiaomaProjectListResult>>();
 const createProject =
-    vi.fn<
-        (input?: {
-            title?: string;
-        }) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>
-    >();
+    vi.fn<() => Promise<MiaomaProjectResult<MiaomaProjectSummary>>>();
 const openProject =
     vi.fn<
         (
@@ -92,6 +121,7 @@ beforeEach(() => {
             create: createProject,
             get: vi.fn(),
             open: openProject,
+            update: vi.fn(),
             delete: deleteProject
         }
     };
@@ -126,16 +156,29 @@ describe('DashboardScreen', () => {
         expect(
             screen.getByRole('button', { name: 'New Project' }).className
         ).toContain('rounded-xl');
+        expect(
+            screen.queryByRole('button', { name: 'From Template' })
+        ).toBeNull();
         const headerControls = screen
             .getByRole('banner')
             .querySelector('.right-0.left-0');
+        const headerBrand = screen
+            .getByRole('banner')
+            .querySelector('[data-dashboard-brand="true"]');
 
         expect(headerControls?.className).toContain('top-[10px]');
-        expect(screen.getByRole('banner').querySelector('.top-2')).toBeTruthy();
+        expect(headerBrand?.className).toContain(
+            '[left:calc(var(--editor-system-traffic-light-space)+30px)]'
+        );
+        expect(headerBrand?.className).toContain('top-[10px]');
+        expect(
+            screen.getByRole('heading', { name: '妙笔AI - Dashboard' })
+                .className
+        ).toContain('text-[15px]');
         expect(screen.getByRole('banner').className).toContain(
             '[-webkit-app-region:drag]'
         );
-        expect(screen.getByRole('banner').className).toContain('min-h-[84px]');
+        expect(screen.getByRole('banner').className).toContain('min-h-[56px]');
         expect(await screen.findByText('No local projects yet')).toBeTruthy();
     });
 
@@ -165,6 +208,16 @@ describe('DashboardScreen', () => {
         expect(grid?.className).toContain('min-[1000px]:grid-cols-3');
         expect(grid?.className).toContain('min-[1400px]:grid-cols-4');
         expect(grid?.className).toContain('gap-5');
+        const previewContent = document.querySelector<HTMLElement>(
+            '[data-dashboard-preview-content="true"]'
+        );
+
+        expect(previewContent?.className).not.toContain('bg-white');
+        expect(previewContent?.className).not.toContain('border');
+        expect(previewContent?.className).toContain('absolute');
+        expect(previewContent?.style.transform).toContain(
+            'translate(-50%, -50%) scale(0.19444444444444445)'
+        );
         expect(screen.getByText('妙码官网首页')).toBeTruthy();
         expect(screen.getByText('Edited 2026-07-12 18:30')).toBeTruthy();
         expect(screen.getByText('Miaoma Design')).toBeTruthy();
@@ -176,6 +229,31 @@ describe('DashboardScreen', () => {
         await waitFor(() => {
             expect(openProject).toHaveBeenCalledWith('project-1');
         });
+    });
+
+    it('refreshes project previews and metadata when the Dashboard window receives focus', async () => {
+        listProjects
+            .mockResolvedValueOnce({
+                success: true,
+                projects: [sampleProject]
+            })
+            .mockResolvedValueOnce({
+                success: true,
+                projects: [updatedSampleProject]
+            });
+
+        render(<DashboardScreen />);
+
+        expect(await screen.findByText('妙码官网首页')).toBeTruthy();
+
+        window.dispatchEvent(new Event('focus'));
+
+        await waitFor(() => {
+            expect(listProjects).toHaveBeenCalledTimes(2);
+        });
+        expect(await screen.findByText('更新后的官网首页')).toBeTruthy();
+        expect(screen.getByText('Edited 2026-07-12 19:20')).toBeTruthy();
+        expect(screen.getByText('Updated Miaoma Design')).toBeTruthy();
     });
 
     it('creates a new project from the New Project button', async () => {

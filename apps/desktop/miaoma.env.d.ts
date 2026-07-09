@@ -5,10 +5,12 @@
   */
 
 import type {
+    MiaomaProjectCreateInput,
     MiaomaProjectDeleteResult,
     MiaomaProjectListResult,
     MiaomaProjectResult,
-    MiaomaProjectSummary
+    MiaomaProjectSummary,
+    MiaomaProjectUpdateInput
 } from './shared/projects';
 
 interface Window {
@@ -16,14 +18,18 @@ interface Window {
         ping: () => Promise<{ success: boolean }>;
         projects: {
             list: () => Promise<MiaomaProjectListResult>;
-            create: (input?: {
-                title?: string;
-            }) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
+            create: (
+                input?: MiaomaProjectCreateInput
+            ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
             get: (
                 projectId: string
             ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
             open: (
                 projectId: string
+            ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
+            update: (
+                projectId: string,
+                input: MiaomaProjectUpdateInput
             ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
             delete: (projectId: string) => Promise<MiaomaProjectDeleteResult>;
         };

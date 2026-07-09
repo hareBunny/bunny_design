@@ -42,8 +42,10 @@ export const DashboardScreen = () => {
     useEffect(() => {
         let isMounted = true;
 
-        const loadProjects = async () => {
-            setStatus('loading');
+        const loadProjects = async ({ showLoading = false } = {}) => {
+            if (showLoading) {
+                setStatus('loading');
+            }
             setErrorMessage(null);
 
             try {
@@ -78,11 +80,29 @@ export const DashboardScreen = () => {
                 );
             }
         };
+        const refreshProjects = () => {
+            void loadProjects();
+        };
+        const refreshProjectsWhenVisible = () => {
+            if (document.visibilityState === 'visible') {
+                refreshProjects();
+            }
+        };
 
-        void loadProjects();
+        void loadProjects({ showLoading: true });
+        window.addEventListener('focus', refreshProjects);
+        document.addEventListener(
+            'visibilitychange',
+            refreshProjectsWhenVisible
+        );
 
         return () => {
             isMounted = false;
+            window.removeEventListener('focus', refreshProjects);
+            document.removeEventListener(
+                'visibilitychange',
+                refreshProjectsWhenVisible
+            );
         };
     }, []);
 
@@ -168,43 +188,45 @@ export const DashboardScreen = () => {
         <main className="h-screen overflow-auto bg-[#f4f6f8] text-[#111827]">
             <div className="flex min-h-full w-full flex-col px-5 pt-0 pb-5">
                 <header
-                    className="relative mb-4 min-h-[84px] [-webkit-app-region:drag]"
+                    className="relative mb-4 min-h-[56px] [-webkit-app-region:drag]"
                     role="banner"
                 >
-                    <div className="pointer-events-none absolute inset-x-0 top-2 flex flex-col items-center text-center">
-                        <div className="flex items-center justify-center gap-2">
-                            <img
-                                alt="Miaoma logo"
-                                className="h-6 w-6 shrink-0"
-                                height={24}
-                                src={logoUrl}
-                                width={24}
-                            />
-                            <h1 className="m-0 text-[24px] leading-8 font-semibold">
-                                妙笔AI - Dashboard
-                            </h1>
-                        </div>
-                        <p className="m-0 mt-1 text-[13px] leading-5 text-[#6b7280]">
-                            Local `.miaomadesign` files stored in this device
-                        </p>
+                    <div
+                        className="pointer-events-none absolute top-[10px] [left:calc(var(--editor-system-traffic-light-space)+30px)] flex items-center gap-2"
+                        data-dashboard-brand="true"
+                    >
+                        <img
+                            alt="Miaoma logo"
+                            className="h-5 w-5 shrink-0"
+                            height={20}
+                            src={logoUrl}
+                            width={20}
+                        />
+                        <h1 className="m-0 text-[15px] leading-6 font-semibold">
+                            妙笔AI - Dashboard
+                        </h1>
                     </div>
                     <div className="absolute top-[10px] right-0 left-0 flex items-start justify-between gap-4">
                         <div
                             aria-hidden="true"
                             className="h-10 w-[var(--editor-system-traffic-light-space)] shrink-0"
                         />
-                        <button
-                            className="relative z-10 inline-flex h-8 shrink-0 cursor-default items-center gap-1.5 rounded-xl bg-[#111827] px-3 text-[12px] font-medium text-white shadow-[0_10px_22px_#11182724] [-webkit-app-region:no-drag]"
-                            onClick={handleCreateProject}
-                            type="button"
-                        >
-                            <Plus
-                                aria-hidden="true"
-                                size={14}
-                                strokeWidth={2}
-                            />
-                            <span>New Project</span>
-                        </button>
+                        <div className="relative z-10 flex items-center gap-2 [-webkit-app-region:no-drag]">
+                            <button
+                                className="inline-flex h-8 shrink-0 cursor-default items-center gap-1.5 rounded-xl bg-[#111827] px-3 text-[12px] font-medium text-white shadow-[0_10px_22px_#11182724]"
+                                onClick={() => {
+                                    handleCreateProject();
+                                }}
+                                type="button"
+                            >
+                                <Plus
+                                    aria-hidden="true"
+                                    size={14}
+                                    strokeWidth={2}
+                                />
+                                <span>New Project</span>
+                            </button>
+                        </div>
                     </div>
                 </header>
 
