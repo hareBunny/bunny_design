@@ -7,36 +7,47 @@
 import type {
     MiaomaProjectCreateInput,
     MiaomaProjectDeleteResult,
+    MiaomaProjectImportKind,
+    MiaomaProjectImportResult,
     MiaomaProjectListResult,
     MiaomaProjectResult,
     MiaomaProjectSummary,
     MiaomaProjectUpdateInput
 } from './shared/projects';
 
-interface Window {
-    miaomaAPI: {
-        ping: () => Promise<{ success: boolean }>;
-        projects: {
-            list: () => Promise<MiaomaProjectListResult>;
-            create: (
-                input?: MiaomaProjectCreateInput
-            ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
-            get: (
-                projectId: string
-            ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
-            open: (
-                projectId: string
-            ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
-            update: (
-                projectId: string,
-                input: MiaomaProjectUpdateInput
-            ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
-            delete: (projectId: string) => Promise<MiaomaProjectDeleteResult>;
+declare global {
+    interface Window {
+        miaomaAPI: {
+            ping: () => Promise<{ success: boolean }>;
+            projects: {
+                list: () => Promise<MiaomaProjectListResult>;
+                create: (
+                    input?: MiaomaProjectCreateInput
+                ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
+                importFromFile: (
+                    kind: MiaomaProjectImportKind
+                ) => Promise<MiaomaProjectImportResult>;
+                get: (
+                    projectId: string
+                ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
+                open: (
+                    projectId: string
+                ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
+                update: (
+                    projectId: string,
+                    input: MiaomaProjectUpdateInput
+                ) => Promise<MiaomaProjectResult<MiaomaProjectSummary>>;
+                delete: (
+                    projectId: string
+                ) => Promise<MiaomaProjectDeleteResult>;
+            };
         };
-    };
+    }
 }
 
 declare module '*.png' {
     const src: string;
     export default src;
 }
+
+export {};

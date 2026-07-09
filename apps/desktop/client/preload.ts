@@ -9,6 +9,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 import {
     MIAOMA_PROJECT_IPC_CHANNELS,
     type MiaomaProjectCreateInput,
+    type MiaomaProjectImportKind,
     type MiaomaProjectUpdateInput
 } from '../shared/projects';
 
@@ -18,6 +19,8 @@ contextBridge.exposeInMainWorld('miaomaAPI', {
         list: () => ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.list),
         create: (input?: MiaomaProjectCreateInput) =>
             ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.create, input),
+        importFromFile: (kind: MiaomaProjectImportKind) =>
+            ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.importFile, kind),
         get: (projectId: string) =>
             ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.get, projectId),
         open: (projectId: string) =>

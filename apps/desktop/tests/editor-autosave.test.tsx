@@ -80,6 +80,7 @@ describe('editor project autosave', () => {
             projects: {
                 list: vi.fn(),
                 create: vi.fn(),
+                importFromFile: vi.fn(),
                 get: vi.fn(),
                 open: vi.fn(),
                 update: updateProject,

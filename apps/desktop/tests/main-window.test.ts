@@ -62,7 +62,10 @@ describe('desktop windows', () => {
         expect(source).toContain('MIAOMA_PROJECT_IPC_CHANNELS.get');
         expect(source).toContain('MIAOMA_PROJECT_IPC_CHANNELS.open');
         expect(source).toContain('MIAOMA_PROJECT_IPC_CHANNELS.update');
+        expect(source).toContain('MIAOMA_PROJECT_IPC_CHANNELS.importFile');
         expect(source).toContain('MIAOMA_PROJECT_IPC_CHANNELS.delete');
+        expect(source).toContain('dialog.showOpenDialog');
+        expect(source).toContain('readProjectImportDocument');
         expect(source).not.toContain('miaoma-design-schema.json');
         expect(source).not.toContain('miaoma-design-design-schema.json');
         expect(source).not.toContain("template !== 'random'");
@@ -80,6 +83,7 @@ describe('desktop windows', () => {
         expect(source).toContain('get:');
         expect(source).toContain('open:');
         expect(source).toContain('update:');
+        expect(source).toContain('importFromFile:');
         expect(source).toContain('delete:');
         expect(source).toContain('MIAOMA_PROJECT_IPC_CHANNELS');
     });

@@ -4,10 +4,19 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { FolderOpen, Plus } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
+import {
+    ChevronDown,
+    FileJson,
+    FolderOpen,
+    Import,
+    PenLine,
+    Plus
+} from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import type {
+    MiaomaProjectImportKind,
     MiaomaProjectListResult,
     MiaomaProjectSummary
 } from '../../shared/projects';
@@ -22,13 +31,32 @@ const EMPTY_PROJECTS_RESULT: MiaomaProjectListResult = {
     projects: []
 };
 
+const IMPORT_ACTIONS: {
+    kind: MiaomaProjectImportKind;
+    label: string;
+    Icon: LucideIcon;
+}[] = [
+    {
+        kind: 'json',
+        label: 'Import JSON',
+        Icon: FileJson
+    },
+    {
+        kind: 'pencil',
+        label: 'Import Pencil (.pen)',
+        Icon: PenLine
+    }
+];
+
 export const DashboardScreen = () => {
     const [projects, setProjects] = useState<MiaomaProjectSummary[]>([]);
     const [status, setStatus] = useState<DashboardStatus>('idle');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [isImportMenuOpen, setIsImportMenuOpen] = useState(false);
     const [pendingDeleteProjectId, setPendingDeleteProjectId] = useState<
         string | null
     >(null);
+    const importMenuRef = useRef<HTMLDivElement | null>(null);
 
     const hasProjects = projects.length > 0;
     const isEmpty = status === 'ready' && !hasProjects;
@@ -57,7 +85,7 @@ export const DashboardScreen = () => {
                     return;
                 }
 
-                if (!result.success) {
+                if (result.success === false) {
                     setProjects([]);
                     setStatus('error');
                     setErrorMessage(result.error);
@@ -106,6 +134,36 @@ export const DashboardScreen = () => {
         };
     }, []);
 
+    useEffect(() => {
+        if (!isImportMenuOpen) {
+            return undefined;
+        }
+
+        const closeOnOutsidePointer = (event: PointerEvent) => {
+            if (
+                event.target instanceof Node &&
+                importMenuRef.current?.contains(event.target)
+            ) {
+                return;
+            }
+
+            setIsImportMenuOpen(false);
+        };
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsImportMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('pointerdown', closeOnOutsidePointer);
+        document.addEventListener('keydown', closeOnEscape);
+
+        return () => {
+            document.removeEventListener('pointerdown', closeOnOutsidePointer);
+            document.removeEventListener('keydown', closeOnEscape);
+        };
+    }, [isImportMenuOpen]);
+
     const headingCopy = useMemo(() => {
         if (status === 'loading') {
             return 'Loading local projects...';
@@ -122,24 +180,28 @@ export const DashboardScreen = () => {
         return null;
     }, [errorMessage, isEmpty, status]);
 
+    const addProjectToDashboard = (project: MiaomaProjectSummary) => {
+        setProjects((currentProjects) => [
+            project,
+            ...currentProjects.filter(
+                (currentProject) => currentProject.id !== project.id
+            )
+        ]);
+        setStatus('ready');
+        setErrorMessage(null);
+    };
+
     const handleCreateProject = () => {
         void window.miaomaAPI.projects
             .create()
             .then((result) => {
-                if (!result.success) {
+                if (result.success === false) {
                     setStatus('error');
                     setErrorMessage(result.error);
                     return;
                 }
 
-                setProjects((currentProjects) => [
-                    result.project,
-                    ...currentProjects.filter(
-                        (project) => project.id !== result.project.id
-                    )
-                ]);
-                setStatus('ready');
-                setErrorMessage(null);
+                addProjectToDashboard(result.project);
             })
             .catch((error: unknown) => {
                 setStatus('error');
@@ -147,6 +209,33 @@ export const DashboardScreen = () => {
                     error instanceof Error
                         ? error.message
                         : 'Unable to create project.'
+                );
+            });
+    };
+
+    const handleImportProject = (kind: MiaomaProjectImportKind) => {
+        setIsImportMenuOpen(false);
+        void window.miaomaAPI.projects
+            .importFromFile(kind)
+            .then((result) => {
+                if (result.success === false) {
+                    if (result.canceled === true) {
+                        return;
+                    }
+
+                    setStatus('error');
+                    setErrorMessage(result.error);
+                    return;
+                }
+
+                addProjectToDashboard(result.project);
+            })
+            .catch((error: unknown) => {
+                setStatus('error');
+                setErrorMessage(
+                    error instanceof Error
+                        ? error.message
+                        : 'Unable to import project.'
                 );
             });
     };
@@ -159,7 +248,7 @@ export const DashboardScreen = () => {
         void window.miaomaAPI.projects
             .delete(pendingDeleteProject.id)
             .then((result) => {
-                if (!result.success) {
+                if (result.success === false) {
                     setStatus('error');
                     setErrorMessage(result.error);
                     return;
@@ -226,6 +315,61 @@ export const DashboardScreen = () => {
                                 />
                                 <span>New Project</span>
                             </button>
+                            <div className="relative" ref={importMenuRef}>
+                                <button
+                                    aria-expanded={isImportMenuOpen}
+                                    aria-haspopup="menu"
+                                    className="inline-flex h-8 shrink-0 cursor-default items-center gap-1.5 rounded-xl border border-[#d4d4d8] bg-white px-3 text-[12px] font-medium text-[#18181b] shadow-[0_1px_2px_#09090b0d]"
+                                    onClick={() => {
+                                        setIsImportMenuOpen(
+                                            (isOpen) => !isOpen
+                                        );
+                                    }}
+                                    type="button"
+                                >
+                                    <Import
+                                        aria-hidden="true"
+                                        size={14}
+                                        strokeWidth={1.8}
+                                    />
+                                    <span>Import</span>
+                                    <ChevronDown
+                                        aria-hidden="true"
+                                        size={13}
+                                        strokeWidth={1.9}
+                                    />
+                                </button>
+                                {isImportMenuOpen ? (
+                                    <div
+                                        className="absolute top-[calc(100%+6px)] right-0 z-20 w-52 overflow-hidden rounded-xl border border-[#e4e4e7] bg-white py-1 shadow-[0_18px_44px_#1118271a]"
+                                        role="menu"
+                                    >
+                                        {IMPORT_ACTIONS.map(
+                                            ({ kind, label, Icon }) => (
+                                                <button
+                                                    className="flex h-9 w-full cursor-default items-center gap-2 px-3 text-left text-[12px] font-medium text-[#27272a] hover:bg-[#f4f4f5]"
+                                                    key={kind}
+                                                    onClick={() => {
+                                                        handleImportProject(
+                                                            kind
+                                                        );
+                                                    }}
+                                                    role="menuitem"
+                                                    type="button"
+                                                >
+                                                    <Icon
+                                                        aria-hidden="true"
+                                                        className="text-[#71717a]"
+                                                        size={14}
+                                                        strokeWidth={1.8}
+                                                    />
+                                                    <span>{label}</span>
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+                                ) : null}
+                            </div>
                         </div>
                     </div>
                 </header>
@@ -259,7 +403,7 @@ export const DashboardScreen = () => {
                                             projectId
                                         );
 
-                                    if (!result.success) {
+                                    if (result.success === false) {
                                         setStatus('error');
                                         setErrorMessage(result.error);
                                     }

@@ -45,7 +45,7 @@ export const MiaomaEditorScreen = () => {
                     return;
                 }
 
-                if (!result.success) {
+                if (result.success === false) {
                     setStatus('error');
                     setErrorMessage(result.error);
                     return;

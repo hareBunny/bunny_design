@@ -97,6 +97,15 @@ const updatedSampleProject: MiaomaProjectSummary = {
 const listProjects = vi.fn<() => Promise<MiaomaProjectListResult>>();
 const createProject =
     vi.fn<() => Promise<MiaomaProjectResult<MiaomaProjectSummary>>>();
+const importFromFile =
+    vi.fn<
+        (
+            kind: string
+        ) => Promise<
+            | MiaomaProjectResult<MiaomaProjectSummary>
+            | { success: false; canceled: true }
+        >
+    >();
 const openProject =
     vi.fn<
         (
@@ -111,20 +120,23 @@ const deleteProject =
 beforeEach(() => {
     listProjects.mockReset();
     createProject.mockReset();
+    importFromFile.mockReset();
     openProject.mockReset();
     deleteProject.mockReset();
 
-    window.miaomaAPI = {
+    const miaomaAPI = {
         ping: vi.fn(async () => ({ success: true })),
         projects: {
             list: listProjects,
             create: createProject,
+            importFromFile,
             get: vi.fn(),
             open: openProject,
             update: vi.fn(),
             delete: deleteProject
         }
     };
+    window.miaomaAPI = miaomaAPI as typeof window.miaomaAPI;
 });
 
 describe('DashboardScreen', () => {
@@ -159,6 +171,7 @@ describe('DashboardScreen', () => {
         expect(
             screen.queryByRole('button', { name: 'From Template' })
         ).toBeNull();
+        expect(screen.getByRole('button', { name: 'Import' })).toBeTruthy();
         const headerControls = screen
             .getByRole('banner')
             .querySelector('.right-0.left-0');
@@ -275,6 +288,97 @@ describe('DashboardScreen', () => {
         await waitFor(() => {
             expect(createProject).toHaveBeenCalledTimes(1);
         });
+    });
+
+    it('imports local JSON and Pencil files from the Dashboard dropdown', async () => {
+        listProjects.mockResolvedValue({
+            success: true,
+            projects: []
+        });
+        importFromFile.mockResolvedValue({
+            success: true,
+            project: sampleProject
+        });
+
+        render(<DashboardScreen />);
+
+        await userEvent.click(
+            await screen.findByRole('button', { name: 'Import' })
+        );
+
+        expect(
+            screen.getAllByRole('menuitem').map((item) => item.textContent)
+        ).toEqual(['Import JSON', 'Import Pencil (.pen)']);
+
+        await userEvent.click(
+            screen.getByRole('menuitem', { name: 'Import JSON' })
+        );
+        await waitFor(() => {
+            expect(importFromFile).toHaveBeenCalledWith('json');
+        });
+        expect(await screen.findByText('妙码官网首页')).toBeTruthy();
+
+        await userEvent.click(screen.getByRole('button', { name: 'Import' }));
+        await userEvent.click(
+            screen.getByRole('menuitem', { name: 'Import Pencil (.pen)' })
+        );
+        await waitFor(() => {
+            expect(importFromFile).toHaveBeenCalledWith('pencil');
+        });
+
+        expect(importFromFile).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not show an error when a project import is canceled', async () => {
+        listProjects.mockResolvedValue({
+            success: true,
+            projects: []
+        });
+        importFromFile.mockResolvedValue({
+            success: false,
+            canceled: true
+        });
+
+        render(<DashboardScreen />);
+
+        await userEvent.click(
+            await screen.findByRole('button', { name: 'Import' })
+        );
+        await userEvent.click(
+            screen.getByRole('menuitem', { name: 'Import JSON' })
+        );
+
+        await waitFor(() => {
+            expect(importFromFile).toHaveBeenCalledWith('json');
+        });
+        expect(screen.queryByText('Unable to import project.')).toBeNull();
+        expect(await screen.findByText('No local projects yet')).toBeTruthy();
+    });
+
+    it('shows an error when a project import fails', async () => {
+        listProjects.mockResolvedValue({
+            success: true,
+            projects: []
+        });
+        importFromFile.mockResolvedValue({
+            success: false,
+            error: 'Selected file is not a valid Miaoma design document.'
+        });
+
+        render(<DashboardScreen />);
+
+        await userEvent.click(
+            await screen.findByRole('button', { name: 'Import' })
+        );
+        await userEvent.click(
+            screen.getByRole('menuitem', { name: 'Import JSON' })
+        );
+
+        expect(
+            await screen.findByText(
+                'Selected file is not a valid Miaoma design document.'
+            )
+        ).toBeTruthy();
     });
 
     it('opens a custom delete confirmation dialog and removes a project after confirmation', async () => {

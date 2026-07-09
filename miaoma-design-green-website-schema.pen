@@ -1,0 +1,4496 @@
+{
+  "version": "2.14",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "小清新官网 - 青禾集",
+      "clip": true,
+      "width": 1440,
+      "fill": "$bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "uE2N3",
+          "name": "Hero 首屏与导航",
+          "clip": true,
+          "width": "fill_container",
+          "height": 820,
+          "fill": "$bg",
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "nV7Dc",
+              "x": 338,
+              "y": 26,
+              "name": "Navigation / 青禾集",
+              "width": 764,
+              "height": 62,
+              "fill": "#FFFFFFE6",
+              "cornerRadius": 999,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "padding": [
+                10,
+                16
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "mNjRx",
+                  "name": "Brand Mark",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "BnQHC",
+                      "name": "Leaf Mark",
+                      "width": 22,
+                      "height": 22,
+                      "icon": "leaf",
+                      "library": "lucide",
+                      "fill": "$sage"
+                    },
+                    {
+                      "type": "text",
+                      "id": "XTvTt",
+                      "name": "Brand Name",
+                      "fill": "$ink",
+                      "content": "青禾集",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 22,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "W1AcRY",
+                  "name": "Navigation Links",
+                  "gap": 28,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "GIquO",
+                      "name": "Nav Link / 空间灵感",
+                      "fill": "$text-secondary",
+                      "content": "空间灵感",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Y21oC4",
+                      "name": "Nav Link / 自然好物",
+                      "fill": "$text-secondary",
+                      "content": "自然好物",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "KaE0E",
+                      "name": "Nav Link / 青禾日志",
+                      "fill": "$text-secondary",
+                      "content": "青禾日志",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "TeVuS",
+                      "name": "Nav Link / 门店体验",
+                      "fill": "$text-secondary",
+                      "content": "门店体验",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "lQdQr",
+                  "name": "Nav Secondary Action",
+                  "fill": "$surface",
+                  "cornerRadius": 999,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "gap": 6,
+                  "padding": [
+                    9,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "q9ziQf",
+                      "name": "Nav Action Label",
+                      "fill": "$ink",
+                      "content": "预约搭配",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hb81C",
+              "x": 130,
+              "y": 112,
+              "name": "Hero Content / 青禾集",
+              "width": 1180,
+              "height": 620,
+              "layout": "vertical",
+              "gap": 9,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "oFe9O",
+                  "name": "分区标签",
+                  "fill": "$surface-soft",
+                  "cornerRadius": 9999,
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "dxumg",
+                      "name": "标签闪光",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "sparkles",
+                      "library": "lucide",
+                      "fill": "$accent"
+                    },
+                    {
+                      "type": "text",
+                      "id": "lKh5n",
+                      "name": "标签文字",
+                      "fill": "$text-secondary",
+                      "content": "SPRING MEADOW · 青禾集新季",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "r6rz8G",
+                  "name": "主标题组",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "UrHqz",
+                      "name": "主标题第一行",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Hu4G5",
+                          "name": "标题字把",
+                          "fill": "$ink",
+                          "content": "把自然",
+                          "lineHeight": 0.96,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 66,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "xFaQz",
+                          "name": "标题手写清新",
+                          "fill": "$sage",
+                          "content": "灵感",
+                          "lineHeight": 0.92,
+                          "fontFamily": "$font-script",
+                          "fontSize": 82,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "ZTTfK",
+                          "name": "标题字种进日常",
+                          "fill": "$ink",
+                          "content": "带进",
+                          "lineHeight": 0.96,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 66,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "pHsIj",
+                      "name": "主标题第二行",
+                      "fill": "$ink",
+                      "content": "日常空间",
+                      "lineHeight": 0.98,
+                      "fontFamily": "$font-heading",
+                      "fontSize": 76,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "F5huJ5",
+                  "name": "分区说明",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 680,
+                  "content": "青禾集把四季植物、温润器物与轻盈织物整理成可带回家的空间灵感，让自然在每天的光线里发生。",
+                  "lineHeight": 1.48,
+                  "textAlign": "center",
+                  "fontFamily": "$font-body",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "rrVfY",
+                  "name": "查看组合按钮",
+                  "fill": "$accent",
+                  "cornerRadius": 9999,
+                  "gap": 8,
+                  "padding": [
+                    11,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Hxvr8",
+                      "name": "按钮文字",
+                      "fill": "#FFFFFF",
+                      "content": "逛逛新季提案",
+                      "fontFamily": "$font-body",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "YhOUK",
+                      "name": "按钮箭头",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "arrow-right",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "hAEUk",
+                  "name": "产品组合展示",
+                  "width": 980,
+                  "height": 214,
+                  "gap": 18,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "T2CofQ",
+                      "name": "轻植栽组合面板",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 12,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000A",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "Bf2Tw",
+                          "x": 20,
+                          "y": 22,
+                          "name": "轻植栽产品图",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/generated-1783816176944.png",
+                            "mode": "fill"
+                          },
+                          "width": 198,
+                          "height": 156
+                        },
+                        {
+                          "type": "text",
+                          "id": "aGhI1",
+                          "x": 244,
+                          "y": 26,
+                          "name": "轻植栽标签",
+                          "fill": "$sage",
+                          "content": "MORNING ROOM",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "o1Zt5",
+                          "x": 244,
+                          "y": 48,
+                          "name": "轻植栽标题",
+                          "fill": "$ink",
+                          "textGrowth": "fixed-width",
+                          "width": 200,
+                          "content": "晨光客厅提案",
+                          "lineHeight": 1.02,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 24,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jMUsm",
+                          "x": 244,
+                          "y": 104,
+                          "name": "轻植栽说明",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": 196,
+                          "content": "轻植栽、亚麻织物与木纹托盘，替窗边整理出一处会呼吸的日常角落。",
+                          "lineHeight": 1.42,
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "d7RrHL",
+                          "x": 244,
+                          "y": 168,
+                          "name": "轻植栽标签组",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "WxIXY",
+                              "name": "轻植栽标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "q37TIW",
+                                  "name": "轻植栽标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "轻植栽",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "dXfR2",
+                              "name": "轻植栽标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "jZ0Py",
+                                  "name": "轻植栽标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "亚麻",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "JxwqK",
+                              "name": "轻植栽标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Z2MDeI",
+                                  "name": "轻植栽标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "木纹",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "TdPE0",
+                          "x": 172,
+                          "y": 144,
+                          "name": "绿意浮动缩略",
+                          "width": 82,
+                          "height": 58,
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "strokeAlignment": "inner",
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#00000012",
+                            "offset": {
+                              "x": 0,
+                              "y": 4
+                            },
+                            "blur": 8
+                          },
+                          "layout": "vertical",
+                          "gap": 2,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "r8Ao7h",
+                              "name": "缩略叶片",
+                              "width": 22,
+                              "height": 22,
+                              "icon": "sprout",
+                              "library": "lucide",
+                              "fill": "$sage"
+                            },
+                            {
+                              "type": "text",
+                              "id": "TrYt9",
+                              "name": "缩略文字",
+                              "fill": "$ink",
+                              "content": "fresh care",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "etjOI",
+                      "name": "香氛小物组合面板",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 12,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000A",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "iavBK",
+                          "x": 263,
+                          "y": 22,
+                          "name": "香氛小物产品图",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/generated-1783816177270.png",
+                            "mode": "fill"
+                          },
+                          "width": 198,
+                          "height": 156
+                        },
+                        {
+                          "type": "text",
+                          "id": "FUNOQ",
+                          "x": 24,
+                          "y": 26,
+                          "name": "香氛标签",
+                          "fill": "$sage",
+                          "content": "NATURE LIST",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "VdqSg",
+                          "x": 24,
+                          "y": 48,
+                          "name": "香氛标题",
+                          "fill": "$ink",
+                          "textGrowth": "fixed-width",
+                          "width": 205,
+                          "content": "自然灵感清单",
+                          "lineHeight": 1.02,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 24,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "o6xDG",
+                          "x": 24,
+                          "y": 104,
+                          "name": "香氛说明",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": 196,
+                          "content": "每周三更新小物组合：花枝、香氛与器物，让书桌、玄关和餐桌自然成景。",
+                          "lineHeight": 1.42,
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "fuoSX",
+                          "x": 24,
+                          "y": 168,
+                          "name": "香氛标签组",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "tNigs",
+                              "name": "香氛标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "L8eaFU",
+                                  "name": "香氛标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "本周花枝",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Q9Stqc",
+                              "name": "香氛标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "FvrdQ",
+                                  "name": "香氛标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "晨间香氛",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "n45qv3",
+                              "name": "香氛标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "w4tNXp",
+                                  "name": "香氛标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "日常器物",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "BHzrK",
+                          "x": 224,
+                          "y": 144,
+                          "name": "香气浮动缩略",
+                          "width": 82,
+                          "height": 58,
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "strokeAlignment": "inner",
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#00000012",
+                            "offset": {
+                              "x": 0,
+                              "y": 4
+                            },
+                            "blur": 8
+                          },
+                          "layout": "vertical",
+                          "gap": 2,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "bsfS8",
+                              "name": "缩略香气",
+                              "width": 22,
+                              "height": 22,
+                              "icon": "wind",
+                              "library": "lucide",
+                              "fill": "$sun"
+                            },
+                            {
+                              "type": "text",
+                              "id": "CrGnf",
+                              "name": "缩略香气文字",
+                              "fill": "$ink",
+                              "content": "soft scent",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "j2HUQ",
+                  "name": "价值亮点行",
+                  "width": 980,
+                  "height": 70,
+                  "gap": 14,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "GhVyP",
+                      "name": "轻松养护价值卡",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "gap": 12,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Q8ZYB",
+                          "name": "轻松养护图标底",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$surface-soft",
+                          "cornerRadius": 9999,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "nAKUU",
+                              "name": "轻松养护图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "leaf",
+                              "library": "lucide",
+                              "fill": "$sage"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "xuDtR",
+                          "name": "轻松养护文案组",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "I3KnH",
+                              "name": "轻松养护标题",
+                              "fill": "$ink",
+                              "content": "自然材质",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "dmP2G",
+                              "name": "轻松养护说明",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "竹木、陶土与亚麻的温柔组合",
+                              "lineHeight": 1.35,
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WpWbI",
+                      "name": "气味分层价值卡",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "gap": 12,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "D7maXV",
+                          "name": "气味分层图标底",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$surface-soft",
+                          "cornerRadius": 9999,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "RxtRK",
+                              "name": "气味分层图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "flower-2",
+                              "library": "lucide",
+                              "fill": "$sun"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Cq6LW",
+                          "name": "气味分层文案组",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "WwHiC",
+                              "name": "气味分层标题",
+                              "fill": "$ink",
+                              "content": "本周花枝",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "UQ8zJ",
+                              "name": "气味分层说明",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "从窗台到餐桌的春日层次",
+                              "lineHeight": 1.35,
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "ipGlf",
+                      "name": "一处成景价值卡",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "gap": 12,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "bLG4l",
+                          "name": "一处成景图标底",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$surface-soft",
+                          "cornerRadius": 9999,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "UQfYz",
+                              "name": "一处成景图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "house",
+                              "library": "lucide",
+                              "fill": "$rose"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Q739J3",
+                          "name": "一处成景文案组",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "DUHTX",
+                              "name": "一处成景标题",
+                              "fill": "$ink",
+                              "content": "一处成景",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "ahJqD",
+                              "name": "一处成景说明",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "小物与植物自然成组",
+                              "lineHeight": 1.35,
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Qc41q",
+          "name": "Services 产品与价值",
+          "clip": true,
+          "width": "fill_container",
+          "height": 620,
+          "fill": "$bg",
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "XxUYw",
+              "x": 130,
+              "y": 18,
+              "name": "产品与价值内容区",
+              "width": 1180,
+              "height": 584,
+              "layout": "vertical",
+              "gap": 9,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "w8segE",
+                  "name": "分区标签",
+                  "fill": "$surface-soft",
+                  "cornerRadius": 9999,
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "mWW8r",
+                      "name": "标签闪光",
+                      "width": 15,
+                      "height": 15,
+                      "icon": "sparkles",
+                      "library": "lucide",
+                      "fill": "$accent"
+                    },
+                    {
+                      "type": "text",
+                      "id": "f2ouR",
+                      "name": "标签文字",
+                      "fill": "$text-secondary",
+                      "content": "产品与价值 / Product Rituals",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "P6bqU",
+                  "name": "主标题组",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "o7L4G",
+                      "name": "主标题第一行",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "M52ZB",
+                          "name": "标题字把",
+                          "fill": "$ink",
+                          "content": "把",
+                          "lineHeight": 0.96,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 58,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "wxFeo",
+                          "name": "标题手写清新",
+                          "fill": "$sage",
+                          "content": "清新",
+                          "lineHeight": 0.92,
+                          "fontFamily": "$font-script",
+                          "fontSize": 66,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "WTIaz",
+                          "name": "标题字种进日常",
+                          "fill": "$ink",
+                          "content": "种进日常",
+                          "lineHeight": 0.96,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 58,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "mKfua",
+                      "name": "主标题第二行",
+                      "fill": "$ink",
+                      "content": "从一盆绿意、一缕香气开始",
+                      "lineHeight": 0.98,
+                      "fontFamily": "$font-heading",
+                      "fontSize": 46,
+                      "fontWeight": "500"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "bfs03",
+                  "name": "分区说明",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 720,
+                  "content": "青禾集把轻植栽、天然香氛与温润家居小物组合成可直接带回家的日常套装，让清晨醒来、午后办公、夜晚放松都有一处自然停靠。",
+                  "lineHeight": 1.48,
+                  "textAlign": "center",
+                  "fontFamily": "$font-body",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "YlzgC",
+                  "name": "查看组合按钮",
+                  "fill": "$accent",
+                  "cornerRadius": 9999,
+                  "gap": 8,
+                  "padding": [
+                    11,
+                    20
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "zuryq",
+                      "name": "按钮文字",
+                      "fill": "#FFFFFF",
+                      "content": "查看组合套装",
+                      "fontFamily": "$font-body",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "G39F5",
+                      "name": "按钮箭头",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "arrow-up-right",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nIftW",
+                  "name": "产品组合展示",
+                  "width": 980,
+                  "height": 214,
+                  "gap": 18,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "R8OjEz",
+                      "name": "轻植栽组合面板",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 12,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000A",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "c3GF5Q",
+                          "x": 20,
+                          "y": 22,
+                          "name": "轻植栽产品图",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/generated-1783816176944.png",
+                            "mode": "fill"
+                          },
+                          "width": 198,
+                          "height": 156
+                        },
+                        {
+                          "type": "text",
+                          "id": "ZKGPS",
+                          "x": 244,
+                          "y": 26,
+                          "name": "轻植栽标签",
+                          "fill": "$sage",
+                          "content": "PLANT SET",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "DJXlr",
+                          "x": 244,
+                          "y": 48,
+                          "name": "轻植栽标题",
+                          "fill": "$ink",
+                          "textGrowth": "fixed-width",
+                          "width": 200,
+                          "content": "轻植栽 Starter Set",
+                          "lineHeight": 1.02,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 24,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gSYrE",
+                          "x": 244,
+                          "y": 104,
+                          "name": "轻植栽说明",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": 196,
+                          "content": "低维护绿植、透气陶盆与补水提示卡，适合床头、书桌和玄关。",
+                          "lineHeight": 1.42,
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "eb8gL",
+                          "x": 244,
+                          "y": 168,
+                          "name": "轻植栽标签组",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "YLEvU",
+                              "name": "轻植栽标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "Z9SFU",
+                                  "name": "轻植栽标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "低维护",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "CaBda",
+                              "name": "轻植栽标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "TM2oJ",
+                                  "name": "轻植栽标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "可换盆",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "vWMco",
+                              "name": "轻植栽标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "aipBC",
+                                  "name": "轻植栽标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "7日养护",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "GyBP8",
+                          "x": 172,
+                          "y": 144,
+                          "name": "绿意浮动缩略",
+                          "width": 82,
+                          "height": 58,
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "strokeAlignment": "inner",
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#00000012",
+                            "offset": {
+                              "x": 0,
+                              "y": 4
+                            },
+                            "blur": 8
+                          },
+                          "layout": "vertical",
+                          "gap": 2,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "QriRI",
+                              "name": "缩略叶片",
+                              "width": 22,
+                              "height": 22,
+                              "icon": "sprout",
+                              "library": "lucide",
+                              "fill": "$sage"
+                            },
+                            {
+                              "type": "text",
+                              "id": "nTDRK",
+                              "name": "缩略文字",
+                              "fill": "$ink",
+                              "content": "fresh care",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "u31H3V",
+                      "name": "香氛小物组合面板",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 12,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000A",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      },
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "cornerRadius": 8,
+                          "id": "YdPu8",
+                          "x": 263,
+                          "y": 22,
+                          "name": "香氛小物产品图",
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "./images/generated-1783816177270.png",
+                            "mode": "fill"
+                          },
+                          "width": 198,
+                          "height": 156
+                        },
+                        {
+                          "type": "text",
+                          "id": "cA4fy",
+                          "x": 24,
+                          "y": 26,
+                          "name": "香氛标签",
+                          "fill": "$sage",
+                          "content": "SCENT & OBJECTS",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RC1YX",
+                          "x": 24,
+                          "y": 48,
+                          "name": "香氛标题",
+                          "fill": "$ink",
+                          "textGrowth": "fixed-width",
+                          "width": 205,
+                          "content": "香氛与家居小物套组",
+                          "lineHeight": 1.02,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 24,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "XIAFn",
+                          "x": 24,
+                          "y": 104,
+                          "name": "香氛说明",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": 196,
+                          "content": "柑橘草本香、亚麻收纳与小陶碟，快速整理出一块可呼吸的生活角落。",
+                          "lineHeight": 1.42,
+                          "fontFamily": "$font-body",
+                          "fontSize": 14,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "U38g7",
+                          "x": 24,
+                          "y": 168,
+                          "name": "香氛标签组",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "c3BbP",
+                              "name": "香氛标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "eM0KW",
+                                  "name": "香氛标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "草本香",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "i85A9t",
+                              "name": "香氛标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "y8zLl",
+                                  "name": "香氛标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "柔和扩香",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "mMMql",
+                              "name": "香氛标签项",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "ifZy3",
+                                  "name": "香氛标签文字",
+                                  "fill": "$text-secondary",
+                                  "content": "随手收纳",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "VuYCD",
+                          "x": 224,
+                          "y": 144,
+                          "name": "香气浮动缩略",
+                          "width": 82,
+                          "height": 58,
+                          "fill": "$surface",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "strokeAlignment": "inner",
+                          "effect": {
+                            "type": "shadow",
+                            "shadowType": "outer",
+                            "color": "#00000012",
+                            "offset": {
+                              "x": 0,
+                              "y": 4
+                            },
+                            "blur": 8
+                          },
+                          "layout": "vertical",
+                          "gap": 2,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "a1Q4r",
+                              "name": "缩略香气",
+                              "width": 22,
+                              "height": 22,
+                              "icon": "wind",
+                              "library": "lucide",
+                              "fill": "$sun"
+                            },
+                            {
+                              "type": "text",
+                              "id": "CGtdA",
+                              "name": "缩略香气文字",
+                              "fill": "$ink",
+                              "content": "soft scent",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "k8IyyW",
+                  "name": "价值亮点行",
+                  "width": 980,
+                  "height": 70,
+                  "gap": 14,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "bR3Je",
+                      "name": "轻松养护价值卡",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "gap": 12,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "CBvGA",
+                          "name": "轻松养护图标底",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$surface-soft",
+                          "cornerRadius": 9999,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "Y3xzxM",
+                              "name": "轻松养护图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "leaf",
+                              "library": "lucide",
+                              "fill": "$sage"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "R5VCkq",
+                          "name": "轻松养护文案组",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "hwATH",
+                              "name": "轻松养护标题",
+                              "fill": "$ink",
+                              "content": "轻松养护",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "CnI2n",
+                              "name": "轻松养护说明",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "小空间也能保持稳定绿意",
+                              "lineHeight": 1.35,
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "KKvIx",
+                      "name": "气味分层价值卡",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "gap": 12,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "tLkB1",
+                          "name": "气味分层图标底",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$surface-soft",
+                          "cornerRadius": 9999,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "NHbsO",
+                              "name": "气味分层图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "flower-2",
+                              "library": "lucide",
+                              "fill": "$sun"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "Rx3i9",
+                          "name": "气味分层文案组",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "b4oQTA",
+                              "name": "气味分层标题",
+                              "fill": "$ink",
+                              "content": "气味分层",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "mcBGG",
+                              "name": "气味分层说明",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "从清晨柑橘到夜晚木质香",
+                              "lineHeight": 1.35,
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "w3HhzD",
+                      "name": "一处成景价值卡",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "strokeAlignment": "inner",
+                      "gap": 12,
+                      "padding": [
+                        12,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "XZa2y",
+                          "name": "一处成景图标底",
+                          "width": 36,
+                          "height": 36,
+                          "fill": "$surface-soft",
+                          "cornerRadius": 9999,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "XN8EI",
+                              "name": "一处成景图标",
+                              "width": 20,
+                              "height": 20,
+                              "icon": "house",
+                              "library": "lucide",
+                              "fill": "$rose"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "LsWVu",
+                          "name": "一处成景文案组",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 2,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "ITt7D",
+                              "name": "一处成景标题",
+                              "fill": "$ink",
+                              "content": "一处成景",
+                              "fontFamily": "$font-body",
+                              "fontSize": 14,
+                              "fontWeight": "800"
+                            },
+                            {
+                              "type": "text",
+                              "id": "OmiCF",
+                              "name": "一处成景说明",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "托盘、小物与植物自然成组",
+                              "lineHeight": 1.35,
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "t16VtI",
+          "name": "Process 使用流程",
+          "clip": true,
+          "width": "fill_container",
+          "height": 660,
+          "fill": "$bg",
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "klUoF",
+              "x": 160,
+              "y": 24,
+              "name": "Process Content 内容容器",
+              "width": 1120,
+              "height": 632,
+              "layout": "vertical",
+              "gap": 22,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "v79El2",
+                  "name": "Process Header 标题区",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "eHVjc",
+                      "name": "Process Label 标签",
+                      "fill": "$surface-soft",
+                      "cornerRadius": 9999,
+                      "gap": 8,
+                      "padding": [
+                        8,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "R1JAb7",
+                          "name": "Label Sparkles 图标",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "sparkles",
+                          "library": "lucide",
+                          "fill": "#72D350"
+                        },
+                        {
+                          "type": "text",
+                          "id": "fC8ai",
+                          "name": "Label Text 文案",
+                          "fill": "$text-secondary",
+                          "content": "4 步，把绿意带回家",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "xTvUQ",
+                      "name": "Headline Inline 内联标题",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "G7Lj30",
+                          "name": "Headline Prefix 标题前段",
+                          "fill": "$ink",
+                          "content": "从主题到养护，",
+                          "lineHeight": 1.02,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 52,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "text",
+                          "id": "YGe1X",
+                          "name": "Headline Script 手写词",
+                          "fill": "$sage",
+                          "content": "轻松",
+                          "lineHeight": 0.9,
+                          "fontFamily": "$font-script",
+                          "fontSize": 70
+                        },
+                        {
+                          "type": "text",
+                          "id": "O6TkwE",
+                          "name": "Headline Suffix 标题后段",
+                          "fill": "$ink",
+                          "content": "完成",
+                          "lineHeight": 1.02,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 52,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "nI4sZ",
+                      "name": "Process Intro 说明",
+                      "fill": "$text-secondary",
+                      "textGrowth": "fixed-width",
+                      "width": 760,
+                      "content": "从灵感主题到日常养护，青禾集把植物、器皿和说明卡组合好，让家里的每一角都自然长出秩序。",
+                      "lineHeight": 1.55,
+                      "textAlign": "center",
+                      "fontFamily": "$font-body",
+                      "fontSize": 17,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "F60nU8",
+                      "name": "Process CTA 行动按钮",
+                      "fill": "#72D350",
+                      "cornerRadius": 9999,
+                      "gap": 8,
+                      "padding": [
+                        10,
+                        18
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "FMdtK",
+                          "name": "CTA Text 文案",
+                          "fill": "$ink",
+                          "content": "开始挑选主题",
+                          "fontFamily": "$font-body",
+                          "fontSize": 15,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "SsNJ7",
+                          "name": "CTA Arrow 图标",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "arrow-right",
+                          "library": "lucide",
+                          "fill": "$ink"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "aOgiq",
+                  "name": "Process Demo 双栏演示",
+                  "width": 1020,
+                  "height": 246,
+                  "gap": 20,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "B6acY3",
+                      "name": "Panel 选择主题",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 12,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000A",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      },
+                      "layout": "vertical",
+                      "gap": 13,
+                      "padding": 22,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "fOVVe",
+                          "name": "Panel Left Top 顶部",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "RQfdg",
+                              "name": "Theme Tag 主题标签",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "gap": 6,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "pH2du",
+                                  "name": "Theme Leaf 图标",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "leaf",
+                                  "library": "lucide",
+                                  "fill": "$sage"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "WOJZG",
+                                  "name": "Theme Tag Text 文案",
+                                  "fill": "$text-secondary",
+                                  "content": "选择主题",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "m5xUHU",
+                              "name": "Step 01 Label 编号",
+                              "fill": "$muted",
+                              "content": "STEP 01",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "iERHR",
+                          "name": "Left Panel Title 标题",
+                          "fill": "$ink",
+                          "content": "先选一个生活主题",
+                          "lineHeight": 1.08,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 27,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "M8Ab1W",
+                          "name": "Theme Chips 主题选项",
+                          "width": "fill_container",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "lyFTW",
+                              "name": "Theme Row One 第一行",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "XjPlL",
+                                  "name": "Theme Chip 晨光餐桌",
+                                  "fill": "#E4F8DD",
+                                  "cornerRadius": 9999,
+                                  "stroke": "#72D350",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "wqhyU",
+                                      "name": "Theme Chip Text 晨光餐桌",
+                                      "fill": "$ink",
+                                      "content": "晨光餐桌",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "W2rTEs",
+                                  "name": "Theme Chip 阳台小森",
+                                  "fill": "$bg",
+                                  "cornerRadius": 9999,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "c69Muf",
+                                      "name": "Theme Chip Text 阳台小森",
+                                      "fill": "$ink",
+                                      "content": "阳台小森",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "UJzN0",
+                                  "name": "Theme Chip 书桌绿洲",
+                                  "fill": "$bg",
+                                  "cornerRadius": 9999,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "JNrLF",
+                                      "name": "Theme Chip Text 书桌绿洲",
+                                      "fill": "$ink",
+                                      "content": "书桌绿洲",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "Y1fgGb",
+                              "name": "Theme Row Two 第二行",
+                              "width": "fill_container",
+                              "gap": 8,
+                              "children": [
+                                {
+                                  "type": "frame",
+                                  "id": "xzr1w",
+                                  "name": "Theme Chip 玄关迎客",
+                                  "fill": "$bg",
+                                  "cornerRadius": 9999,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "j7jnvu",
+                                      "name": "Theme Chip Text 玄关迎客",
+                                      "fill": "$ink",
+                                      "content": "玄关迎客",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "SnNOh",
+                                  "name": "Theme Chip 卧室轻香",
+                                  "fill": "$bg",
+                                  "cornerRadius": 9999,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "RoGN3",
+                                      "name": "Theme Chip Text 卧室轻香",
+                                      "fill": "$ink",
+                                      "content": "卧室轻香",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                },
+                                {
+                                  "type": "frame",
+                                  "id": "AfWBJ",
+                                  "name": "Theme Chip 新手耐养",
+                                  "fill": "$bg",
+                                  "cornerRadius": 9999,
+                                  "stroke": "$border",
+                                  "strokeWidth": 1,
+                                  "padding": [
+                                    8,
+                                    12
+                                  ],
+                                  "alignItems": "center",
+                                  "children": [
+                                    {
+                                      "type": "text",
+                                      "id": "S2ynL",
+                                      "name": "Theme Chip Text 新手耐养",
+                                      "fill": "$ink",
+                                      "content": "新手耐养",
+                                      "fontFamily": "$font-body",
+                                      "fontSize": 13,
+                                      "fontWeight": "600"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "izuNW",
+                          "name": "Theme Note 匹配说明",
+                          "width": "fill_container",
+                          "fill": "$surface-warm",
+                          "cornerRadius": 8,
+                          "gap": 9,
+                          "padding": [
+                            9,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "n6oiO",
+                              "name": "Theme Note Icon 图标",
+                              "width": 15,
+                              "height": 15,
+                              "icon": "wand-sparkles",
+                              "library": "lucide",
+                              "fill": "$sage"
+                            },
+                            {
+                              "type": "text",
+                              "id": "tXDfN",
+                              "name": "Theme Note Text 文案",
+                              "fill": "$text-secondary",
+                              "textGrowth": "fixed-width",
+                              "width": "fill_container",
+                              "content": "主题会同步匹配植物高度、器皿材质与摆放说明。",
+                              "lineHeight": 1.35,
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "eCG0M",
+                      "name": "Panel 收到组合",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "$surface",
+                      "cornerRadius": 12,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000A",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      },
+                      "layout": "vertical",
+                      "gap": 13,
+                      "padding": 22,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "bGEmS",
+                          "name": "Panel Right Top 顶部",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "bHBHm",
+                              "name": "Bundle Tag 组合标签",
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "gap": 6,
+                              "padding": [
+                                6,
+                                10
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "w0qtge",
+                                  "name": "Bundle Package 图标",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "package",
+                                  "library": "lucide",
+                                  "fill": "$sage"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "UDTVc",
+                                  "name": "Bundle Tag Text 文案",
+                                  "fill": "$text-secondary",
+                                  "content": "组合到家",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "text",
+                              "id": "ACJP4",
+                              "name": "Step 02 Label 编号",
+                              "fill": "$muted",
+                              "content": "STEP 02",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "600"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "x4bOtR",
+                          "name": "Right Panel Title 标题",
+                          "fill": "$ink",
+                          "content": "收到一组刚刚好",
+                          "lineHeight": 1.08,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 27,
+                          "fontWeight": "600"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "n0pjjH",
+                          "name": "Bundle Scene 组合场景",
+                          "clip": true,
+                          "width": "fill_container",
+                          "height": 118,
+                          "fill": "$surface-soft",
+                          "cornerRadius": 8,
+                          "layout": "none",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "cornerRadius": 9999,
+                              "id": "RcdLx",
+                              "x": 72,
+                              "y": 88,
+                              "name": "Scene Shelf 台面",
+                              "fill": "#D9E8DE",
+                              "width": 320,
+                              "height": 11
+                            },
+                            {
+                              "type": "frame",
+                              "id": "W7AzUq",
+                              "x": 38,
+                              "y": 30,
+                              "name": "Gift Box 组合盒",
+                              "width": 132,
+                              "height": 72,
+                              "fill": "$surface-warm",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": [
+                                    8,
+                                    8,
+                                    0,
+                                    0
+                                  ],
+                                  "id": "z73852",
+                                  "x": 0,
+                                  "y": 0,
+                                  "name": "Box Lid 盒盖",
+                                  "fill": "#F7D96B",
+                                  "width": 132,
+                                  "height": 18
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "kkZMm",
+                                  "x": 18,
+                                  "y": 34,
+                                  "name": "Box Label 盒标",
+                                  "fill": "$ink",
+                                  "content": "青禾集",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 13,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "HMXJ7",
+                              "x": 204,
+                              "y": 22,
+                              "name": "Plant Preview 植物预览",
+                              "width": 92,
+                              "height": 90,
+                              "layout": "none",
+                              "children": [
+                                {
+                                  "type": "ellipse",
+                                  "id": "AspBJ",
+                                  "x": 23,
+                                  "y": 4,
+                                  "name": "Leaf One 叶片",
+                                  "rotation": -22,
+                                  "fill": "$sage",
+                                  "width": 26,
+                                  "height": 48
+                                },
+                                {
+                                  "type": "ellipse",
+                                  "id": "Z2pMBa",
+                                  "x": 45,
+                                  "y": 10,
+                                  "name": "Leaf Two 叶片",
+                                  "rotation": 18,
+                                  "fill": "#8BC99A",
+                                  "width": 28,
+                                  "height": 50
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": 9999,
+                                  "id": "PojiF",
+                                  "x": 44,
+                                  "y": 38,
+                                  "name": "Plant Stem 茎",
+                                  "fill": "$sage",
+                                  "width": 5,
+                                  "height": 31
+                                },
+                                {
+                                  "type": "rectangle",
+                                  "cornerRadius": [
+                                    6,
+                                    6,
+                                    10,
+                                    10
+                                  ],
+                                  "id": "JeWGz",
+                                  "x": 25,
+                                  "y": 65,
+                                  "name": "Plant Pot 花器",
+                                  "fill": "#FF8A5B",
+                                  "width": 48,
+                                  "height": 24
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "ZdkYq",
+                              "x": 324,
+                              "y": 26,
+                              "name": "Care Card 养护卡",
+                              "width": 106,
+                              "height": 70,
+                              "fill": "$surface",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "layout": "vertical",
+                              "gap": 5,
+                              "padding": [
+                                9,
+                                10
+                              ],
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "FfY6B",
+                                  "name": "Care Card Title 标题",
+                                  "fill": "$ink",
+                                  "content": "养护卡",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "P2zPi",
+                                  "name": "Care Card Copy 文案",
+                                  "fill": "$text-secondary",
+                                  "textGrowth": "fixed-width",
+                                  "width": "fill_container",
+                                  "content": "浇水、光照、换盆时间都写好。",
+                                  "lineHeight": 1.25,
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "normal"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "TQqri",
+                              "x": 302,
+                              "y": 6,
+                              "name": "Care Reminder 浮动提醒",
+                              "fill": "$surface",
+                              "cornerRadius": 9999,
+                              "stroke": "#D9E8DE",
+                              "strokeWidth": 1,
+                              "gap": 5,
+                              "padding": [
+                                6,
+                                9
+                              ],
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "UB0CZ",
+                                  "name": "Reminder Drop 图标",
+                                  "width": 12,
+                                  "height": 12,
+                                  "icon": "droplets",
+                                  "library": "lucide",
+                                  "fill": "$sage"
+                                },
+                                {
+                                  "type": "text",
+                                  "id": "BK3ga",
+                                  "name": "Reminder Text 文案",
+                                  "fill": "$text-secondary",
+                                  "content": "3 天后浇水",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 11,
+                                  "fontWeight": "600"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "uJQjd",
+                  "name": "Process Steps 四步流程",
+                  "width": 1020,
+                  "height": 124,
+                  "gap": 14,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "cGoBk",
+                      "name": "Step Tile 01 选择主题",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "#FFFFFFCC",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 7,
+                      "padding": [
+                        14,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "uMwiR",
+                          "name": "Step Tile Top 01",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "aSYO0",
+                              "name": "Step Number 01",
+                              "fill": "$muted",
+                              "content": "01",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "GrP4t",
+                              "name": "Step Icon Wrap 01",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "e1Vqh",
+                                  "name": "Step Icon 01",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "list-checks",
+                                  "library": "lucide",
+                                  "fill": "$sage"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "K1ximF",
+                          "name": "Step Title 01",
+                          "fill": "$ink",
+                          "content": "选择主题",
+                          "fontFamily": "$font-body",
+                          "fontSize": 17,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "d14KJ",
+                          "name": "Step Copy 01",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "按空间和心情挑选，系统推荐合适植物与器皿。",
+                          "lineHeight": 1.35,
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "L5zg4f",
+                      "name": "Step Tile 02 收到组合",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "#FFFFFFCC",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 7,
+                      "padding": [
+                        14,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "k3AsRv",
+                          "name": "Step Tile Top 02",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "j6ccqI",
+                              "name": "Step Number 02",
+                              "fill": "$muted",
+                              "content": "02",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "p2tURv",
+                              "name": "Step Icon Wrap 02",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "N8xafJ",
+                                  "name": "Step Icon 02",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "package-check",
+                                  "library": "lucide",
+                                  "fill": "$sage"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "SET2d",
+                          "name": "Step Title 02",
+                          "fill": "$ink",
+                          "content": "收到组合",
+                          "fontFamily": "$font-body",
+                          "fontSize": 17,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "yxiHf",
+                          "name": "Step Copy 02",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "植物、花器、基质和养护卡一次送到门口。",
+                          "lineHeight": 1.35,
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ia93b",
+                      "name": "Step Tile 03 布置空间",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "#FFFFFFCC",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 7,
+                      "padding": [
+                        14,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "Itzvt",
+                          "name": "Step Tile Top 03",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "jID0h",
+                              "name": "Step Number 03",
+                              "fill": "$muted",
+                              "content": "03",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "teMHe",
+                              "name": "Step Icon Wrap 03",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "Y6l21",
+                                  "name": "Step Icon 03",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "house",
+                                  "library": "lucide",
+                                  "fill": "$sage"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "NcXBk",
+                          "name": "Step Title 03",
+                          "fill": "$ink",
+                          "content": "布置空间",
+                          "fontFamily": "$font-body",
+                          "fontSize": 17,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "gjELz",
+                          "name": "Step Copy 03",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "照着卡片摆放，几分钟就让角落有层次。",
+                          "lineHeight": 1.35,
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "u3eDHE",
+                      "name": "Step Tile 04 持续养护",
+                      "width": "fill_container",
+                      "height": "fill_container",
+                      "fill": "#FFFFFFCC",
+                      "cornerRadius": 8,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "gap": 7,
+                      "padding": [
+                        14,
+                        16
+                      ],
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "KLuVC",
+                          "name": "Step Tile Top 04",
+                          "width": "fill_container",
+                          "justifyContent": "space_between",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "Cz432",
+                              "name": "Step Number 04",
+                              "fill": "$muted",
+                              "content": "04",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "frame",
+                              "id": "u9v7q",
+                              "name": "Step Icon Wrap 04",
+                              "width": 24,
+                              "height": 24,
+                              "fill": "$surface-soft",
+                              "cornerRadius": 9999,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "icon",
+                                  "id": "i4PRzH",
+                                  "name": "Step Icon 04",
+                                  "width": 14,
+                                  "height": 14,
+                                  "icon": "sprout",
+                                  "library": "lucide",
+                                  "fill": "$sage"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "I9Su02",
+                          "name": "Step Title 04",
+                          "fill": "$ink",
+                          "content": "持续养护",
+                          "fontFamily": "$font-body",
+                          "fontSize": 17,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "RxYUe",
+                          "name": "Step Copy 04",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "按提醒浇水、转向、修剪，保持轻松生长。",
+                          "lineHeight": 1.35,
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "fnzn3",
+          "name": "Proof 用户反馈",
+          "clip": true,
+          "width": "fill_container",
+          "height": 560,
+          "fill": "$bg",
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "ZKQML",
+              "x": 270,
+              "y": 54,
+              "name": "反馈区标题组",
+              "width": 900,
+              "layout": "vertical",
+              "gap": 12,
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "xXzrZ",
+                  "name": "反馈区标签",
+                  "fill": "$surface-soft",
+                  "cornerRadius": 9999,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "UoIZN",
+                      "name": "标签闪光图标",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "sparkles",
+                      "library": "lucide",
+                      "fill": "$accent"
+                    },
+                    {
+                      "type": "text",
+                      "id": "z1aew",
+                      "name": "标签文字",
+                      "fill": "$sage",
+                      "content": "来自真实日常的回响",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "PCNBW",
+                  "name": "反馈区主标题",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Sm6tH",
+                      "name": "标题第一行",
+                      "width": "fill_container",
+                      "gap": 10,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "A1sR4",
+                          "name": "标题文字 日常里长出的",
+                          "fill": "$ink",
+                          "content": "日常里长出的",
+                          "lineHeight": 0.95,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 52,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "osy3b",
+                      "name": "标题第二行",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ENjvq",
+                          "name": "标题手写词 信任",
+                          "fill": "$sage",
+                          "content": "信任",
+                          "lineHeight": 0.95,
+                          "fontFamily": "$font-script",
+                          "fontSize": 64
+                        },
+                        {
+                          "type": "text",
+                          "id": "K8F92",
+                          "name": "标题文字 与证明",
+                          "fill": "$ink",
+                          "content": "与证明",
+                          "lineHeight": 0.95,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 52,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "h8JSR",
+                  "name": "反馈区说明",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": 720,
+                  "content": "订阅用户、合作媒体和门店伙伴留下的反馈，帮你判断青禾集是否真的适合每天生活的节奏。",
+                  "lineHeight": 1.55,
+                  "textAlign": "center",
+                  "fontFamily": "$font-body",
+                  "fontSize": 17,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Q40dS",
+              "x": 120,
+              "y": 264,
+              "name": "反馈与信任证明内容",
+              "width": 1200,
+              "height": 252,
+              "gap": 24,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "SzM9d",
+                  "name": "真实用户评价卡",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 12,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000A",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "Y8FTc",
+                      "x": 24,
+                      "y": 24,
+                      "name": "评价卡标签",
+                      "fill": "$surface-soft",
+                      "cornerRadius": 9999,
+                      "gap": 8,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "u9wB3A",
+                          "name": "评价标签叶子图标",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "leaf",
+                          "library": "lucide",
+                          "fill": "$sage"
+                        },
+                        {
+                          "type": "text",
+                          "id": "F6gZZx",
+                          "name": "评价标签文字",
+                          "fill": "$sage",
+                          "content": "真实评价",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "s2lbI",
+                      "x": 24,
+                      "y": 58,
+                      "name": "评价引号",
+                      "fill": "$mint",
+                      "content": "“",
+                      "lineHeight": 0.8,
+                      "fontFamily": "$font-heading",
+                      "fontSize": 78,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rJaEi",
+                      "x": 60,
+                      "y": 66,
+                      "name": "用户评价正文",
+                      "fill": "$ink",
+                      "textGrowth": "fixed-width",
+                      "width": 350,
+                      "content": "青禾集的组合不是简单卖绿植，它像有人替我把窗台的季节感搭好了。每月打开箱子，家里都会多一点新鲜的秩序。",
+                      "lineHeight": 1.42,
+                      "fontFamily": "$font-body",
+                      "fontSize": 19,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Gnrsy",
+                      "x": 60,
+                      "y": 192,
+                      "name": "评价作者信息",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ZS9Re",
+                          "name": "作者头像",
+                          "width": 40,
+                          "height": 40,
+                          "fill": "$mint",
+                          "cornerRadius": 9999,
+                          "justifyContent": "center",
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "dWe0R",
+                              "name": "作者头像文字",
+                              "fill": "$ink",
+                              "content": "林",
+                              "fontFamily": "$font-heading",
+                              "fontSize": 20,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "AfWX5",
+                          "name": "作者文字组",
+                          "layout": "vertical",
+                          "gap": 3,
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "LTnhg",
+                              "name": "作者姓名",
+                              "fill": "$ink",
+                              "content": "林予安",
+                              "fontFamily": "$font-body",
+                              "fontSize": 15,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "IWC5E",
+                              "name": "作者身份",
+                              "fill": "$text-secondary",
+                              "content": "青禾集 6 期订阅用户 · 上海",
+                              "fontFamily": "$font-body",
+                              "fontSize": 12,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dFSJy",
+                      "x": 414,
+                      "y": 90,
+                      "name": "五星评分",
+                      "gap": 3,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "S9qHLE",
+                          "name": "评分星标 1",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "star",
+                          "library": "lucide",
+                          "fill": "$sun"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "RdVCF",
+                          "name": "评分星标 2",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "star",
+                          "library": "lucide",
+                          "fill": "$sun"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "bD5TD",
+                          "name": "评分星标 3",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "star",
+                          "library": "lucide",
+                          "fill": "$sun"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "NgT3m",
+                          "name": "评分星标 4",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "star",
+                          "library": "lucide",
+                          "fill": "$sun"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "Aq9FN",
+                          "name": "评分星标 5",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "star",
+                          "library": "lucide",
+                          "fill": "$sun"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dbKwI",
+                      "x": 414,
+                      "y": 24,
+                      "name": "复购率浮层",
+                      "width": 148,
+                      "height": 54,
+                      "fill": "$surface-warm",
+                      "cornerRadius": 12,
+                      "stroke": "$sun",
+                      "strokeWidth": 1,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#0000000A",
+                        "offset": {
+                          "x": 0,
+                          "y": 1
+                        },
+                        "blur": 3
+                      },
+                      "layout": "vertical",
+                      "gap": 2,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "MOfrQ",
+                          "name": "复购率数字",
+                          "fill": "$ink",
+                          "content": "68%",
+                          "lineHeight": 1,
+                          "fontFamily": "$font-heading",
+                          "fontSize": 24,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "b5tYU",
+                          "name": "复购率说明",
+                          "fill": "$text-secondary",
+                          "content": "本月复购用户",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "h882c",
+                  "name": "关键数字与媒体背书卡",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "fill": "$surface",
+                  "cornerRadius": 12,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#0000000A",
+                    "offset": {
+                      "x": 0,
+                      "y": 1
+                    },
+                    "blur": 3
+                  },
+                  "layout": "vertical",
+                  "gap": 10,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "a916dd",
+                      "name": "信任证明标题行",
+                      "width": "fill_container",
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "FiP0K",
+                          "name": "信任证明标签",
+                          "fill": "$surface-soft",
+                          "cornerRadius": 9999,
+                          "gap": 8,
+                          "padding": [
+                            8,
+                            12
+                          ],
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "type": "icon",
+                              "id": "nSUYk",
+                              "name": "信任标签图标",
+                              "width": 15,
+                              "height": 15,
+                              "icon": "shield-check",
+                              "library": "lucide",
+                              "fill": "$sage"
+                            },
+                            {
+                              "type": "text",
+                              "id": "wLM07",
+                              "name": "信任标签文字",
+                              "fill": "$sage",
+                              "content": "信任证明",
+                              "fontFamily": "$font-body",
+                              "fontSize": 13,
+                              "fontWeight": "700"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "s7Fs6w",
+                          "name": "更新时间",
+                          "fill": "$muted",
+                          "content": "2026 春季统计",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "AJwZJ",
+                      "name": "关键数字组",
+                      "width": "fill_container",
+                      "height": 62,
+                      "gap": 10,
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "ugQP3",
+                          "name": "关键数字 用户平均评分",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "#FFFFFF00",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 3,
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "kM6fR",
+                              "name": "用户平均评分 数字",
+                              "fill": "$ink",
+                              "content": "4.9/5",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-heading",
+                              "fontSize": 22,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "EIciy",
+                              "name": "用户平均评分 标签",
+                              "fill": "$text-secondary",
+                              "content": "用户平均评分",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "jRM6J",
+                          "name": "关键数字 累计灵感包送达",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "#FFFFFF00",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 3,
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "QCzkd",
+                              "name": "累计灵感包送达 数字",
+                              "fill": "$ink",
+                              "content": "12,800+",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-heading",
+                              "fontSize": 22,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "W3xrku",
+                              "name": "累计灵感包送达 标签",
+                              "fill": "$text-secondary",
+                              "content": "累计灵感包送达",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "HVTJX",
+                          "name": "关键数字 愿意推荐给朋友",
+                          "width": "fill_container",
+                          "height": "fill_container",
+                          "fill": "#FFFFFF00",
+                          "cornerRadius": 8,
+                          "stroke": "$border",
+                          "strokeWidth": 1,
+                          "layout": "vertical",
+                          "gap": 3,
+                          "padding": [
+                            8,
+                            10
+                          ],
+                          "justifyContent": "center",
+                          "children": [
+                            {
+                              "type": "text",
+                              "id": "H8m5nT",
+                              "name": "愿意推荐给朋友 数字",
+                              "fill": "$ink",
+                              "content": "87%",
+                              "lineHeight": 1,
+                              "fontFamily": "$font-heading",
+                              "fontSize": 22,
+                              "fontWeight": "700"
+                            },
+                            {
+                              "type": "text",
+                              "id": "nmVvW",
+                              "name": "愿意推荐给朋友 标签",
+                              "fill": "$text-secondary",
+                              "content": "愿意推荐给朋友",
+                              "fontFamily": "$font-body",
+                              "fontSize": 11,
+                              "fontWeight": "normal"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "P1kiEr",
+                      "name": "媒体背书组",
+                      "width": "fill_container",
+                      "layout": "vertical",
+                      "gap": 8,
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "h4z6Fd",
+                          "name": "媒体背书标题",
+                          "fill": "$text-secondary",
+                          "content": "被这些生活方式频道提起",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "frame",
+                          "id": "IU3G0",
+                          "name": "媒体背书列表",
+                          "width": "fill_container",
+                          "gap": 10,
+                          "children": [
+                            {
+                              "type": "frame",
+                              "id": "V2hI7",
+                              "name": "媒体背书 城市生活周刊",
+                              "width": "fill_container",
+                              "height": 34,
+                              "fill": "#FFFFFF00",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "c7lSx",
+                                  "name": "城市生活周刊 标识",
+                                  "fill": "$text-secondary",
+                                  "content": "城市生活周刊",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "tOcC7",
+                              "name": "媒体背书 小红书园艺榜",
+                              "width": "fill_container",
+                              "height": 34,
+                              "fill": "#FFFFFF00",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "NYcNb",
+                                  "name": "小红书园艺榜 标识",
+                                  "fill": "$text-secondary",
+                                  "content": "小红书园艺榜",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "frame",
+                              "id": "jsNEP",
+                              "name": "媒体背书 日常空间研究",
+                              "width": "fill_container",
+                              "height": 34,
+                              "fill": "#FFFFFF00",
+                              "cornerRadius": 8,
+                              "stroke": "$border",
+                              "strokeWidth": 1,
+                              "justifyContent": "center",
+                              "alignItems": "center",
+                              "children": [
+                                {
+                                  "type": "text",
+                                  "id": "n0bZmD",
+                                  "name": "日常空间研究 标识",
+                                  "fill": "$text-secondary",
+                                  "content": "日常空间研究",
+                                  "fontFamily": "$font-body",
+                                  "fontSize": 12,
+                                  "fontWeight": "700"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "wS04A",
+                      "name": "推荐证明提示",
+                      "width": "fill_container",
+                      "fill": "$surface-soft",
+                      "cornerRadius": 9999,
+                      "gap": 8,
+                      "padding": [
+                        7,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "UhnIO",
+                          "name": "推荐证明图标",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "circle-check",
+                          "library": "lucide",
+                          "fill": "$sage"
+                        },
+                        {
+                          "type": "text",
+                          "id": "e6tDf",
+                          "name": "推荐证明文字",
+                          "fill": "$text-secondary",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "最近 30 天新增 1,430 条晒单笔记，重复购买占比持续上升。",
+                          "fontFamily": "$font-body",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "pzRfv",
+          "name": "CTA 联系与页脚",
+          "clip": true,
+          "width": "fill_container",
+          "height": 700,
+          "fill": "$surface-soft",
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "A13ix",
+              "x": 120,
+              "y": 76,
+              "name": "CTA 文案区",
+              "width": 600,
+              "layout": "vertical",
+              "gap": 22,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "neP2U",
+                  "name": "CTA 标签",
+                  "fill": "$surface",
+                  "cornerRadius": 9999,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "gap": 8,
+                  "padding": [
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "zxJmu",
+                      "name": "标签叶子图标",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "leaf",
+                      "library": "lucide",
+                      "fill": "$sage"
+                    },
+                    {
+                      "type": "text",
+                      "id": "wkF32",
+                      "name": "标签文字",
+                      "fill": "$sage",
+                      "content": "季节清单开放中",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "IfL0k",
+                  "name": "CTA 标题",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "SGrew",
+                      "name": "标题第一行",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "h6o83R",
+                          "name": "把一抹",
+                          "fill": "$ink",
+                          "content": "把一抹",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 66,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "text",
+                          "id": "KP9ty",
+                          "name": "清新手写字",
+                          "fill": "$sage",
+                          "content": "清新",
+                          "fontFamily": "$font-script",
+                          "fontSize": 80,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "SR6Rf",
+                      "name": "带回家",
+                      "fill": "$ink",
+                      "content": "带回家",
+                      "lineHeight": 0.95,
+                      "fontFamily": "$font-heading",
+                      "fontSize": 66,
+                      "fontWeight": "700"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "aqBYU",
+                  "name": "CTA 说明",
+                  "fill": "$text-secondary",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "订阅青禾集的每月灵感包：轻植栽、自然香氛与小物搭配一起送达，让书桌、玄关和窗边都有会呼吸的角落。",
+                  "lineHeight": 1.55,
+                  "fontFamily": "$font-body",
+                  "fontSize": 18,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "TyZzj",
+                  "name": "CTA 操作组",
+                  "gap": 14,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "JYBPn",
+                      "name": "预约本月组合按钮",
+                      "fill": "$accent",
+                      "cornerRadius": 9999,
+                      "gap": 10,
+                      "padding": [
+                        14,
+                        22
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dFI90",
+                          "name": "预约本月组合文字",
+                          "fill": "#FFFFFF",
+                          "content": "预约本月组合",
+                          "fontFamily": "$font-body",
+                          "fontSize": 16,
+                          "fontWeight": "700"
+                        },
+                        {
+                          "type": "icon",
+                          "id": "x7bohe",
+                          "name": "预约箭头图标",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "arrow-right",
+                          "library": "lucide",
+                          "fill": "#FFFFFF"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PbT5w",
+                      "name": "查看搭配指南按钮",
+                      "fill": "#FFFFFF00",
+                      "cornerRadius": 9999,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 10,
+                      "padding": [
+                        13,
+                        20
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "J4WkS5",
+                          "name": "指南图标",
+                          "width": 18,
+                          "height": 18,
+                          "icon": "book-open",
+                          "library": "lucide",
+                          "fill": "$ink"
+                        },
+                        {
+                          "type": "text",
+                          "id": "jWyfS",
+                          "name": "查看搭配指南文字",
+                          "fill": "$ink",
+                          "content": "查看搭配指南",
+                          "fontFamily": "$font-body",
+                          "fontSize": 16,
+                          "fontWeight": "650"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "iS0cg",
+              "x": 780,
+              "y": 70,
+              "name": "右侧植物视觉",
+              "width": 520,
+              "height": 340,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 12,
+                  "id": "GVLtb",
+                  "x": 0,
+                  "y": 16,
+                  "name": "植物生活方式图片",
+                  "metadata": {
+                    "type": "unsplash",
+                    "username": "anniespratt",
+                    "link": "https://unsplash.com/@anniespratt",
+                    "author": "Annie Spratt"
+                  },
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "https://images.unsplash.com/photo-1604762525343-62309354f8a1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NDM0ODN8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODM4MTYwMjd8&ixlib=rb-4.1.0&q=80&w=1080",
+                    "mode": "fill"
+                  },
+                  "width": 420,
+                  "height": 278
+                },
+                {
+                  "type": "frame",
+                  "id": "wTFGt",
+                  "x": 286,
+                  "y": 204,
+                  "name": "清单提示卡",
+                  "width": 226,
+                  "height": 116,
+                  "fill": "$surface",
+                  "cornerRadius": 8,
+                  "stroke": "$border",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#00000014",
+                    "offset": {
+                      "x": 0,
+                      "y": 10
+                    },
+                    "blur": 24
+                  },
+                  "layout": "vertical",
+                  "gap": 8,
+                  "padding": 16,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "daYke",
+                      "name": "清单提示标题行",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "u18PXD",
+                          "name": "清单提示图标",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "sprout",
+                          "library": "lucide",
+                          "fill": "$accent"
+                        },
+                        {
+                          "type": "text",
+                          "id": "iUTmd",
+                          "name": "清单提示标题",
+                          "fill": "$ink",
+                          "content": "本月主题",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "W1PScQ",
+                      "name": "清单提示内容",
+                      "fill": "$ink",
+                      "content": "雨后花园",
+                      "fontFamily": "$font-heading",
+                      "fontSize": 24,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "nLDKz",
+                      "name": "清单提示说明",
+                      "fill": "$text-secondary",
+                      "content": "3 件植物与香氛搭配",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "GDgH3",
+              "x": 780,
+              "y": 428,
+              "name": "订阅输入区",
+              "width": 520,
+              "height": 86,
+              "fill": "$surface",
+              "cornerRadius": 12,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "gap": 12,
+              "padding": [
+                16,
+                18
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "qsRrD",
+                  "name": "邮箱输入框",
+                  "width": "fill_container",
+                  "fill": "$bg",
+                  "cornerRadius": 9999,
+                  "gap": 10,
+                  "padding": [
+                    12,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "WrmCj",
+                      "name": "邮箱图标",
+                      "width": 18,
+                      "height": 18,
+                      "icon": "mail",
+                      "library": "lucide",
+                      "fill": "$muted"
+                    },
+                    {
+                      "type": "text",
+                      "id": "HIbNr",
+                      "name": "邮箱占位文字",
+                      "fill": "$muted",
+                      "content": "留下邮箱，接收季节清单",
+                      "fontFamily": "$font-body",
+                      "fontSize": 15,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "H0UU6D",
+                  "name": "订阅按钮",
+                  "fill": "$ink",
+                  "cornerRadius": 9999,
+                  "gap": 8,
+                  "padding": [
+                    12,
+                    18
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NE1k1",
+                      "name": "订阅按钮文字",
+                      "fill": "#FFFFFF",
+                      "content": "订阅",
+                      "fontFamily": "$font-body",
+                      "fontSize": 15,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "icon",
+                      "id": "sZL9p",
+                      "name": "订阅按钮图标",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "send",
+                      "library": "lucide",
+                      "fill": "#FFFFFF"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "IfuAE",
+              "x": 120,
+              "y": 566,
+              "name": "页脚分隔线",
+              "fill": "$border",
+              "width": 1200,
+              "height": 1
+            },
+            {
+              "type": "frame",
+              "id": "ZVqJl",
+              "x": 120,
+              "y": 594,
+              "name": "官网页脚",
+              "width": 1200,
+              "height": 72,
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "hj7ZH",
+                  "name": "页脚品牌",
+                  "width": 260,
+                  "layout": "vertical",
+                  "gap": 6,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "f4BYS",
+                      "name": "页脚品牌行",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "FBGyS",
+                          "name": "页脚品牌图标",
+                          "width": 20,
+                          "height": 20,
+                          "icon": "leaf",
+                          "library": "lucide",
+                          "fill": "$sage"
+                        },
+                        {
+                          "type": "text",
+                          "id": "V6EKUL",
+                          "name": "页脚品牌名",
+                          "fill": "$ink",
+                          "content": "青禾集",
+                          "fontFamily": "$font-heading",
+                          "fontSize": 24,
+                          "fontWeight": "700"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "heI93",
+                      "name": "页脚版权",
+                      "fill": "$text-secondary",
+                      "content": "自然灵感与日常空间研究所",
+                      "fontFamily": "$font-body",
+                      "fontSize": 13,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "DP0gQ",
+                  "name": "页脚导航",
+                  "gap": 28,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "JIlts",
+                      "name": "页脚导航 产品",
+                      "fill": "$text-secondary",
+                      "content": "产品",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "tE47K",
+                      "name": "页脚导航 灵感",
+                      "fill": "$text-secondary",
+                      "content": "灵感",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "O1yqIQ",
+                      "name": "页脚导航 门店",
+                      "fill": "$text-secondary",
+                      "content": "门店",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "w7cKch",
+                      "name": "页脚导航 会员",
+                      "fill": "$text-secondary",
+                      "content": "会员",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "HL5QQ",
+                      "name": "页脚导航 联系",
+                      "fill": "$text-secondary",
+                      "content": "联系",
+                      "fontFamily": "$font-body",
+                      "fontSize": 14,
+                      "fontWeight": "600"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ZC2Uq",
+                  "name": "页脚联系方式",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vg6mD",
+                      "name": "联系入口 Instagram",
+                      "fill": "#FFFFFF00",
+                      "cornerRadius": 9999,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 6,
+                      "padding": [
+                        8,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "iQFoh",
+                          "name": "Instagram图标",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "instagram",
+                          "library": "lucide",
+                          "fill": "$sage"
+                        },
+                        {
+                          "type": "text",
+                          "id": "Is5pn",
+                          "name": "Instagram文字",
+                          "fill": "$text-secondary",
+                          "content": "Instagram",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kfeFu",
+                      "name": "联系入口 微信",
+                      "fill": "#FFFFFF00",
+                      "cornerRadius": 9999,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 6,
+                      "padding": [
+                        8,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "X93XOF",
+                          "name": "微信图标",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "message-circle",
+                          "library": "lucide",
+                          "fill": "$sage"
+                        },
+                        {
+                          "type": "text",
+                          "id": "P8k7H4",
+                          "name": "微信文字",
+                          "fill": "$text-secondary",
+                          "content": "微信",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "j5JgG",
+                      "name": "联系入口 杭州",
+                      "fill": "#FFFFFF00",
+                      "cornerRadius": 9999,
+                      "stroke": "$border",
+                      "strokeWidth": 1,
+                      "gap": 6,
+                      "padding": [
+                        8,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "gpbQi",
+                          "name": "杭州图标",
+                          "width": 15,
+                          "height": 15,
+                          "icon": "map-pin",
+                          "library": "lucide",
+                          "fill": "$sage"
+                        },
+                        {
+                          "type": "text",
+                          "id": "daEpX",
+                          "name": "杭州文字",
+                          "fill": "$text-secondary",
+                          "content": "杭州",
+                          "fontFamily": "$font-body",
+                          "fontSize": 13,
+                          "fontWeight": "600"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "bg": {
+      "type": "color",
+      "value": "#F8FCF6"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "surface-soft": {
+      "type": "color",
+      "value": "#EEF8EA"
+    },
+    "surface-warm": {
+      "type": "color",
+      "value": "#FFF7EA"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#18302B"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#5B716C"
+    },
+    "muted": {
+      "type": "color",
+      "value": "#8BA09A"
+    },
+    "border": {
+      "type": "color",
+      "value": "#D9E8DE"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#FF8A5B"
+    },
+    "sage": {
+      "type": "color",
+      "value": "#6FA87A"
+    },
+    "mint": {
+      "type": "color",
+      "value": "#CDEED6"
+    },
+    "sun": {
+      "type": "color",
+      "value": "#F7D96B"
+    },
+    "rose": {
+      "type": "color",
+      "value": "#F5B8C3"
+    },
+    "font-heading": {
+      "type": "string",
+      "value": "Newsreader"
+    },
+    "font-body": {
+      "type": "string",
+      "value": "Inter"
+    },
+    "font-script": {
+      "type": "string",
+      "value": "Caveat"
+    }
+  },
+  "fileToken": "12e1cc8f-7c54-4da8-8d1b-754afda06ca6"
+}

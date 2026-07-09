@@ -4,21 +4,28 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { app, BrowserWindow, ipcMain, nativeTheme } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron';
 import started from 'electron-squirrel-startup';
 import path from 'node:path';
 
 import {
+    isMiaomaProjectImportKind,
     MIAOMA_PROJECT_IPC_CHANNELS,
     MIAOMA_PROJECTS_DIRECTORY_NAME,
     type MiaomaProjectCreateInput,
     type MiaomaProjectDeleteResult,
+    type MiaomaProjectImportKind,
+    type MiaomaProjectImportResult,
     type MiaomaProjectListResult,
     type MiaomaProjectResult,
     type MiaomaProjectSummary,
     type MiaomaProjectUpdateInput
 } from '../shared/projects';
 
+import {
+    getProjectImportDialogOptions,
+    readProjectImportDocument
+} from './projects/importProjectDocument';
 import { createProjectStore, type ProjectStore } from './projects/projectStore';
 
 if (started) {
@@ -148,6 +155,19 @@ const toProjectResult = (
               project
           };
 
+const showImportDialog = async (
+    parentWindow: BrowserWindow | null,
+    kind: MiaomaProjectImportKind
+) => {
+    const options = getProjectImportDialogOptions(kind);
+
+    if (parentWindow) {
+        return dialog.showOpenDialog(parentWindow, options);
+    }
+
+    return dialog.showOpenDialog(options);
+};
+
 const registerProjectIpcHandlers = (projectStore: ProjectStore) => {
     ipcMain.handle(
         MIAOMA_PROJECT_IPC_CHANNELS.list,
@@ -194,6 +214,56 @@ const registerProjectIpcHandlers = (projectStore: ProjectStore) => {
                         error instanceof Error
                             ? error.message
                             : 'Failed to create project.'
+                };
+            }
+        }
+    );
+
+    ipcMain.handle(
+        MIAOMA_PROJECT_IPC_CHANNELS.importFile,
+        async (event, kind: string): Promise<MiaomaProjectImportResult> => {
+            try {
+                if (!isMiaomaProjectImportKind(kind)) {
+                    return {
+                        success: false,
+                        error: 'Unsupported import type.'
+                    };
+                }
+
+                const dashboardWindow = BrowserWindow.fromWebContents(
+                    event.sender
+                );
+                const dialogResult = await showImportDialog(
+                    dashboardWindow,
+                    kind
+                );
+                const filePath = dialogResult.filePaths[0];
+
+                if (dialogResult.canceled || filePath === undefined) {
+                    return {
+                        success: false,
+                        canceled: true
+                    };
+                }
+
+                const document = await readProjectImportDocument(filePath);
+                const project = await projectStore.createProject({
+                    document
+                });
+
+                createEditorWindow(project.id, dashboardWindow);
+
+                return {
+                    success: true,
+                    project
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error:
+                        error instanceof Error
+                            ? error.message
+                            : 'Failed to import project.'
                 };
             }
         }

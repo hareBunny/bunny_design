@@ -12,11 +12,17 @@ export const MIAOMA_PROJECTS_DIRECTORY_NAME = 'projects';
 export const MIAOMA_PROJECT_IPC_CHANNELS = {
     list: 'miaoma:projects:list',
     create: 'miaoma:projects:create',
+    importFile: 'miaoma:projects:import-file',
     get: 'miaoma:projects:get',
     open: 'miaoma:projects:open',
     update: 'miaoma:projects:update',
     delete: 'miaoma:projects:delete'
 } as const;
+
+export const MIAOMA_PROJECT_IMPORT_KINDS = ['json', 'pencil'] as const;
+
+export type MiaomaProjectImportKind =
+    (typeof MIAOMA_PROJECT_IMPORT_KINDS)[number];
 
 export type MiaomaProjectFile = {
     formatVersion: typeof MIAOMA_PROJECT_FORMAT_VERSION;
@@ -74,5 +80,25 @@ export type MiaomaProjectDeleteResult =
           error: string;
       };
 
+export type MiaomaProjectImportResult =
+    | {
+          success: true;
+          project: MiaomaProjectSummary;
+      }
+    | {
+          success: false;
+          canceled: true;
+      }
+    | {
+          success: false;
+          canceled?: false;
+          error: string;
+      };
+
 export const isSafeMiaomaProjectId = (projectId: string) =>
     /^[A-Za-z0-9_-]+$/.test(projectId);
+
+export const isMiaomaProjectImportKind = (
+    value: string
+): value is MiaomaProjectImportKind =>
+    MIAOMA_PROJECT_IMPORT_KINDS.includes(value as MiaomaProjectImportKind);
