@@ -9,14 +9,35 @@ export type MiaomaColorFill = {
     color: string;
 };
 
-export type MiaomaLinearGradientFill = {
+type MiaomaGradientStop = {
+    color: string;
+    position: number;
+};
+
+type MiaomaGradientPoint = {
+    x?: number;
+    y?: number;
+};
+
+type MiaomaGradientSize = {
+    width?: number;
+    height?: number;
+};
+
+type MiaomaGradientFillBase = {
     type: 'gradient';
-    gradientType: 'linear';
     rotation?: number;
-    colors: {
-        color: string;
-        position: number;
-    }[];
+    colors: MiaomaGradientStop[];
+    center?: MiaomaGradientPoint;
+    size?: MiaomaGradientSize;
+};
+
+export type MiaomaLinearGradientFill = MiaomaGradientFillBase & {
+    gradientType: 'linear';
+};
+
+export type MiaomaRadialGradientFill = MiaomaGradientFillBase & {
+    gradientType: 'radial';
 };
 
 export type MiaomaImageFill = {
@@ -28,7 +49,13 @@ export type MiaomaImageFill = {
 export type MiaomaFill =
     | MiaomaColorFill
     | MiaomaLinearGradientFill
+    | MiaomaRadialGradientFill
     | MiaomaImageFill;
+
+export type MiaomaStroke = MiaomaFill & {
+    width?: number;
+    align?: 'center' | 'inner' | 'outer';
+};
 
 export type MiaomaShadowEffect = {
     type: 'shadow';

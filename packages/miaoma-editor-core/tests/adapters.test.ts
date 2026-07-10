@@ -50,6 +50,79 @@ describe('schemaToEditorDocument', () => {
         expect((node as { opacity?: number }).opacity).toBe(25);
     });
 
+    it('preserves multiple schema style items in editor arrays', () => {
+        const schemaDocument = {
+            version: '2.14',
+            children: [
+                {
+                    id: 'rect-1',
+                    type: 'rectangle',
+                    width: 10,
+                    height: 10,
+                    fill: [
+                        { type: 'color', color: '#ffffff' },
+                        {
+                            type: 'gradient',
+                            gradientType: 'radial',
+                            colors: [
+                                { color: '#ffffff', position: 0 },
+                                { color: '#ffffff00', position: 1 }
+                            ]
+                        }
+                    ],
+                    stroke: [
+                        {
+                            type: 'color',
+                            color: '#000000',
+                            width: 2,
+                            align: 'inner'
+                        },
+                        {
+                            type: 'color',
+                            color: '#ff0000',
+                            width: 1
+                        }
+                    ],
+                    effect: [
+                        {
+                            type: 'shadow',
+                            color: '#00000033',
+                            offset: { x: 1, y: 2 },
+                            blur: 4
+                        },
+                        {
+                            type: 'shadow',
+                            shadowType: 'inner',
+                            color: '#ffffff40',
+                            blur: 2
+                        }
+                    ]
+                }
+            ]
+        } as unknown as MiaomaDesignDocument;
+
+        const editorDocument = schemaToEditorDocument(schemaDocument);
+        const node = editorDocument.children[0];
+
+        expect(node.fills).toHaveLength(2);
+        expect(node.fills[1]).toMatchObject({
+            type: 'gradient',
+            gradientType: 'radial'
+        });
+        expect(node.strokes).toHaveLength(2);
+        expect(node.strokes[0]).toMatchObject({
+            type: 'color',
+            width: 2,
+            align: 'inner'
+        });
+        expect(node.effects).toHaveLength(2);
+        expect(node.effects[1]).toMatchObject({
+            type: 'shadow',
+            shadowType: 'inner',
+            blur: 2
+        });
+    });
+
     it('preserves space_around justifyContent on flow layout frames', () => {
         const schemaDocument: MiaomaDesignDocument = {
             version: '2.14',
@@ -79,7 +152,7 @@ describe('schemaToEditorDocument', () => {
 });
 
 describe('editorDocumentToRenderable', () => {
-    it('maps style arrays back to the current renderable schema shape', () => {
+    it('maps style arrays back to schema style arrays', () => {
         const editorDocument: EditorDocument = {
             version: '1.0.0',
             children: [
@@ -125,16 +198,111 @@ describe('editorDocumentToRenderable', () => {
         const renderable = editorDocumentToRenderable(editorDocument);
         const node = renderable.children[0];
 
-        expect(node.fill).toMatchObject({ type: 'color', color: '#ffffff' });
-        expect(node.stroke).toMatchObject({ type: 'color', color: '#000000' });
+        expect(node.fill).toMatchObject([{ type: 'color', color: '#ffffff' }]);
+        expect(node.stroke).toMatchObject([
+            { type: 'color', color: '#000000', width: 2, align: 'inner' }
+        ]);
         expect(node.strokeWidth).toBe(2);
-        expect(node.effect).toMatchObject({
-            type: 'shadow',
-            color: '#00000033',
-            offset: { x: 1, y: 2 },
-            blur: 4
-        });
+        expect(node.effect).toMatchObject([
+            {
+                type: 'shadow',
+                color: '#00000033',
+                offset: { x: 1, y: 2 },
+                blur: 4
+            }
+        ]);
         expect(node.opacity).toBe(25);
+    });
+
+    it('maps multiple editor style items back to schema arrays', () => {
+        const editorDocument: EditorDocument = {
+            version: '1.0.0',
+            children: [
+                {
+                    id: 'rect-1',
+                    type: 'rectangle',
+                    width: 10,
+                    height: 10,
+                    fills: [
+                        {
+                            id: 'fill-1',
+                            enabled: true,
+                            type: 'color',
+                            color: '#ffffff'
+                        },
+                        {
+                            id: 'fill-2',
+                            enabled: true,
+                            type: 'gradient',
+                            gradientType: 'radial',
+                            colors: [
+                                { color: '#ffffff', position: 0 },
+                                { color: '#ffffff00', position: 1 }
+                            ]
+                        }
+                    ],
+                    strokes: [
+                        {
+                            id: 'stroke-1',
+                            enabled: true,
+                            type: 'color',
+                            color: '#000000',
+                            width: 2,
+                            align: 'inner'
+                        },
+                        {
+                            id: 'stroke-2',
+                            enabled: true,
+                            type: 'color',
+                            color: '#ff0000',
+                            width: 1
+                        }
+                    ],
+                    effects: [
+                        {
+                            id: 'effect-1',
+                            enabled: true,
+                            type: 'shadow',
+                            color: '#00000033',
+                            offsetX: 1,
+                            offsetY: 2,
+                            blur: 4
+                        },
+                        {
+                            id: 'effect-2',
+                            enabled: true,
+                            type: 'shadow',
+                            shadowType: 'inner',
+                            color: '#ffffff40',
+                            offsetX: 0,
+                            offsetY: 0,
+                            blur: 2
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const renderable = editorDocumentToRenderable(editorDocument);
+        const node = renderable.children[0];
+
+        expect(node.fill).toHaveLength(2);
+        expect(node.fill?.[1]).toMatchObject({
+            type: 'gradient',
+            gradientType: 'radial'
+        });
+        expect(node.stroke).toHaveLength(2);
+        expect(node.stroke?.[0]).toMatchObject({
+            type: 'color',
+            width: 2,
+            align: 'inner'
+        });
+        expect(node.effect).toHaveLength(2);
+        expect(node.effect?.[1]).toMatchObject({
+            type: 'shadow',
+            shadowType: 'inner',
+            blur: 2
+        });
     });
 
     it('maps space_around justifyContent back to the renderable schema shape', () => {

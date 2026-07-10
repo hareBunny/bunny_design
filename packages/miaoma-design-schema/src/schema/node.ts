@@ -4,7 +4,7 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import type { MiaomaFill, MiaomaShadowEffect } from './fill';
+import type { MiaomaFill, MiaomaShadowEffect, MiaomaStroke } from './fill';
 import type {
     MiaomaAlignItems,
     MiaomaCornerRadius,
@@ -22,12 +22,12 @@ type MiaomaBaseNode = {
     x?: number;
     y?: number;
     rotation?: number;
-    fill?: MiaomaFill;
-    stroke?: MiaomaFill;
+    fill?: MiaomaFill | MiaomaFill[];
+    stroke?: MiaomaStroke | MiaomaStroke[];
     strokeWidth?: number;
     strokeAlignment?: 'center' | 'inner' | 'outer';
     cornerRadius?: MiaomaCornerRadius;
-    effect?: MiaomaShadowEffect;
+    effect?: MiaomaShadowEffect | MiaomaShadowEffect[];
 };
 
 export type MiaomaFrameNode = MiaomaBaseNode & {

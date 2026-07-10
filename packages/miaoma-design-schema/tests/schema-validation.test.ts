@@ -195,6 +195,89 @@ describe('miaoma design schema validation', () => {
         );
     });
 
+    it('accepts style fields as arrays without flattening supported items', () => {
+        const result = strictValidateDesignDocument({
+            version: '2.14',
+            children: [
+                {
+                    type: 'rectangle',
+                    id: 'shape',
+                    x: 0,
+                    y: 0,
+                    width: 10,
+                    height: 10,
+                    fill: [
+                        { type: 'color', color: '#101010ff' },
+                        {
+                            type: 'gradient',
+                            gradientType: 'radial',
+                            colors: [
+                                { color: '#ffffffff', position: 0 },
+                                { color: '#ffffff00', position: 1 }
+                            ]
+                        }
+                    ],
+                    stroke: [
+                        {
+                            type: 'color',
+                            color: '#202020ff',
+                            width: 2,
+                            align: 'inner'
+                        },
+                        {
+                            type: 'gradient',
+                            gradientType: 'linear',
+                            colors: [
+                                { color: '#303030ff', position: 0 },
+                                { color: '#404040ff', position: 1 }
+                            ],
+                            width: 1
+                        }
+                    ],
+                    effect: [
+                        {
+                            type: 'shadow',
+                            shadowType: 'outer',
+                            color: '#00000033',
+                            offset: { x: 0, y: 4 },
+                            blur: 12
+                        },
+                        {
+                            type: 'shadow',
+                            shadowType: 'inner',
+                            color: '#ffffff40',
+                            blur: 2
+                        }
+                    ]
+                }
+            ]
+        });
+
+        expect(result.success).toBe(true);
+        if (!result.success) {
+            throw new Error(JSON.stringify(result.diagnostics, null, 2));
+        }
+
+        const node = result.document.children[0];
+
+        expect(node.fill).toHaveLength(2);
+        expect(node.fill?.[1]).toMatchObject({
+            type: 'gradient',
+            gradientType: 'radial'
+        });
+        expect(node.stroke).toHaveLength(2);
+        expect(node.stroke?.[0]).toMatchObject({
+            type: 'color',
+            width: 2,
+            align: 'inner'
+        });
+        expect(node.effect).toHaveLength(2);
+        expect(node.effect?.[1]).toMatchObject({
+            type: 'shadow',
+            shadowType: 'inner'
+        });
+    });
+
     it('rejects string fills in strict mode', () => {
         const result = strictValidateDesignDocument({
             version: '2.14',

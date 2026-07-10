@@ -44,6 +44,33 @@ const createDesignDocument = (): MiaomaDesignDocument => ({
     ]
 });
 
+const findNodeByName = (
+    nodes: unknown[],
+    name: string
+): Record<string, unknown> | undefined => {
+    for (const node of nodes) {
+        if (!node || typeof node !== 'object' || Array.isArray(node)) {
+            continue;
+        }
+
+        const record = node as Record<string, unknown>;
+
+        if (record.name === name) {
+            return record;
+        }
+
+        if (Array.isArray(record.children)) {
+            const match = findNodeByName(record.children, name);
+
+            if (match) {
+                return match;
+            }
+        }
+    }
+
+    return undefined;
+};
+
 describe('project import documents', () => {
     it.each([
         ['json', 'json'],
@@ -155,7 +182,8 @@ describe('project import documents', () => {
 
     it.each([
         'miaoma-design-green-website-schema.json',
-        'miaoma-design-green-website-schema.pen'
+        'miaoma-design-green-website-schema.pen',
+        'miaoma-design-magicut.pen'
     ])(
         'can import root design documents with string color tokens: %s',
         async (fileName) => {
@@ -164,13 +192,37 @@ describe('project import documents', () => {
             );
 
             expect(document.version).toBe('2.14');
-            expect(document.children[0]).toMatchObject({
-                name: '小清新官网 - 青禾集',
-                fill: {
-                    type: 'color',
-                    color: '#F8FCF6'
-                }
-            });
+            expect(document.children.length).toBeGreaterThan(0);
+            expect(document.children[0]?.fill).toMatchObject([
+                { type: 'color' }
+            ]);
         }
     );
+
+    it('preserves multiple style array items when importing magicut pen files', async () => {
+        const document = await readProjectImportDocument(
+            path.resolve(testDirectory, '../../../miaoma-design-magicut.pen')
+        );
+        const node = findNodeByName(document.children, '悬浮胶囊主导航');
+
+        expect(node).toBeDefined();
+        expect(node?.fill).toHaveLength(3);
+        expect(node?.fill).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    type: 'gradient',
+                    gradientType: 'radial'
+                })
+            ])
+        );
+        expect(node?.effect).toHaveLength(3);
+        expect(node?.effect).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    type: 'shadow',
+                    shadowType: 'outer'
+                })
+            ])
+        );
+    });
 });

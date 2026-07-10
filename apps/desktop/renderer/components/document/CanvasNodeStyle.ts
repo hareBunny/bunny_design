@@ -14,7 +14,9 @@ import type {
     MiaomaFrameNode as FrameNode,
     MiaomaJustifyContent as JustifyContent,
     MiaomaLayoutDirection as LayoutDirection,
-    MiaomaSpacing as Spacing
+    MiaomaShadowEffect as ShadowEffect,
+    MiaomaSpacing as Spacing,
+    MiaomaStroke as Stroke
 } from '@miaoma-design-ai/miaoma-design-schema';
 
 import {
@@ -35,6 +37,14 @@ const normalizeAngle = (angle: number) => ((angle % 360) + 360) % 360;
 const toCssGradientAngle = (rotation = 0) => `${normalizeAngle(-rotation)}deg`;
 
 const toCssNodeRotation = (rotation: number) => `rotate(${-rotation}deg)`;
+
+const toStyleArray = <T>(value: T | T[] | undefined): T[] => {
+    if (value === undefined) {
+        return [];
+    }
+
+    return Array.isArray(value) ? value : [value];
+};
 
 const toCssOpacityValue = (opacity: number | undefined) => {
     if (opacity === undefined) {
@@ -75,39 +85,49 @@ export const toFontFamily = (fontFamily?: string) => {
     return `${quoteFontFamily(fontFamily)}, system-ui, sans-serif`;
 };
 
-const toGradientValue = (fill: Extract<Fill, { type: 'gradient' }>) =>
-    `linear-gradient(${toCssGradientAngle(fill.rotation)}, ${fill.colors
+const toGradientStops = (fill: Extract<Fill, { type: 'gradient' }>) =>
+    fill.colors
         .map((stop) => `${stop.color} ${stop.position * 100}%`)
-        .join(', ')})`;
+        .join(', ');
 
-export const getColorFillValue = (fill: Fill | undefined) =>
-    fill?.type === 'color' ? fill.color : undefined;
+const toGradientCenter = (fill: Extract<Fill, { type: 'gradient' }>) => {
+    const x = fill.center?.x ?? 0.5;
+    const y = fill.center?.y ?? 0.5;
+
+    return `${x * 100}% ${y * 100}%`;
+};
+
+const toGradientValue = (fill: Extract<Fill, { type: 'gradient' }>) =>
+    fill.gradientType === 'radial'
+        ? `radial-gradient(circle at ${toGradientCenter(fill)}, ${toGradientStops(fill)})`
+        : `linear-gradient(${toCssGradientAngle(fill.rotation)}, ${toGradientStops(fill)})`;
+
+export const getColorFillValue = (fill: Fill | Fill[] | undefined) =>
+    toStyleArray(fill).find((item) => item.type === 'color')?.color;
 
 const getFillStyle = (
-    fill: Fill | undefined,
+    fill: Fill | Fill[] | undefined,
     resolveAsset: AssetResolver,
     target: 'shape' | 'text'
 ): CSSProperties => {
-    if (!fill) {
+    const fills = toStyleArray(fill);
+
+    if (fills.length === 0) {
         return {};
     }
 
-    if (fill.type === 'color') {
-        return target === 'text'
-            ? { color: fill.color }
-            : { backgroundColor: fill.color };
-    }
+    if (target === 'text') {
+        const firstFill = fills[0];
 
-    if (fill.type === 'gradient') {
-        const gradientStyle: CSSProperties = {
-            backgroundImage: toGradientValue(fill),
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: '100% 100%'
-        };
+        if (firstFill.type === 'color') {
+            return { color: firstFill.color };
+        }
 
-        if (target === 'text') {
+        if (firstFill.type === 'gradient') {
             return {
-                ...gradientStyle,
+                backgroundImage: toGradientValue(firstFill),
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '100% 100%',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
@@ -115,38 +135,76 @@ const getFillStyle = (
             };
         }
 
-        return gradientStyle;
+        return {
+            backgroundImage: `url("${escapeAssetUrl(resolveAsset(firstFill.url))}")`,
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: toBackgroundSize(firstFill.mode)
+        };
+    }
+
+    const backgroundImages: string[] = [];
+    const backgroundSizes: string[] = [];
+    const backgroundPositions: string[] = [];
+    let backgroundColor: string | undefined;
+
+    for (const item of fills) {
+        if (item.type === 'color') {
+            backgroundColor = item.color;
+            continue;
+        }
+
+        if (item.type === 'gradient') {
+            backgroundImages.push(toGradientValue(item));
+            backgroundSizes.push('100% 100%');
+            backgroundPositions.push('center');
+            continue;
+        }
+
+        backgroundImages.push(
+            `url("${escapeAssetUrl(resolveAsset(item.url))}")`
+        );
+        backgroundSizes.push(toBackgroundSize(item.mode));
+        backgroundPositions.push('center');
+    }
+
+    if (backgroundImages.length === 0) {
+        return backgroundColor ? { backgroundColor } : {};
     }
 
     return {
-        backgroundImage: `url("${escapeAssetUrl(resolveAsset(fill.url))}")`,
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundSize: toBackgroundSize(fill.mode)
+        backgroundColor,
+        backgroundImage: backgroundImages.join(', '),
+        backgroundPosition: backgroundPositions.join(', '),
+        backgroundRepeat: backgroundImages.map(() => 'no-repeat').join(', '),
+        backgroundSize: backgroundSizes.join(', ')
     };
 };
 
 const getStrokeStyle = (
-    stroke: Fill | undefined,
+    stroke: Stroke | Stroke[] | undefined,
     strokeWidth: number | undefined
 ): CSSProperties => {
-    if (!stroke || strokeWidth === undefined) {
+    const firstStroke = toStyleArray(stroke)[0];
+    const width = firstStroke?.width ?? strokeWidth;
+
+    if (!firstStroke || width === undefined) {
         return {};
     }
 
-    if (stroke.type === 'color') {
+    if (firstStroke.type === 'color') {
         return {
-            borderColor: stroke.color,
+            borderColor: firstStroke.color,
             borderStyle: 'solid',
-            borderWidth: px(strokeWidth)
+            borderWidth: px(width)
         };
     }
 
-    if (stroke.type === 'gradient') {
+    if (firstStroke.type === 'gradient') {
         return {
-            borderImage: `${toGradientValue(stroke)} 1`,
+            borderImage: `${toGradientValue(firstStroke)} 1`,
             borderStyle: 'solid',
-            borderWidth: px(strokeWidth)
+            borderWidth: px(width)
         };
     }
 
@@ -218,17 +276,23 @@ export const toAlignItems = (
 };
 
 const getEffectStyle = (node: DesignNode): CSSProperties => {
-    if (node.effect?.type !== 'shadow') {
+    const shadows = toStyleArray(node.effect)
+        .filter((effect): effect is ShadowEffect => effect.type === 'shadow')
+        .map((effect) => {
+            const offsetX = effect.offset?.x ?? 0;
+            const offsetY = effect.offset?.y ?? 0;
+            const blur = effect.blur ?? 0;
+            const inset = effect.shadowType === 'inner' ? 'inset ' : '';
+
+            return `${inset}${px(offsetX)} ${px(offsetY)} ${px(blur)} ${effect.color}`;
+        });
+
+    if (shadows.length === 0) {
         return {};
     }
 
-    const offsetX = node.effect.offset?.x ?? 0;
-    const offsetY = node.effect.offset?.y ?? 0;
-    const blur = node.effect.blur ?? 0;
-    const inset = node.effect.shadowType === 'inner' ? 'inset ' : '';
-
     return {
-        boxShadow: `${inset}${px(offsetX)} ${px(offsetY)} ${px(blur)} ${node.effect.color}`
+        boxShadow: shadows.join(', ')
     };
 };
 

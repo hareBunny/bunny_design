@@ -8,7 +8,8 @@ import type {
     MiaomaDesignDocument,
     MiaomaDesignNode,
     MiaomaFill,
-    MiaomaShadowEffect
+    MiaomaShadowEffect,
+    MiaomaStroke
 } from '@miaoma-design-ai/miaoma-design-schema';
 
 import type { EditorDocument } from '../model/document';
@@ -27,108 +28,134 @@ const toFillItem = (
     nodeId: string,
     fill: MiaomaFill | undefined,
     index: number
-): FillItem[] => {
+): FillItem | undefined => {
     if (!fill) {
-        return [];
+        return undefined;
     }
 
     const id = buildStyleId(nodeId, 'fill', index);
 
     if (fill.type === 'color') {
-        return [{ id, enabled: true, type: 'color', color: fill.color }];
+        return { id, enabled: true, type: 'color', color: fill.color };
     }
 
     if (fill.type === 'gradient') {
-        return [
-            {
-                id,
-                enabled: true,
-                type: 'gradient',
-                gradientType: 'linear',
-                rotation: fill.rotation,
-                colors: fill.colors
-            }
-        ];
-    }
-
-    return [
-        {
+        return {
             id,
             enabled: true,
-            type: 'image',
-            url: fill.url,
-            mode: fill.mode
-        }
-    ];
+            type: 'gradient',
+            gradientType: fill.gradientType,
+            rotation: fill.rotation,
+            colors: fill.colors,
+            center: fill.center,
+            size: fill.size
+        };
+    }
+
+    return {
+        id,
+        enabled: true,
+        type: 'image',
+        url: fill.url,
+        mode: fill.mode
+    };
 };
 
-const toStrokeItem = (node: MiaomaDesignNode, index: number): StrokeItem[] => {
-    if (!node.stroke || node.strokeWidth === undefined) {
+const toStyleArray = <T>(value: T | T[] | undefined): T[] => {
+    if (value === undefined) {
         return [];
     }
 
+    return Array.isArray(value) ? value : [value];
+};
+
+const toFillItems = (node: MiaomaDesignNode): FillItem[] =>
+    toStyleArray(node.fill).flatMap((fill, index) => {
+        const item = toFillItem(node.id, fill, index);
+
+        return item ? [item] : [];
+    });
+
+const toStrokeItem = (
+    node: MiaomaDesignNode,
+    stroke: MiaomaStroke | undefined,
+    index: number
+): StrokeItem | undefined => {
+    if (!stroke) {
+        return undefined;
+    }
+
+    const width = stroke.width ?? node.strokeWidth ?? 1;
     const id = buildStyleId(node.id, 'stroke', index);
     const shared = {
         id,
         enabled: true,
-        width: node.strokeWidth,
-        align: node.strokeAlignment
+        width,
+        align: stroke.align ?? node.strokeAlignment
     } as const;
 
-    if (node.stroke.type === 'color') {
-        return [
-            {
-                ...shared,
-                type: 'color',
-                color: node.stroke.color
-            }
-        ];
-    }
-
-    if (node.stroke.type === 'gradient') {
-        return [
-            {
-                ...shared,
-                type: 'gradient',
-                gradientType: 'linear',
-                rotation: node.stroke.rotation,
-                colors: node.stroke.colors
-            }
-        ];
-    }
-
-    return [
-        {
+    if (stroke.type === 'color') {
+        return {
             ...shared,
-            type: 'image',
-            url: node.stroke.url,
-            mode: node.stroke.mode
-        }
-    ];
+            type: 'color',
+            color: stroke.color
+        };
+    }
+
+    if (stroke.type === 'gradient') {
+        return {
+            ...shared,
+            type: 'gradient',
+            gradientType: stroke.gradientType,
+            rotation: stroke.rotation,
+            colors: stroke.colors,
+            center: stroke.center,
+            size: stroke.size
+        };
+    }
+
+    return {
+        ...shared,
+        type: 'image',
+        url: stroke.url,
+        mode: stroke.mode
+    };
 };
 
 const toEffectItem = (
     nodeId: string,
     effect: MiaomaShadowEffect | undefined,
     index: number
-): EffectItem[] => {
+): EffectItem | undefined => {
     if (!effect || effect.type !== 'shadow') {
-        return [];
+        return undefined;
     }
 
-    return [
-        {
-            id: buildStyleId(nodeId, 'effect', index),
-            enabled: true,
-            type: 'shadow',
-            shadowType: effect.shadowType,
-            color: effect.color,
-            offsetX: effect.offset?.x ?? 0,
-            offsetY: effect.offset?.y ?? 0,
-            blur: effect.blur ?? 0
-        }
-    ];
+    return {
+        id: buildStyleId(nodeId, 'effect', index),
+        enabled: true,
+        type: 'shadow',
+        shadowType: effect.shadowType,
+        color: effect.color,
+        offsetX: effect.offset?.x ?? 0,
+        offsetY: effect.offset?.y ?? 0,
+        blur: effect.blur ?? 0
+    };
 };
+
+const toStrokeItems = (node: MiaomaDesignNode): StrokeItem[] =>
+    toStyleArray(node.stroke).flatMap((stroke, index) => {
+        const item = toStrokeItem(node, stroke, index);
+
+        return item ? [item] : [];
+    });
+
+const toEffectItems = (node: MiaomaDesignNode): EffectItem[] =>
+    toStyleArray(node.effect).flatMap((effect, index) => {
+        const item = toEffectItem(node.id, effect, index);
+
+        return item ? [item] : [];
+    });
 
 const toEditorNodeBase = (node: MiaomaDesignNode) => ({
     id: node.id,
@@ -137,9 +164,9 @@ const toEditorNodeBase = (node: MiaomaDesignNode) => ({
     x: node.x,
     y: node.y,
     rotation: node.rotation,
-    fills: toFillItem(node.id, node.fill, 0),
-    strokes: toStrokeItem(node, 0),
-    effects: toEffectItem(node.id, node.effect, 0)
+    fills: toFillItems(node),
+    strokes: toStrokeItems(node),
+    effects: toEffectItems(node)
 });
 
 const toEditorNode = (node: MiaomaDesignNode): EditorNode => {

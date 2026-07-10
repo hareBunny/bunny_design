@@ -28,7 +28,9 @@ export type {
     MiaomaFill,
     MiaomaImageFill,
     MiaomaLinearGradientFill,
-    MiaomaShadowEffect
+    MiaomaRadialGradientFill,
+    MiaomaShadowEffect,
+    MiaomaStroke
 } from './schema/fill';
 export type {
     MiaomaAlignItems,

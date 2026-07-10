@@ -18,12 +18,20 @@ type EditorColorPaint = {
 
 type EditorGradientPaint = {
     type: 'gradient';
-    gradientType: 'linear';
+    gradientType: 'linear' | 'radial';
     rotation?: number;
     colors: {
         color: string;
         position: number;
     }[];
+    center?: {
+        x?: number;
+        y?: number;
+    };
+    size?: {
+        width?: number;
+        height?: number;
+    };
 };
 
 type EditorImagePaint = {

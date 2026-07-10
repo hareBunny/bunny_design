@@ -9,7 +9,11 @@ import type {
     MiaomaDesignValidationResult,
     MiaomaStrictValidationResult
 } from '../schema/document';
-import type { MiaomaFill, MiaomaShadowEffect } from '../schema/fill';
+import type {
+    MiaomaFill,
+    MiaomaShadowEffect,
+    MiaomaStroke
+} from '../schema/fill';
 import type { MiaomaCornerRadius, MiaomaSpacing } from '../schema/layout';
 import type {
     MiaomaDesignNode,
@@ -78,6 +82,34 @@ const parseCornerRadius = (value: unknown): MiaomaCornerRadius | undefined => {
     return tuple?.length === 4
         ? [tuple[0], tuple[1], tuple[2], tuple[3]]
         : undefined;
+};
+
+const parseOptionalPoint = (
+    value: unknown
+): { x?: number; y?: number } | undefined => {
+    if (!isUnknownRecord(value)) {
+        return undefined;
+    }
+
+    const x = readNumber(value.x);
+    const y = readNumber(value.y);
+
+    return x === undefined && y === undefined ? undefined : { x, y };
+};
+
+const parseOptionalSize = (
+    value: unknown
+): { width?: number; height?: number } | undefined => {
+    if (!isUnknownRecord(value)) {
+        return undefined;
+    }
+
+    const width = readNumber(value.width);
+    const height = readNumber(value.height);
+
+    return width === undefined && height === undefined
+        ? undefined
+        : { width, height };
 };
 
 const isStrictString = (
@@ -202,8 +234,14 @@ export const strictValidateDesignDocument = (
             if (colors.length > 0) {
                 return {
                     type: 'gradient',
-                    gradientType: 'linear',
+                    gradientType:
+                        readStringUnion(value.gradientType, [
+                            'linear',
+                            'radial'
+                        ]) ?? 'linear',
                     rotation: readNumber(value.rotation),
+                    center: parseOptionalPoint(value.center),
+                    size: parseOptionalSize(value.size),
                     colors
                 };
             }
@@ -250,6 +288,76 @@ export const strictValidateDesignDocument = (
         return undefined;
     };
 
+    const parseFillList = (
+        value: unknown,
+        path: string
+    ): MiaomaFill[] | undefined => {
+        if (value === undefined) {
+            return undefined;
+        }
+
+        const values = Array.isArray(value) ? value : [value];
+        const fills = values.flatMap((item, index) => {
+            const fill = parseFill(
+                item,
+                Array.isArray(value) ? `${path}[${index}]` : path
+            );
+
+            return fill ? [fill] : [];
+        });
+
+        return fills.length > 0 ? fills : undefined;
+    };
+
+    const parseStrokeItem = (
+        value: unknown,
+        path: string,
+        fallbackWidth: number | undefined,
+        fallbackAlignment: MiaomaStroke['align'] | undefined
+    ): MiaomaStroke | undefined => {
+        const fill = parseFill(value, path);
+
+        if (!fill) {
+            return undefined;
+        }
+
+        return {
+            ...fill,
+            width: isUnknownRecord(value)
+                ? (readNumber(value.width) ?? fallbackWidth)
+                : fallbackWidth,
+            align: isUnknownRecord(value)
+                ? (readStringUnion(value.align, ['center', 'inner', 'outer']) ??
+                  fallbackAlignment)
+                : fallbackAlignment
+        };
+    };
+
+    const parseStrokeList = (
+        value: unknown,
+        path: string,
+        fallbackWidth: number | undefined,
+        fallbackAlignment: MiaomaStroke['align'] | undefined
+    ): MiaomaStroke[] | undefined => {
+        if (value === undefined) {
+            return undefined;
+        }
+
+        const values = Array.isArray(value) ? value : [value];
+        const strokes = values.flatMap((item, index) => {
+            const stroke = parseStrokeItem(
+                item,
+                Array.isArray(value) ? `${path}[${index}]` : path,
+                fallbackWidth,
+                fallbackAlignment
+            );
+
+            return stroke ? [stroke] : [];
+        });
+
+        return strokes.length > 0 ? strokes : undefined;
+    };
+
     const parseEffect = (value: unknown): MiaomaShadowEffect | undefined => {
         if (!isUnknownRecord(value) || value.type !== 'shadow') {
             return undefined;
@@ -274,30 +382,57 @@ export const strictValidateDesignDocument = (
         };
     };
 
-    const parseCommonNode = (value: Record<string, unknown>, path: string) => ({
-        id:
-            isStrictString(
-                value.id,
-                `${path}.id`,
-                addDiagnostic,
-                'Node id is required.'
-            ) ?? path,
-        name: readString(value.name),
-        opacity: readNumber(value.opacity),
-        x: readNumber(value.x),
-        y: readNumber(value.y),
-        rotation: readNumber(value.rotation),
-        fill: parseFill(value.fill, `${path}.fill`),
-        stroke: parseFill(value.stroke, `${path}.stroke`),
-        strokeWidth: readNumber(value.strokeWidth),
-        strokeAlignment: readStringUnion(value.strokeAlignment, [
+    const parseEffectList = (
+        value: unknown
+    ): MiaomaShadowEffect[] | undefined => {
+        if (value === undefined) {
+            return undefined;
+        }
+
+        const values = Array.isArray(value) ? value : [value];
+        const effects = values.flatMap((item) => {
+            const effect = parseEffect(item);
+
+            return effect ? [effect] : [];
+        });
+
+        return effects.length > 0 ? effects : undefined;
+    };
+
+    const parseCommonNode = (value: Record<string, unknown>, path: string) => {
+        const strokeWidth = readNumber(value.strokeWidth);
+        const strokeAlignment = readStringUnion(value.strokeAlignment, [
             'center',
             'inner',
             'outer'
-        ]),
-        cornerRadius: parseCornerRadius(value.cornerRadius),
-        effect: parseEffect(value.effect)
-    });
+        ]);
+
+        return {
+            id:
+                isStrictString(
+                    value.id,
+                    `${path}.id`,
+                    addDiagnostic,
+                    'Node id is required.'
+                ) ?? path,
+            name: readString(value.name),
+            opacity: readNumber(value.opacity),
+            x: readNumber(value.x),
+            y: readNumber(value.y),
+            rotation: readNumber(value.rotation),
+            fill: parseFillList(value.fill, `${path}.fill`),
+            stroke: parseStrokeList(
+                value.stroke,
+                `${path}.stroke`,
+                strokeWidth,
+                strokeAlignment
+            ),
+            strokeWidth,
+            strokeAlignment,
+            cornerRadius: parseCornerRadius(value.cornerRadius),
+            effect: parseEffectList(value.effect)
+        };
+    };
 
     const parseNode = (value: unknown, path: string): MiaomaDesignNode[] => {
         if (!isUnknownRecord(value)) {

@@ -67,6 +67,18 @@ const resolveStringToken = (value: string, variables: UnknownRecord) => {
 };
 
 const normalizeFill = (value: unknown, variables: UnknownRecord): unknown => {
+    if (Array.isArray(value)) {
+        return value.flatMap((item) => {
+            if (isRecord(item) && item.enabled === false) {
+                return [];
+            }
+
+            const normalizedItem = normalizeFill(item, variables);
+
+            return normalizedItem === undefined ? [] : [normalizedItem];
+        });
+    }
+
     if (typeof value === 'string') {
         return {
             type: 'color',
