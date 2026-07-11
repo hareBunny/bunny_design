@@ -4,36 +4,192 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import { Check, ChevronDown } from 'lucide-react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+
 import { AGENT_TIMELINE_ITEMS } from '../../constants/editor';
 import type { AgentTimelineItem } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
 
 import { PromptDock } from './PromptDock';
 
-const AgentCheckIcon = () => (
-    <svg
-        aria-hidden="true"
-        className="h-[9px] w-[9px] shrink-0 overflow-visible"
-        preserveAspectRatio="none"
-        viewBox="0 0 24 24"
-    >
-        <path d="M20 6l-11 11-5-5 1.5-1.5 3.5 3.5 9.5-9.5z" fill="#12B76A" />
-    </svg>
-);
+type AgentSelectorOption = {
+    id: string;
+    label: string;
+    dotColor: string;
+    isRunning: boolean;
+};
 
-const AgentChevronIcon = () => (
-    <svg
-        aria-hidden="true"
-        className="h-[13px] w-[13px] shrink-0 overflow-visible"
-        preserveAspectRatio="none"
-        viewBox="0 0 24 24"
-    >
-        <path
-            d="M7.41 8.59l4.59 4.58 4.59-4.58 1.41 1.41-6 6-6-6z"
-            fill="#9CA3AF"
-        />
-    </svg>
-);
+const AGENT_SELECTOR_OPTIONS: AgentSelectorOption[] = [
+    {
+        id: 'newton',
+        label: 'Newton',
+        dotColor: '#AFC3ED',
+        isRunning: true
+    },
+    {
+        id: 'mendel',
+        label: 'Mendel',
+        dotColor: '#C3EAD8',
+        isRunning: false
+    }
+];
+
+const DEFAULT_AGENT_ID = AGENT_SELECTOR_OPTIONS[0]?.id ?? 'newton';
+
+const AgentTopControl = () => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [selectedAgentId, setSelectedAgentId] = useState(DEFAULT_AGENT_ID);
+    const controlRef = useRef<HTMLDivElement | null>(null);
+    const listboxId = useId();
+    const selectedAgent = useMemo(
+        () =>
+            AGENT_SELECTOR_OPTIONS.find(({ id }) => id === selectedAgentId) ??
+            AGENT_SELECTOR_OPTIONS[0],
+        [selectedAgentId]
+    );
+    const runningAgentCount = AGENT_SELECTOR_OPTIONS.filter(
+        ({ isRunning }) => isRunning
+    ).length;
+
+    useEffect(() => {
+        if (!isMenuOpen) {
+            return;
+        }
+
+        const handlePointerDown = (event: PointerEvent) => {
+            if (
+                controlRef.current &&
+                !controlRef.current.contains(event.target as Node)
+            ) {
+                setIsMenuOpen(false);
+            }
+        };
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setIsMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('keydown', handleEscape);
+
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown);
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, [isMenuOpen]);
+
+    if (!selectedAgent) {
+        return null;
+    }
+
+    return (
+        <div
+            className="editor-agent-top-control relative z-10 flex h-9 w-full items-center justify-between rounded-[12px] px-[10px]"
+            ref={controlRef}
+        >
+            <div className="flex h-[27px] w-[132px] shrink-0 items-center gap-2">
+                <span className="truncate text-[12px]/[normal] font-normal text-[#828282]">
+                    {runningAgentCount}/{AGENT_SELECTOR_OPTIONS.length} agent
+                    running
+                </span>
+            </div>
+
+            <button
+                aria-controls={listboxId}
+                aria-expanded={isMenuOpen}
+                aria-haspopup="listbox"
+                className="editor-agent-selector-trigger flex h-[27px] w-[130px] shrink-0 cursor-default items-center justify-end gap-[7px] border-0 bg-transparent px-[2px] py-0 text-left"
+                onClick={() => {
+                    setIsMenuOpen((open) => !open);
+                }}
+                onKeyDown={(event) => {
+                    if (
+                        event.key === 'ArrowDown' ||
+                        event.key === 'Enter' ||
+                        event.key === ' '
+                    ) {
+                        event.preventDefault();
+                        setIsMenuOpen(true);
+                    }
+                }}
+                type="button"
+            >
+                <span
+                    aria-hidden="true"
+                    className="h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: selectedAgent.dotColor }}
+                />
+                <span className="truncate text-[12px]/[normal] font-normal text-[#5f6068]">
+                    {selectedAgent.label}
+                </span>
+                <ChevronDown
+                    aria-hidden="true"
+                    className={classNames(
+                        'shrink-0 text-[#6f717a] transition-transform duration-150',
+                        isMenuOpen ? 'rotate-180' : 'rotate-0'
+                    )}
+                    size={14}
+                    strokeWidth={1.9}
+                />
+            </button>
+
+            {isMenuOpen ? (
+                <div
+                    aria-label="Multi agent selector"
+                    className="editor-agent-selector-menu absolute top-[calc(100%+6px)] right-[10px] z-20 w-[148px] overflow-hidden rounded-[14px] border border-[#e8eaee] bg-white p-1.5 shadow-[0_18px_44px_#1118271a]"
+                    id={listboxId}
+                    role="listbox"
+                >
+                    {AGENT_SELECTOR_OPTIONS.map((option) => {
+                        const isSelected = option.id === selectedAgent.id;
+
+                        return (
+                            <button
+                                aria-selected={isSelected}
+                                className={classNames(
+                                    'flex w-full cursor-default items-center justify-between gap-3 rounded-[12px] border-0 px-2.5 py-2 text-left',
+                                    isSelected
+                                        ? 'bg-[#f4f7fb]'
+                                        : 'bg-transparent hover:bg-[#f8fafc]'
+                                )}
+                                key={option.id}
+                                onClick={() => {
+                                    setSelectedAgentId(option.id);
+                                    setIsMenuOpen(false);
+                                }}
+                                role="option"
+                                type="button"
+                            >
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <span
+                                        aria-hidden="true"
+                                        className="h-2 w-2 shrink-0 rounded-full"
+                                        style={{
+                                            backgroundColor: option.dotColor
+                                        }}
+                                    />
+                                    <span className="min-w-0 truncate text-[12px]/[normal] font-medium text-[#202328]">
+                                        {option.label}
+                                    </span>
+                                </span>
+                                {isSelected ? (
+                                    <Check
+                                        aria-hidden="true"
+                                        className="shrink-0 text-[#12b76a]"
+                                        size={14}
+                                        strokeWidth={2.3}
+                                    />
+                                ) : null}
+                            </button>
+                        );
+                    })}
+                </div>
+            ) : null}
+        </div>
+    );
+};
 
 const AgentTitlePill = ({
     height = 24,
@@ -58,13 +214,18 @@ const AgentStatusRow = ({ label }: { label: string }) => (
     >
         <span className="flex min-w-0 items-center gap-1.5">
             <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#e9fff4] text-[#12b76a]">
-                <AgentCheckIcon />
+                <Check aria-hidden="true" size={9} strokeWidth={2.8} />
             </span>
             <span className="min-w-0 truncate text-[12px]/[normal] font-normal">
                 {label}
             </span>
         </span>
-        <AgentChevronIcon />
+        <ChevronDown
+            aria-hidden="true"
+            className="shrink-0 text-[#9ca3af]"
+            size={13}
+            strokeWidth={1.9}
+        />
     </button>
 );
 
@@ -104,12 +265,19 @@ const AgentTimelineNode = ({ item }: { item: AgentTimelineItem }) => {
 };
 
 export const SidebarAgentPanel = () => (
-    <div className="editor-agent-panel flex h-full min-h-0 flex-col justify-between gap-2.5 overflow-hidden py-3 pr-[11px] pl-3">
-        <div className="editor-agent-timeline flex min-h-0 w-[277px] flex-1 flex-col gap-2.5 overflow-y-auto overflow-x-hidden max-[980px]:w-full">
-            {AGENT_TIMELINE_ITEMS.map((item) => (
-                <AgentTimelineNode item={item} key={item.id} />
-            ))}
+    <div className="editor-agent-panel flex h-full min-h-0 flex-col overflow-hidden py-3">
+        <div className="shrink-0 px-3 pr-[11px]">
+            <AgentTopControl />
         </div>
-        <PromptDock variant="agent" />
+        <div className="editor-agent-timeline mt-2.5 min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+            <div className="editor-agent-timeline-stack flex w-full flex-col gap-2.5 px-3 pr-[11px]">
+                {AGENT_TIMELINE_ITEMS.map((item) => (
+                    <AgentTimelineNode item={item} key={item.id} />
+                ))}
+            </div>
+        </div>
+        <div className="shrink-0 px-3 pr-[11px] pt-2.5">
+            <PromptDock variant="agent" />
+        </div>
     </div>
 );

@@ -4,6 +4,8 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import { useEffect, useRef, useState } from 'react';
+
 type PromptDockVariant = 'agent' | 'canvas';
 
 type PromptDockConfig = {
@@ -22,12 +24,16 @@ type PromptDockProps = {
     variant: PromptDockVariant;
 };
 
+const AGENT_PROMPT_MAX_DOCK_HEIGHT = 400;
+const AGENT_PROMPT_MIN_TEXTAREA_HEIGHT = 32;
+const AGENT_PROMPT_MAX_TEXTAREA_HEIGHT = 324;
+
 const PROMPT_DOCK_CONFIG: Record<PromptDockVariant, PromptDockConfig> = {
     agent: {
         rootClassName:
-            'editor-agent-prompt-dock flex h-[104px] w-[277px] shrink-0 flex-col gap-[18px] overflow-hidden rounded-[10px] border border-[#ececee] bg-white p-[18px] shadow-[0_6px_24px_#00000012] max-[980px]:w-full',
+            'editor-agent-prompt-dock flex min-h-[104px] max-h-[400px] w-full shrink-0 flex-col gap-[18px] overflow-hidden rounded-[10px] border border-[#ececee] bg-white px-[18px] pt-[18px] pb-[14px] shadow-[0_6px_24px_#00000012] max-[980px]:w-full',
         inputClassName:
-            'h-8 w-[137px] shrink-0 resize-none border-0 bg-transparent p-0 text-[14px]/[normal] font-normal text-[#202328] outline-none placeholder:text-[#6c6c72]',
+            'min-h-8 w-full min-w-0 shrink-0 resize-none overflow-y-auto border-0 bg-transparent p-0 text-[14px]/[normal] font-normal text-[#202328] outline-none placeholder:text-[#6c6c72]',
         footerClassName: 'flex h-6 w-full items-center justify-between',
         boostClassName: 'text-[14px]/[normal] font-medium text-[#ff8b1f]',
         modelClassName:
@@ -73,17 +79,58 @@ const PromptChevronIcon = () => (
 
 export const PromptDock = ({ variant }: PromptDockProps) => {
     const config = PROMPT_DOCK_CONFIG[variant];
+    const [promptValue, setPromptValue] = useState('');
+    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+    useEffect(() => {
+        if (variant !== 'agent') {
+            return;
+        }
+
+        const textareaElement = textareaRef.current;
+
+        if (!textareaElement) {
+            return;
+        }
+
+        textareaElement.style.height = '0px';
+
+        const nextHeight = Math.min(
+            Math.max(
+                textareaElement.scrollHeight,
+                AGENT_PROMPT_MIN_TEXTAREA_HEIGHT
+            ),
+            AGENT_PROMPT_MAX_TEXTAREA_HEIGHT
+        );
+
+        textareaElement.style.height = `${nextHeight}px`;
+        textareaElement.style.maxHeight = `${AGENT_PROMPT_MAX_TEXTAREA_HEIGHT}px`;
+        textareaElement.style.overflowY =
+            textareaElement.scrollHeight > AGENT_PROMPT_MAX_TEXTAREA_HEIGHT
+                ? 'auto'
+                : 'hidden';
+    }, [promptValue, variant]);
 
     return (
         <section
             aria-label={config.sectionAriaLabel}
             className={config.rootClassName}
+            style={
+                variant === 'agent'
+                    ? { maxHeight: `${AGENT_PROMPT_MAX_DOCK_HEIGHT}px` }
+                    : undefined
+            }
         >
             <textarea
                 aria-label={config.inputAriaLabel}
                 className={config.inputClassName}
+                onChange={(event) => {
+                    setPromptValue(event.target.value);
+                }}
                 placeholder="Design anything..."
+                ref={textareaRef}
                 rows={1}
+                value={promptValue}
             />
             <footer className={config.footerClassName}>
                 <span className={config.boostClassName}>⚡ 6x</span>

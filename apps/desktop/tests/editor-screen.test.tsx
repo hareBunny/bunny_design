@@ -139,6 +139,8 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).toContain(
             '正在检查 /Users/heyi/Downloads/miaoma-crm.pen'
         );
+        expect(markup).toContain('1/2 agent running');
+        expect(markup).toContain('aria-haspopup="listbox"');
         expect(markup).toContain('Checked guidelines');
         expect(markup).toContain('Read variables');
         expect(markup).toContain('Read objects');
@@ -173,9 +175,14 @@ describe('MiaomaEditorScreen', () => {
         expect(agentPanelSource).toContain('font-cn');
         expect(agentPanelSource).toContain('text-[12px]/[normal]');
         expect(agentPanelSource).toContain('text-[12.5px]/[19px]');
+        expect(agentPanelSource).toContain('editor-agent-top-control');
+        expect(agentPanelSource).toContain('editor-agent-selector-menu');
         expect(promptDockSource).toContain('editor-agent-prompt-dock');
-        expect(promptDockSource).toContain('h-[104px]');
-        expect(promptDockSource).toContain('w-[277px]');
+        expect(promptDockSource).toContain('min-h-[104px]');
+        expect(promptDockSource).toContain('max-h-[400px]');
+        expect(promptDockSource).toContain('w-full');
+        expect(promptDockSource).toContain('shrink-0 resize-none');
+        expect(promptDockSource).not.toContain('flex-1 resize-none');
         expect(promptDockSource).toContain('text-[14px]/[normal]');
         expect(promptDockSource).toContain('text-xs text-[#5e5f67]');
     });
@@ -196,9 +203,23 @@ describe('MiaomaEditorScreen', () => {
         expect(agentMarkup).toContain('overflow-x-hidden');
         expect(agentPanelSource).toContain('flex-1');
         expect(agentPanelSource).toContain('shrink-0');
+        expect(agentPanelSource).toContain('editor-agent-timeline-stack');
+        expect(agentPanelSource).toContain('pr-[11px]');
         expect(layersMarkup).toContain('editor-sidebar-body');
         expect(layersMarkup).toContain('overflow-y-auto');
         expect(layersMarkup).toContain('overflow-x-hidden');
+    });
+
+    it('uses a custom multi-agent dropdown instead of a native select', () => {
+        const agentPanelSource = rendererSource(
+            'components/editor/SidebarAgentPanel.tsx'
+        );
+
+        expect(agentPanelSource).toContain('aria-haspopup="listbox"');
+        expect(agentPanelSource).toContain('role="listbox"');
+        expect(agentPanelSource).toContain('role="option"');
+        expect(agentPanelSource).toContain('editor-agent-selector-menu');
+        expect(agentPanelSource).not.toContain('<select');
     });
 
     it('renders the detailed right inspector controls from the Pencil frame', () => {
