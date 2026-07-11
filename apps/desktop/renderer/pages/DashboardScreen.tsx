@@ -10,6 +10,7 @@ import {
     FileJson,
     FolderOpen,
     Import,
+    PanelsTopLeft,
     PenLine,
     Plus
 } from 'lucide-react';
@@ -45,6 +46,11 @@ const IMPORT_ACTIONS: {
         kind: 'pencil',
         label: 'Import Pencil (.pen)',
         Icon: PenLine
+    },
+    {
+        kind: 'figma',
+        label: 'Import Figma (.fig)',
+        Icon: PanelsTopLeft
     }
 ];
 

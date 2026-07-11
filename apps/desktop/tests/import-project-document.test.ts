@@ -142,7 +142,8 @@ describe('project import documents', () => {
     it('uses focused file dialog filters for each import kind', () => {
         const expectations: Record<MiaomaProjectImportKind, string[]> = {
             json: ['json'],
-            pencil: ['pen']
+            pencil: ['pen'],
+            figma: ['fig']
         };
 
         for (const [kind, extensions] of Object.entries(expectations) as [
@@ -224,5 +225,42 @@ describe('project import documents', () => {
                 })
             ])
         );
+    });
+
+    it('imports the course intro Figma file as a Miaoma design document', async () => {
+        const document = await readProjectImportDocument(
+            path.resolve(
+                testDirectory,
+                '../../../miaoma-design-course-intro.fig'
+            )
+        );
+
+        expect(document.version).toBe('2.14');
+        expect(document.children).toHaveLength(5);
+        expect(document.children.map((node) => node.name)).toEqual(
+            expect.arrayContaining([
+                '01-cover',
+                '02-intro',
+                '03-service',
+                '04-updates',
+                '05-projects'
+            ])
+        );
+        expect(findNodeByName(document.children, '核心技术')).toMatchObject({
+            type: 'text',
+            content: '核心技术 '
+        });
+    });
+
+    it('uses a .fig file filter for Figma imports', () => {
+        expect(getProjectImportDialogOptions('figma')).toMatchObject({
+            title: 'Import Figma',
+            properties: ['openFile'],
+            filters: [
+                {
+                    extensions: ['fig']
+                }
+            ]
+        });
     });
 });

@@ -6,11 +6,14 @@
 
 import type { OpenDialogOptions } from 'electron';
 import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 
 import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schema';
 import { strictValidateDesignDocument } from '@miaoma-design-ai/miaoma-design-schema';
 
 import type { MiaomaProjectImportKind } from '../../shared/projects';
+
+import { readFigmaDesignDocument } from './figmaImport';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -32,6 +35,16 @@ const PROJECT_IMPORT_DIALOG_OPTIONS = {
             {
                 name: 'Pencil Files',
                 extensions: ['pen']
+            }
+        ]
+    },
+    figma: {
+        title: 'Import Figma',
+        properties: ['openFile'],
+        filters: [
+            {
+                name: 'Figma Files',
+                extensions: ['fig']
             }
         ]
     }
@@ -149,10 +162,18 @@ export const readProjectImportDocument = async (
 ): Promise<MiaomaDesignDocument> => {
     let input: unknown;
 
-    try {
-        input = JSON.parse(await readFile(filePath, 'utf8'));
-    } catch {
-        throw new Error('Selected file is not valid JSON.');
+    if (path.extname(filePath).toLowerCase() === '.fig') {
+        try {
+            input = await readFigmaDesignDocument(filePath);
+        } catch {
+            throw new Error('Selected file is not a supported Figma document.');
+        }
+    } else {
+        try {
+            input = JSON.parse(await readFile(filePath, 'utf8'));
+        } catch {
+            throw new Error('Selected file is not valid JSON.');
+        }
     }
 
     const validation = strictValidateDesignDocument(

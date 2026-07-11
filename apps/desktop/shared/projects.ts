@@ -19,7 +19,7 @@ export const MIAOMA_PROJECT_IPC_CHANNELS = {
     delete: 'miaoma:projects:delete'
 } as const;
 
-export const MIAOMA_PROJECT_IMPORT_KINDS = ['json', 'pencil'] as const;
+export const MIAOMA_PROJECT_IMPORT_KINDS = ['json', 'pencil', 'figma'] as const;
 
 export type MiaomaProjectImportKind =
     (typeof MIAOMA_PROJECT_IMPORT_KINDS)[number];

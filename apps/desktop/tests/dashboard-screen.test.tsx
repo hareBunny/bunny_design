@@ -290,7 +290,7 @@ describe('DashboardScreen', () => {
         });
     });
 
-    it('imports local JSON and Pencil files from the Dashboard dropdown', async () => {
+    it('imports local JSON, Pencil, and Figma files from the Dashboard dropdown', async () => {
         listProjects.mockResolvedValue({
             success: true,
             projects: []
@@ -308,7 +308,11 @@ describe('DashboardScreen', () => {
 
         expect(
             screen.getAllByRole('menuitem').map((item) => item.textContent)
-        ).toEqual(['Import JSON', 'Import Pencil (.pen)']);
+        ).toEqual([
+            'Import JSON',
+            'Import Pencil (.pen)',
+            'Import Figma (.fig)'
+        ]);
 
         await userEvent.click(
             screen.getByRole('menuitem', { name: 'Import JSON' })
@@ -326,7 +330,15 @@ describe('DashboardScreen', () => {
             expect(importFromFile).toHaveBeenCalledWith('pencil');
         });
 
-        expect(importFromFile).toHaveBeenCalledTimes(2);
+        await userEvent.click(screen.getByRole('button', { name: 'Import' }));
+        await userEvent.click(
+            screen.getByRole('menuitem', { name: 'Import Figma (.fig)' })
+        );
+        await waitFor(() => {
+            expect(importFromFile).toHaveBeenCalledWith('figma');
+        });
+
+        expect(importFromFile).toHaveBeenCalledTimes(3);
     });
 
     it('does not show an error when a project import is canceled', async () => {
