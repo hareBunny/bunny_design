@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "esnext",
+        "strict": true,
+        "skipLibCheck": true,
+        "moduleResolution": "bundler",
+        "types": ["vitest/globals"]
+    },
+    "include": ["src/**/*", "tests/**/*", "tsdown.config.ts"]
+}
