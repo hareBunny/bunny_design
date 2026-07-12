@@ -8,6 +8,7 @@ import type { ReactElement } from 'react';
 
 import type {
     MiaomaDesignNode as DesignNode,
+    MiaomaDesignVariables as DesignVariables,
     MiaomaLayoutDirection as LayoutDirection
 } from '@miaoma-design-ai/miaoma-design-schema';
 
@@ -31,6 +32,7 @@ export type NodeRendererProps<TNode extends DesignNode = DesignNode> = {
     resolveAsset: AssetResolver;
     selectedNodeId?: string | null;
     topLevelBounds?: Bounds;
+    variables?: DesignVariables;
 };
 
 export type NodeRenderer = (props: NodeRendererProps) => ReactElement;

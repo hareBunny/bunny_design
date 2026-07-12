@@ -11,7 +11,8 @@ import type {
     MiaomaFill,
     MiaomaFrameNode,
     MiaomaShadowEffect,
-    MiaomaStroke
+    MiaomaStroke,
+    MiaomaStrokeAlign
 } from '@miaoma-design-ai/miaoma-design-schema';
 
 import {
@@ -300,9 +301,7 @@ const readPaints = (
     return paints.length > 0 ? paints : undefined;
 };
 
-const readStrokeAlignment = (
-    value: unknown
-): MiaomaStroke['align'] | undefined => {
+const readStrokeAlignment = (value: unknown): MiaomaStrokeAlign | undefined => {
     if (value === 'INSIDE') {
         return 'inner';
     }
@@ -327,7 +326,9 @@ const readStrokes = (
     const width = readFiniteNumber(node.strokeWeight);
     const align = readStrokeAlignment(node.strokeAlign);
 
-    return fills.map((fill) => ({ ...fill, width, align }));
+    return fills.flatMap((fill) =>
+        typeof fill === 'string' ? [] : [{ ...fill, width, align }]
+    );
 };
 
 const readEffects = (value: unknown): MiaomaShadowEffect[] | undefined => {
@@ -508,8 +509,14 @@ const buildDocument = (
             rotation: bounds.rotation,
             fill: readPaints(node.fillPaints, images),
             stroke,
-            strokeWidth: firstStroke?.width,
-            strokeAlignment: firstStroke?.align,
+            strokeWidth:
+                typeof firstStroke === 'string'
+                    ? undefined
+                    : firstStroke?.width,
+            strokeAlignment:
+                typeof firstStroke === 'string'
+                    ? undefined
+                    : firstStroke?.align,
             effect: readEffects(node.effects),
             cornerRadius: readCornerRadius(node)
         };

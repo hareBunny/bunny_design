@@ -75,7 +75,8 @@ const CanvasTextNode = ({
     parentLayout,
     resolveAsset,
     selectedNodeId,
-    topLevelBounds
+    topLevelBounds,
+    variables
 }: NodeRendererProps<TextNode>) => {
     const lineHeight =
         node.lineHeight && node.fontSize
@@ -89,8 +90,8 @@ const CanvasTextNode = ({
             parentLayout,
             topLevelBounds
         }),
-        ...getVisualStyle(node, resolveAsset, 'text'),
-        fontFamily: toFontFamily(node.fontFamily),
+        ...getVisualStyle(node, resolveAsset, 'text', variables),
+        fontFamily: toFontFamily(node.fontFamily, variables),
         fontSize: node.fontSize === undefined ? undefined : px(node.fontSize),
         fontWeight: node.fontWeight,
         lineHeight,
@@ -122,7 +123,8 @@ const CanvasRectangleNode = ({
     parentLayout,
     resolveAsset,
     selectedNodeId,
-    topLevelBounds
+    topLevelBounds,
+    variables
 }: NodeRendererProps<RectangleNode>) => (
     <div
         className="editor-document-node editor-document-rectangle"
@@ -137,7 +139,7 @@ const CanvasRectangleNode = ({
                 parentLayout,
                 topLevelBounds
             }),
-            ...getVisualStyle(node, resolveAsset, 'shape')
+            ...getVisualStyle(node, resolveAsset, 'shape', variables)
         }}
     />
 );
@@ -147,7 +149,8 @@ const CanvasEllipseNode = ({
     parentLayout,
     resolveAsset,
     selectedNodeId,
-    topLevelBounds
+    topLevelBounds,
+    variables
 }: NodeRendererProps<EllipseNode>) => (
     <div
         className="editor-document-node editor-document-ellipse"
@@ -162,7 +165,7 @@ const CanvasEllipseNode = ({
                 parentLayout,
                 topLevelBounds
             }),
-            ...getVisualStyle(node, resolveAsset, 'shape'),
+            ...getVisualStyle(node, resolveAsset, 'shape', variables),
             borderRadius: '50%'
         }}
     />
@@ -172,11 +175,12 @@ const CanvasIconNode = ({
     node,
     parentLayout,
     selectedNodeId,
-    topLevelBounds
+    topLevelBounds,
+    variables
 }: NodeRendererProps<IconNode>) => {
     const Icon =
         node.library === 'lucide' ? LUCIDE_ICONS[node.icon] : undefined;
-    const color = getColorFillValue(node.fill) ?? 'currentColor';
+    const color = getColorFillValue(node.fill, variables) ?? 'currentColor';
     const style: CSSProperties = {
         ...getNodeBoxStyle({
             node,
@@ -221,7 +225,8 @@ const CanvasFrameNode = ({
     parentLayout,
     resolveAsset,
     selectedNodeId,
-    topLevelBounds
+    topLevelBounds,
+    variables
 }: NodeRendererProps<FrameNode>) => {
     const flowLayout = getFlowLayout(node.layout);
     const childParentLayout: ParentLayout = flowLayout ?? 'absolute';
@@ -234,7 +239,7 @@ const CanvasFrameNode = ({
             parentLayout,
             topLevelBounds
         }),
-        ...getVisualStyle(node, resolveAsset, 'shape'),
+        ...getVisualStyle(node, resolveAsset, 'shape', variables),
         alignItems: flowLayout ? toAlignItems(node.alignItems) : undefined,
         display: flowLayout ? 'flex' : undefined,
         flexDirection:
@@ -269,6 +274,7 @@ const CanvasFrameNode = ({
                     parentLayout={childParentLayout}
                     resolveAsset={resolveAsset}
                     selectedNodeId={selectedNodeId}
+                    variables={variables}
                 />
             ))}
         </div>
@@ -291,7 +297,8 @@ export const CanvasRenderNode = ({
     parentLayout,
     resolveAsset,
     selectedNodeId,
-    topLevelBounds
+    topLevelBounds,
+    variables
 }: NodeRendererProps) => {
     const Renderer = nodeRenderers[node.type];
 
@@ -305,6 +312,7 @@ export const CanvasRenderNode = ({
             resolveAsset={resolveAsset}
             selectedNodeId={selectedNodeId}
             topLevelBounds={topLevelBounds}
+            variables={variables}
         />
     );
 };

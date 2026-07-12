@@ -309,6 +309,7 @@ export const CanvasDocumentRenderer = ({
                     resolveAsset={resolveAsset}
                     selectedNodeId={selectedNodeId}
                     topLevelBounds={bounds}
+                    variables={document.variables}
                 />
             ))}
             {renderSelectionOverlay ? (

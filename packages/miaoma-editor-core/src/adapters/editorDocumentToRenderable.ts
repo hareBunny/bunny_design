@@ -22,6 +22,10 @@ const toFill = (fill: FillItem | undefined): MiaomaFill | undefined => {
         return undefined;
     }
 
+    if (fill.type === 'variable') {
+        return fill.reference;
+    }
+
     if (fill.type === 'color') {
         return { type: 'color', color: fill.color };
     }
@@ -49,6 +53,10 @@ const toStrokeFill = (
 ): MiaomaStroke | undefined => {
     if (!stroke || !stroke.enabled) {
         return undefined;
+    }
+
+    if (stroke.type === 'variable') {
+        return stroke.reference;
     }
 
     if (stroke.type === 'color') {
@@ -118,7 +126,9 @@ const toRenderableNode = (node: EditorNode): MiaomaDesignNode => {
     const fill = toStyleArray(node.fills, toFill);
     const stroke = toStyleArray(node.strokes, toStrokeFill);
     const effect = toStyleArray(node.effects, toEffect);
-    const firstStroke = stroke?.[0];
+    const firstStroke = node.strokes.find((item) => item.enabled);
+    const firstStrokeWidth = firstStroke?.width;
+    const firstStrokeAlignment = firstStroke?.align;
 
     switch (node.type) {
         case 'frame': {
@@ -141,8 +151,8 @@ const toRenderableNode = (node: EditorNode): MiaomaDesignNode => {
                 cornerRadius: node.cornerRadius,
                 fill,
                 stroke,
-                strokeWidth: firstStroke?.width,
-                strokeAlignment: firstStroke?.align,
+                strokeWidth: firstStrokeWidth,
+                strokeAlignment: firstStrokeAlignment,
                 effect,
                 children: node.children.map(toRenderableNode)
             };
@@ -163,8 +173,8 @@ const toRenderableNode = (node: EditorNode): MiaomaDesignNode => {
                 cornerRadius: node.cornerRadius,
                 fill,
                 stroke,
-                strokeWidth: firstStroke?.width,
-                strokeAlignment: firstStroke?.align,
+                strokeWidth: firstStrokeWidth,
+                strokeAlignment: firstStrokeAlignment,
                 effect
             };
         case 'ellipse':
@@ -180,8 +190,8 @@ const toRenderableNode = (node: EditorNode): MiaomaDesignNode => {
                 height: node.height ?? 0,
                 fill,
                 stroke,
-                strokeWidth: firstStroke?.width,
-                strokeAlignment: firstStroke?.align,
+                strokeWidth: firstStrokeWidth,
+                strokeAlignment: firstStrokeAlignment,
                 effect
             };
         case 'icon':
@@ -199,8 +209,8 @@ const toRenderableNode = (node: EditorNode): MiaomaDesignNode => {
                 library: node.library,
                 fill,
                 stroke,
-                strokeWidth: firstStroke?.width,
-                strokeAlignment: firstStroke?.align,
+                strokeWidth: firstStrokeWidth,
+                strokeAlignment: firstStrokeAlignment,
                 effect
             };
         case 'text':
@@ -223,8 +233,8 @@ const toRenderableNode = (node: EditorNode): MiaomaDesignNode => {
                 lineHeight: node.lineHeight,
                 fill,
                 stroke,
-                strokeWidth: firstStroke?.width,
-                strokeAlignment: firstStroke?.align,
+                strokeWidth: firstStrokeWidth,
+                strokeAlignment: firstStrokeAlignment,
                 effect
             };
     }
@@ -235,5 +245,6 @@ export const editorDocumentToRenderable = (
 ): MiaomaDesignDocument => ({
     version: document.version,
     fileToken: document.fileToken,
+    variables: document.variables,
     children: document.children.map(toRenderableNode)
 });

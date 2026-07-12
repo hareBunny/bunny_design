@@ -12,7 +12,8 @@ import type {
 import type {
     MiaomaFill,
     MiaomaShadowEffect,
-    MiaomaStroke
+    MiaomaStroke,
+    MiaomaStrokeAlign
 } from '../schema/fill';
 import type { MiaomaCornerRadius, MiaomaSpacing } from '../schema/layout';
 import type {
@@ -23,6 +24,11 @@ import type {
     MiaomaRectangleNode,
     MiaomaTextNode
 } from '../schema/node';
+import {
+    isMiaomaVariableReference,
+    type MiaomaDesignVariable,
+    type MiaomaDesignVariables
+} from '../schema/variable';
 
 import type {
     MiaomaDesignDiagnostic,
@@ -149,6 +155,11 @@ const isStrictDimension = (
     return dimension;
 };
 
+const HEX_COLOR_PATTERN =
+    /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+
+const isColorLiteral = (value: string) => HEX_COLOR_PATTERN.test(value);
+
 export const strictValidateDesignDocument = (
     input: unknown
 ): MiaomaStrictValidationResult => {
@@ -159,6 +170,103 @@ export const strictValidateDesignDocument = (
         message: string
     ) => {
         diagnostics.push({ code, path, message });
+    };
+
+    const parseVariables = (
+        value: unknown
+    ): MiaomaDesignVariables | undefined => {
+        if (value === undefined) {
+            return undefined;
+        }
+
+        if (!isUnknownRecord(value)) {
+            addDiagnostic(
+                'invalid_variable',
+                '$.variables',
+                'Variables must be an object.'
+            );
+            return undefined;
+        }
+
+        const parsed: MiaomaDesignVariables = {};
+
+        for (const [name, definition] of Object.entries(value)) {
+            const path = `$.variables.${name}`;
+
+            if (!isUnknownRecord(definition)) {
+                addDiagnostic(
+                    'invalid_variable',
+                    path,
+                    'Variable definition must be an object.'
+                );
+                continue;
+            }
+
+            const type = readString(definition.type);
+            const variableValue = definition.value;
+
+            if (type === 'color' || type === 'string') {
+                if (typeof variableValue === 'string') {
+                    parsed[name] = { type, value: variableValue };
+                    continue;
+                }
+            } else if (type === 'number') {
+                const numberValue = readNumber(variableValue);
+
+                if (numberValue !== undefined) {
+                    parsed[name] = { type, value: numberValue };
+                    continue;
+                }
+            }
+
+            addDiagnostic(
+                'invalid_variable',
+                path,
+                'Variable must use a supported type and matching value.'
+            );
+        }
+
+        return parsed;
+    };
+
+    const variables = parseVariables(
+        isUnknownRecord(input) ? input.variables : undefined
+    );
+
+    const validateVariableReference = <
+        TType extends MiaomaDesignVariable['type']
+    >(
+        value: string,
+        expectedType: TType,
+        path: string
+    ): string => {
+        if (!isMiaomaVariableReference(value)) {
+            return value;
+        }
+
+        const variable = variables?.[value.slice(1)];
+
+        if (!variable || variable.type !== expectedType) {
+            addDiagnostic(
+                'invalid_variable',
+                path,
+                `Variable reference "${value}" must resolve to a ${expectedType} variable.`
+            );
+        }
+
+        return value;
+    };
+
+    const parseVariableString = (
+        value: unknown,
+        path: string,
+        expectedType: Extract<MiaomaDesignVariable['type'], 'string'>
+    ) => {
+        const stringValue = readString(value);
+
+        return stringValue === undefined
+            ? undefined
+            : validateVariableReference(stringValue, expectedType, path);
     };
 
     const parseFill = (
@@ -175,10 +283,19 @@ export const strictValidateDesignDocument = (
         }
 
         if (typeof value === 'string') {
+            if (isMiaomaVariableReference(value)) {
+                validateVariableReference(value, 'color', path);
+                return value;
+            }
+
+            if (isColorLiteral(value)) {
+                return { type: 'color', color: value };
+            }
+
             addDiagnostic(
                 'invalid_fill',
                 path,
-                'Fill must use the object form in strict mode.'
+                'String fills must be color literals or variable references.'
             );
             return undefined;
         }
@@ -189,7 +306,14 @@ export const strictValidateDesignDocument = (
         }
 
         if (value.type === 'color' && readString(value.color)) {
-            return { type: 'color', color: readString(value.color)! };
+            return {
+                type: 'color',
+                color: validateVariableReference(
+                    readString(value.color)!,
+                    'color',
+                    `${path}.color`
+                )
+            };
         }
 
         const fillType = readString(value.type);
@@ -227,7 +351,16 @@ export const strictValidateDesignDocument = (
                           return [];
                       }
 
-                      return [{ color, position }];
+                      return [
+                          {
+                              color: validateVariableReference(
+                                  color,
+                                  'color',
+                                  `${path}.colors[${index}].color`
+                              ),
+                              position
+                          }
+                      ];
                   })
                 : [];
 
@@ -313,12 +446,16 @@ export const strictValidateDesignDocument = (
         value: unknown,
         path: string,
         fallbackWidth: number | undefined,
-        fallbackAlignment: MiaomaStroke['align'] | undefined
+        fallbackAlignment: MiaomaStrokeAlign | undefined
     ): MiaomaStroke | undefined => {
         const fill = parseFill(value, path);
 
         if (!fill) {
             return undefined;
+        }
+
+        if (typeof fill === 'string') {
+            return fill;
         }
 
         return {
@@ -337,7 +474,7 @@ export const strictValidateDesignDocument = (
         value: unknown,
         path: string,
         fallbackWidth: number | undefined,
-        fallbackAlignment: MiaomaStroke['align'] | undefined
+        fallbackAlignment: MiaomaStrokeAlign | undefined
     ): MiaomaStroke[] | undefined => {
         if (value === undefined) {
             return undefined;
@@ -358,7 +495,10 @@ export const strictValidateDesignDocument = (
         return strokes.length > 0 ? strokes : undefined;
     };
 
-    const parseEffect = (value: unknown): MiaomaShadowEffect | undefined => {
+    const parseEffect = (
+        value: unknown,
+        path: string
+    ): MiaomaShadowEffect | undefined => {
         if (!isUnknownRecord(value) || value.type !== 'shadow') {
             return undefined;
         }
@@ -371,7 +511,7 @@ export const strictValidateDesignDocument = (
         return {
             type: 'shadow',
             shadowType: readStringUnion(value.shadowType, ['inner', 'outer']),
-            color,
+            color: validateVariableReference(color, 'color', `${path}.color`),
             offset: isUnknownRecord(value.offset)
                 ? {
                       x: readNumber(value.offset.x) ?? 0,
@@ -383,20 +523,37 @@ export const strictValidateDesignDocument = (
     };
 
     const parseEffectList = (
-        value: unknown
+        value: unknown,
+        path: string
     ): MiaomaShadowEffect[] | undefined => {
         if (value === undefined) {
             return undefined;
         }
 
         const values = Array.isArray(value) ? value : [value];
-        const effects = values.flatMap((item) => {
-            const effect = parseEffect(item);
+        const effects = values.flatMap((item, index) => {
+            const effect = parseEffect(
+                item,
+                Array.isArray(value) ? `${path}[${index}]` : path
+            );
 
             return effect ? [effect] : [];
         });
 
         return effects.length > 0 ? effects : undefined;
+    };
+
+    const parseVariableCornerRadius = (value: unknown, path: string) => {
+        if (typeof value !== 'string') {
+            return parseCornerRadius(value);
+        }
+
+        if (!isMiaomaVariableReference(value)) {
+            return undefined;
+        }
+
+        validateVariableReference(value, 'number', path);
+        return value;
     };
 
     const parseCommonNode = (value: Record<string, unknown>, path: string) => {
@@ -429,8 +586,11 @@ export const strictValidateDesignDocument = (
             ),
             strokeWidth,
             strokeAlignment,
-            cornerRadius: parseCornerRadius(value.cornerRadius),
-            effect: parseEffectList(value.effect)
+            cornerRadius: parseVariableCornerRadius(
+                value.cornerRadius,
+                `${path}.cornerRadius`
+            ),
+            effect: parseEffectList(value.effect, `${path}.effect`)
         };
     };
 
@@ -569,7 +729,11 @@ export const strictValidateDesignDocument = (
                         'right',
                         'justify'
                     ]),
-                    fontFamily: readString(value.fontFamily),
+                    fontFamily: parseVariableString(
+                        value.fontFamily,
+                        `${path}.fontFamily`,
+                        'string'
+                    ),
                     fontSize: readNumber(value.fontSize),
                     fontWeight: readString(value.fontWeight),
                     lineHeight: readNumber(value.lineHeight)
@@ -611,6 +775,7 @@ export const strictValidateDesignDocument = (
     const document: MiaomaDesignDocument = {
         version: version ?? 'unknown',
         fileToken: readString(input.fileToken),
+        variables,
         children: Array.isArray(input.children)
             ? input.children.flatMap((child, index) =>
                   parseNode(child, `$.children[${index}]`)

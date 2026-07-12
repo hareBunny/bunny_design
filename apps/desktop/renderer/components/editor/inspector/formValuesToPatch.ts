@@ -70,7 +70,7 @@ const parseCornerRadiusValue = (value: string) => {
 };
 
 const isCornerRadiusEqual = (
-    left: number | [number, number, number, number] | undefined,
+    left: Extract<EditorNode, { type: 'frame' }>['cornerRadius'],
     right: number | [number, number, number, number] | undefined
 ) => {
     if (Array.isArray(left) || Array.isArray(right)) {

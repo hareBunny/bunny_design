@@ -40,7 +40,16 @@ type EditorImagePaint = {
     mode: 'fill' | 'fit' | 'stretch';
 };
 
-type EditorPaint = EditorColorPaint | EditorGradientPaint | EditorImagePaint;
+type EditorVariablePaint = {
+    type: 'variable';
+    reference: MiaomaVariableReference;
+};
+
+type EditorPaint =
+    | EditorColorPaint
+    | EditorGradientPaint
+    | EditorImagePaint
+    | EditorVariablePaint;
 
 export type FillItem = EditorStyleItemBase & EditorPaint;
 
@@ -64,3 +73,4 @@ export type EditorStyleArrayField = 'fills' | 'strokes' | 'effects';
 export type EditorStyleItem = EffectItem | FillItem | StrokeItem;
 
 export type EditorStyleItemPatch = Partial<EditorStyleItem>;
+import type { MiaomaVariableReference } from '@miaoma-design-ai/miaoma-design-schema';

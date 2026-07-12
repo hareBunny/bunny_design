@@ -278,7 +278,62 @@ describe('miaoma design schema validation', () => {
         });
     });
 
-    it('rejects string fills in strict mode', () => {
+    it('preserves typed variables and their supported references', () => {
+        const result = strictValidateDesignDocument({
+            version: '2.14',
+            variables: {
+                surface: { type: 'color', value: '#ffffff' },
+                radius: { type: 'number', value: 8 },
+                body: { type: 'string', value: 'Inter' }
+            },
+            children: [
+                {
+                    type: 'frame',
+                    id: 'root',
+                    width: 100,
+                    height: 100,
+                    fill: '$surface',
+                    cornerRadius: '$radius',
+                    children: [
+                        {
+                            type: 'text',
+                            id: 'label',
+                            content: 'Variables',
+                            fill: '#101010',
+                            fontFamily: '$body'
+                        }
+                    ]
+                }
+            ]
+        });
+
+        expect(result.success).toBe(true);
+        if (!result.success) {
+            throw new Error(JSON.stringify(result.diagnostics, null, 2));
+        }
+
+        expect(result.document).toMatchObject({
+            variables: {
+                surface: { type: 'color', value: '#ffffff' },
+                radius: { type: 'number', value: 8 },
+                body: { type: 'string', value: 'Inter' }
+            },
+            children: [
+                {
+                    fill: ['$surface'],
+                    cornerRadius: '$radius',
+                    children: [
+                        {
+                            fill: [{ type: 'color', color: '#101010' }],
+                            fontFamily: '$body'
+                        }
+                    ]
+                }
+            ]
+        });
+    });
+
+    it('rejects unsupported string fills in strict mode', () => {
         const result = strictValidateDesignDocument({
             version: '2.14',
             children: [
@@ -289,7 +344,7 @@ describe('miaoma design schema validation', () => {
                     y: 0,
                     width: 10,
                     height: 10,
-                    fill: '#ffffff'
+                    fill: 'not-a-color-token'
                 }
             ]
         } satisfies MiaomaDesignDocument | Record<string, unknown>);

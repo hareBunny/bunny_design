@@ -9,6 +9,7 @@ import type { CSSProperties } from 'react';
 import type {
     MiaomaAlignItems as AlignItems,
     MiaomaDesignNode as DesignNode,
+    MiaomaDesignVariables as DesignVariables,
     MiaomaDimension as Dimension,
     MiaomaFill as Fill,
     MiaomaFrameNode as FrameNode,
@@ -18,6 +19,7 @@ import type {
     MiaomaSpacing as Spacing,
     MiaomaStroke as Stroke
 } from '@miaoma-design-ai/miaoma-design-schema';
+import { isMiaomaVariableReference } from '@miaoma-design-ai/miaoma-design-schema';
 
 import {
     getRenderOriginFromAabb,
@@ -73,21 +75,64 @@ const escapeAssetUrl = (url: string) => url.replaceAll('"', '\\"');
 const quoteFontFamily = (fontFamily: string) =>
     `'${fontFamily.replaceAll("'", "\\'")}'`;
 
-export const toFontFamily = (fontFamily?: string) => {
-    if (!fontFamily) {
+const resolveVariableValue = (
+    value: string | undefined,
+    variables: DesignVariables | undefined,
+    expectedType: 'color' | 'string'
+) => {
+    if (!value || !isMiaomaVariableReference(value)) {
+        return value;
+    }
+
+    const variable = variables?.[value.slice(1)];
+
+    return variable?.type === expectedType ? variable.value : undefined;
+};
+
+const resolveNumberVariable = (
+    value: string,
+    variables: DesignVariables | undefined
+) => {
+    const variable = variables?.[value.slice(1)];
+
+    return variable?.type === 'number' ? variable.value : undefined;
+};
+
+export const toFontFamily = (
+    fontFamily?: string,
+    variables?: DesignVariables
+) => {
+    const resolvedFontFamily = resolveVariableValue(
+        fontFamily,
+        variables,
+        'string'
+    );
+
+    if (!resolvedFontFamily) {
         return undefined;
     }
 
-    if (fontFamily === 'Alimama ShuHeiTi' || fontFamily === 'Heiti SC') {
-        return `${quoteFontFamily(fontFamily)}, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif`;
+    if (
+        resolvedFontFamily === 'Alimama ShuHeiTi' ||
+        resolvedFontFamily === 'Heiti SC'
+    ) {
+        return `${quoteFontFamily(resolvedFontFamily)}, 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif`;
     }
 
-    return `${quoteFontFamily(fontFamily)}, system-ui, sans-serif`;
+    return `${quoteFontFamily(resolvedFontFamily)}, system-ui, sans-serif`;
 };
 
-const toGradientStops = (fill: Extract<Fill, { type: 'gradient' }>) =>
+type GradientFill = Extract<Fill, { type: 'gradient' }>;
+
+const toGradientStops = (
+    fill: GradientFill,
+    variables: DesignVariables | undefined
+) =>
     fill.colors
-        .map((stop) => `${stop.color} ${stop.position * 100}%`)
+        .map(
+            (stop) =>
+                `${resolveVariableValue(stop.color, variables, 'color') ?? 'transparent'} ${stop.position * 100}%`
+        )
         .join(', ');
 
 const toGradientCenter = (fill: Extract<Fill, { type: 'gradient' }>) => {
@@ -97,18 +142,46 @@ const toGradientCenter = (fill: Extract<Fill, { type: 'gradient' }>) => {
     return `${x * 100}% ${y * 100}%`;
 };
 
-const toGradientValue = (fill: Extract<Fill, { type: 'gradient' }>) =>
+const toGradientValue = (
+    fill: GradientFill,
+    variables: DesignVariables | undefined
+) =>
     fill.gradientType === 'radial'
-        ? `radial-gradient(circle at ${toGradientCenter(fill)}, ${toGradientStops(fill)})`
-        : `linear-gradient(${toCssGradientAngle(fill.rotation)}, ${toGradientStops(fill)})`;
+        ? `radial-gradient(circle at ${toGradientCenter(fill)}, ${toGradientStops(fill, variables)})`
+        : `linear-gradient(${toCssGradientAngle(fill.rotation)}, ${toGradientStops(fill, variables)})`;
 
-export const getColorFillValue = (fill: Fill | Fill[] | undefined) =>
-    toStyleArray(fill).find((item) => item.type === 'color')?.color;
+export const getColorFillValue = (
+    fill: Fill | Fill[] | undefined,
+    variables?: DesignVariables
+) => {
+    for (const item of toStyleArray(fill)) {
+        if (typeof item === 'string') {
+            const color = resolveVariableValue(item, variables, 'color');
+
+            if (color) {
+                return color;
+            }
+
+            continue;
+        }
+
+        if (item.type === 'color') {
+            const color = resolveVariableValue(item.color, variables, 'color');
+
+            if (color) {
+                return color;
+            }
+        }
+    }
+
+    return undefined;
+};
 
 const getFillStyle = (
     fill: Fill | Fill[] | undefined,
     resolveAsset: AssetResolver,
-    target: 'shape' | 'text'
+    target: 'shape' | 'text',
+    variables: DesignVariables | undefined
 ): CSSProperties => {
     const fills = toStyleArray(fill);
 
@@ -119,13 +192,21 @@ const getFillStyle = (
     if (target === 'text') {
         const firstFill = fills[0];
 
+        if (typeof firstFill === 'string') {
+            const color = resolveVariableValue(firstFill, variables, 'color');
+
+            return color ? { color } : {};
+        }
+
         if (firstFill.type === 'color') {
-            return { color: firstFill.color };
+            return {
+                color: resolveVariableValue(firstFill.color, variables, 'color')
+            };
         }
 
         if (firstFill.type === 'gradient') {
             return {
-                backgroundImage: toGradientValue(firstFill),
+                backgroundImage: toGradientValue(firstFill, variables),
                 backgroundRepeat: 'no-repeat',
                 backgroundSize: '100% 100%',
                 WebkitBackgroundClip: 'text',
@@ -149,13 +230,22 @@ const getFillStyle = (
     let backgroundColor: string | undefined;
 
     for (const item of fills) {
+        if (typeof item === 'string') {
+            backgroundColor = resolveVariableValue(item, variables, 'color');
+            continue;
+        }
+
         if (item.type === 'color') {
-            backgroundColor = item.color;
+            backgroundColor = resolveVariableValue(
+                item.color,
+                variables,
+                'color'
+            );
             continue;
         }
 
         if (item.type === 'gradient') {
-            backgroundImages.push(toGradientValue(item));
+            backgroundImages.push(toGradientValue(item, variables));
             backgroundSizes.push('100% 100%');
             backgroundPositions.push('center');
             continue;
@@ -183,18 +273,38 @@ const getFillStyle = (
 
 const getStrokeStyle = (
     stroke: Stroke | Stroke[] | undefined,
-    strokeWidth: number | undefined
+    strokeWidth: number | undefined,
+    variables: DesignVariables | undefined
 ): CSSProperties => {
     const firstStroke = toStyleArray(stroke)[0];
-    const width = firstStroke?.width ?? strokeWidth;
+    const width =
+        firstStroke && typeof firstStroke !== 'string'
+            ? (firstStroke.width ?? strokeWidth)
+            : strokeWidth;
 
     if (!firstStroke || width === undefined) {
         return {};
     }
 
+    if (typeof firstStroke === 'string') {
+        const color = resolveVariableValue(firstStroke, variables, 'color');
+
+        return color
+            ? {
+                  borderColor: color,
+                  borderStyle: 'solid',
+                  borderWidth: px(width)
+              }
+            : {};
+    }
+
     if (firstStroke.type === 'color') {
         return {
-            borderColor: firstStroke.color,
+            borderColor: resolveVariableValue(
+                firstStroke.color,
+                variables,
+                'color'
+            ),
             borderStyle: 'solid',
             borderWidth: px(width)
         };
@@ -202,7 +312,7 @@ const getStrokeStyle = (
 
     if (firstStroke.type === 'gradient') {
         return {
-            borderImage: `${toGradientValue(firstStroke)} 1`,
+            borderImage: `${toGradientValue(firstStroke, variables)} 1`,
             borderStyle: 'solid',
             borderWidth: px(width)
         };
@@ -212,7 +322,8 @@ const getStrokeStyle = (
 };
 
 const toCornerRadiusValue = (
-    cornerRadius: FrameNode['cornerRadius']
+    cornerRadius: FrameNode['cornerRadius'],
+    variables: DesignVariables | undefined
 ): string | undefined => {
     if (cornerRadius === undefined) {
         return undefined;
@@ -220,6 +331,12 @@ const toCornerRadiusValue = (
 
     if (typeof cornerRadius === 'number') {
         return px(cornerRadius);
+    }
+
+    if (typeof cornerRadius === 'string') {
+        const value = resolveNumberVariable(cornerRadius, variables);
+
+        return value === undefined ? undefined : px(value);
     }
 
     return cornerRadius.map(px).join(' ');
@@ -275,7 +392,10 @@ export const toAlignItems = (
     return alignItems;
 };
 
-const getEffectStyle = (node: DesignNode): CSSProperties => {
+const getEffectStyle = (
+    node: DesignNode,
+    variables: DesignVariables | undefined
+): CSSProperties => {
     const shadows = toStyleArray(node.effect)
         .filter((effect): effect is ShadowEffect => effect.type === 'shadow')
         .map((effect) => {
@@ -284,7 +404,11 @@ const getEffectStyle = (node: DesignNode): CSSProperties => {
             const blur = effect.blur ?? 0;
             const inset = effect.shadowType === 'inner' ? 'inset ' : '';
 
-            return `${inset}${px(offsetX)} ${px(offsetY)} ${px(blur)} ${effect.color}`;
+            const color =
+                resolveVariableValue(effect.color, variables, 'color') ??
+                'transparent';
+
+            return `${inset}${px(offsetX)} ${px(offsetY)} ${px(blur)} ${color}`;
         });
 
     if (shadows.length === 0) {
@@ -299,12 +423,13 @@ const getEffectStyle = (node: DesignNode): CSSProperties => {
 export const getVisualStyle = (
     node: DesignNode,
     resolveAsset: AssetResolver,
-    target: 'shape' | 'text'
+    target: 'shape' | 'text',
+    variables?: DesignVariables
 ): CSSProperties => ({
-    ...getFillStyle(node.fill, resolveAsset, target),
-    ...getStrokeStyle(node.stroke, node.strokeWidth),
-    ...getEffectStyle(node),
-    borderRadius: toCornerRadiusValue(node.cornerRadius)
+    ...getFillStyle(node.fill, resolveAsset, target, variables),
+    ...getStrokeStyle(node.stroke, node.strokeWidth, variables),
+    ...getEffectStyle(node, variables),
+    borderRadius: toCornerRadiusValue(node.cornerRadius, variables)
 });
 
 const getNumericDimension = (value: Dimension | undefined) =>

@@ -335,3 +335,56 @@ describe('editorDocumentToRenderable', () => {
         });
     });
 });
+
+describe('design variable adapters', () => {
+    it('preserves variables and references through the editor round trip', () => {
+        const schemaDocument: MiaomaDesignDocument = {
+            version: '2.14',
+            variables: {
+                surface: { type: 'color', value: '#ffffff' },
+                border: { type: 'color', value: '#dddddd' },
+                radius: { type: 'number', value: 8 }
+            },
+            children: [
+                {
+                    id: 'frame-1',
+                    type: 'frame',
+                    width: 100,
+                    height: 80,
+                    fill: '$surface',
+                    stroke: '$border',
+                    strokeWidth: 2,
+                    cornerRadius: '$radius',
+                    children: []
+                }
+            ]
+        };
+
+        const editorDocument = schemaToEditorDocument(schemaDocument);
+        const renderable = editorDocumentToRenderable(editorDocument);
+
+        expect(editorDocument).toMatchObject({
+            variables: schemaDocument.variables,
+            children: [
+                {
+                    fills: [{ type: 'variable', reference: '$surface' }],
+                    strokes: [
+                        { type: 'variable', reference: '$border', width: 2 }
+                    ],
+                    cornerRadius: '$radius'
+                }
+            ]
+        });
+        expect(renderable).toMatchObject({
+            variables: schemaDocument.variables,
+            children: [
+                {
+                    fill: ['$surface'],
+                    stroke: ['$border'],
+                    strokeWidth: 2,
+                    cornerRadius: '$radius'
+                }
+            ]
+        });
+    });
+});

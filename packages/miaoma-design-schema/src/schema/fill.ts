@@ -4,6 +4,8 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import type { MiaomaVariableReference } from './variable';
+
 export type MiaomaColorFill = {
     type: 'color';
     color: string;
@@ -47,15 +49,20 @@ export type MiaomaImageFill = {
 };
 
 export type MiaomaFill =
+    | MiaomaVariableReference
     | MiaomaColorFill
     | MiaomaLinearGradientFill
     | MiaomaRadialGradientFill
     | MiaomaImageFill;
 
-export type MiaomaStroke = MiaomaFill & {
-    width?: number;
-    align?: 'center' | 'inner' | 'outer';
-};
+export type MiaomaStrokeAlign = 'center' | 'inner' | 'outer';
+
+export type MiaomaStroke =
+    | MiaomaVariableReference
+    | (Exclude<MiaomaFill, MiaomaVariableReference> & {
+          width?: number;
+          align?: MiaomaStrokeAlign;
+      });
 
 export type MiaomaShadowEffect = {
     type: 'shadow';

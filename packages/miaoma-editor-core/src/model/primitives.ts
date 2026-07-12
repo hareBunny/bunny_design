@@ -6,7 +6,7 @@
 
 export type EditorDimension = number | 'fill_container' | 'hug_contents';
 
-export type EditorCornerRadius = number | [number, number, number, number];
+export type EditorCornerRadius = MiaomaCornerRadius;
 
 export type EditorSpacing =
     | number
@@ -23,3 +23,4 @@ export type EditorJustifyContent =
     | 'space_around';
 
 export type EditorAlignItems = 'start' | 'center' | 'end' | 'stretch';
+import type { MiaomaCornerRadius } from '@miaoma-design-ai/miaoma-design-schema';

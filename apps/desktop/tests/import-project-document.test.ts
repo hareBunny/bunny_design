@@ -194,9 +194,10 @@ describe('project import documents', () => {
 
             expect(document.version).toBe('2.14');
             expect(document.children.length).toBeGreaterThan(0);
-            expect(document.children[0]?.fill).toMatchObject([
-                { type: 'color' }
-            ]);
+            expect(document.variables).toBeDefined();
+            expect(document.children[0]?.fill).toEqual(
+                expect.arrayContaining([expect.stringMatching(/^\$/)])
+            );
         }
     );
 

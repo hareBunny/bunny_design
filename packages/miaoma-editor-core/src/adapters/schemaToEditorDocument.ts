@@ -35,6 +35,10 @@ const toFillItem = (
 
     const id = buildStyleId(nodeId, 'fill', index);
 
+    if (typeof fill === 'string') {
+        return { id, enabled: true, type: 'variable', reference: fill };
+    }
+
     if (fill.type === 'color') {
         return { id, enabled: true, type: 'color', color: fill.color };
     }
@@ -85,14 +89,27 @@ const toStrokeItem = (
         return undefined;
     }
 
-    const width = stroke.width ?? node.strokeWidth ?? 1;
+    const width =
+        (typeof stroke === 'string' ? undefined : stroke.width) ??
+        node.strokeWidth ??
+        1;
     const id = buildStyleId(node.id, 'stroke', index);
     const shared = {
         id,
         enabled: true,
         width,
-        align: stroke.align ?? node.strokeAlignment
+        align:
+            (typeof stroke === 'string' ? undefined : stroke.align) ??
+            node.strokeAlignment
     } as const;
+
+    if (typeof stroke === 'string') {
+        return {
+            ...shared,
+            type: 'variable',
+            reference: stroke
+        };
+    }
 
     if (stroke.type === 'color') {
         return {
@@ -249,5 +266,6 @@ export const schemaToEditorDocument = (
 ): EditorDocument => ({
     version: document.version,
     fileToken: document.fileToken,
+    variables: document.variables,
     children: document.children.map(toEditorNode)
 });

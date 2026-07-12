@@ -29,7 +29,7 @@ import {
     toGradientFormValues
 } from './styleFieldUtils';
 
-const toInputValue = (value: number | undefined) =>
+const toInputValue = (value: number | string | undefined) =>
     value === undefined ? '' : String(value);
 
 const toOpacityInputValue = (value: number | undefined) => {
@@ -44,7 +44,12 @@ const toFillFormItem = (item: FillItem): InspectorFillFormItem => ({
     itemId: item.id,
     enabled: item.enabled,
     type: item.type,
-    color: item.type === 'color' ? getColorWithoutOpacity(item.color) : '',
+    color:
+        item.type === 'color'
+            ? getColorWithoutOpacity(item.color)
+            : item.type === 'variable'
+              ? item.reference
+              : '',
     opacity: item.type === 'color' ? getColorOpacityValue(item.color) : '100%',
     rotation: item.type === 'gradient' ? toInputValue(item.rotation) : '',
     url: item.type === 'image' ? item.url : '',
@@ -57,7 +62,12 @@ const toStrokeFormItem = (item: StrokeItem): InspectorStrokeFormItem => ({
     itemId: item.id,
     enabled: item.enabled,
     type: item.type,
-    color: item.type === 'color' ? getColorWithoutOpacity(item.color) : '',
+    color:
+        item.type === 'color'
+            ? getColorWithoutOpacity(item.color)
+            : item.type === 'variable'
+              ? item.reference
+              : '',
     opacity: item.type === 'color' ? getColorOpacityValue(item.color) : '100%',
     rotation: item.type === 'gradient' ? toInputValue(item.rotation) : '',
     url: item.type === 'image' ? item.url : '',

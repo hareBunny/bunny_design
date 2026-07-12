@@ -63,5 +63,6 @@ export const normalizeDesignDocument = (
 ): MiaomaDesignDocument => ({
     version: document.version,
     fileToken: document.fileToken,
+    variables: document.variables,
     children: document.children.map(normalizeDesignNode)
 });

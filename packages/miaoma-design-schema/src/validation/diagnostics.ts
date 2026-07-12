@@ -9,6 +9,7 @@ export type MiaomaDesignDiagnosticCode =
     | 'invalid_document'
     | 'invalid_fill'
     | 'invalid_node'
+    | 'invalid_variable'
     | 'unsupported_fill_type'
     | 'unsupported_node_type';
 

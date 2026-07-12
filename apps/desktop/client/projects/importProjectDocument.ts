@@ -57,87 +57,37 @@ export const getProjectImportDialogOptions = (
 const isRecord = (value: unknown): value is UnknownRecord =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const readVariables = (input: unknown): UnknownRecord => {
-    if (!isRecord(input) || !isRecord(input.variables)) {
-        return {};
-    }
-
-    return input.variables;
-};
-
-const resolveStringToken = (value: string, variables: UnknownRecord) => {
-    if (!value.startsWith('$')) {
-        return value;
-    }
-
-    const variable = variables[value.slice(1)];
-
-    if (!isRecord(variable) || variable.type !== 'color') {
-        return value;
-    }
-
-    return typeof variable.value === 'string' ? variable.value : value;
-};
-
-const normalizeFill = (value: unknown, variables: UnknownRecord): unknown => {
+const normalizeFill = (value: unknown): unknown => {
     if (Array.isArray(value)) {
         return value.flatMap((item) => {
             if (isRecord(item) && item.enabled === false) {
                 return [];
             }
 
-            const normalizedItem = normalizeFill(item, variables);
+            const normalizedItem = normalizeFill(item);
 
             return normalizedItem === undefined ? [] : [normalizedItem];
         });
-    }
-
-    if (typeof value === 'string') {
-        return {
-            type: 'color',
-            color: resolveStringToken(value, variables)
-        };
     }
 
     if (!isRecord(value)) {
         return value;
     }
 
-    if (value.type === 'color' && typeof value.color === 'string') {
-        return {
-            ...value,
-            color: resolveStringToken(value.color, variables)
-        };
-    }
-
-    if (value.type === 'gradient' && Array.isArray(value.colors)) {
-        return {
-            ...value,
-            colors: value.colors.map((stop) =>
-                isRecord(stop) && typeof stop.color === 'string'
-                    ? {
-                          ...stop,
-                          color: resolveStringToken(stop.color, variables)
-                      }
-                    : stop
-            )
-        };
-    }
-
     return value;
 };
 
-const normalizeNode = (value: unknown, variables: UnknownRecord): unknown => {
+const normalizeNode = (value: unknown): unknown => {
     if (!isRecord(value)) {
         return value;
     }
 
     return {
         ...value,
-        fill: normalizeFill(value.fill, variables),
-        stroke: normalizeFill(value.stroke, variables),
+        fill: normalizeFill(value.fill),
+        stroke: normalizeFill(value.stroke),
         children: Array.isArray(value.children)
-            ? value.children.map((child) => normalizeNode(child, variables))
+            ? value.children.map(normalizeNode)
             : value.children
     };
 };
@@ -147,12 +97,10 @@ const normalizeImportDesignInput = (input: unknown): unknown => {
         return input;
     }
 
-    const variables = readVariables(input);
-
     return {
         ...input,
         children: Array.isArray(input.children)
-            ? input.children.map((child) => normalizeNode(child, variables))
+            ? input.children.map(normalizeNode)
             : input.children
     };
 };

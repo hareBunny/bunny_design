@@ -30,7 +30,8 @@ export type {
     MiaomaLinearGradientFill,
     MiaomaRadialGradientFill,
     MiaomaShadowEffect,
-    MiaomaStroke
+    MiaomaStroke,
+    MiaomaStrokeAlign
 } from './schema/fill';
 export type {
     MiaomaAlignItems,
@@ -48,6 +49,12 @@ export type {
     MiaomaRectangleNode,
     MiaomaTextNode
 } from './schema/node';
+export type {
+    MiaomaDesignVariable,
+    MiaomaDesignVariables,
+    MiaomaVariableReference
+} from './schema/variable';
+export { isMiaomaVariableReference } from './schema/variable';
 export { FILL_TYPES, LAYOUT_TYPES, NODE_TYPES } from './shared/literals';
 export type { UnknownRecord } from './shared/types';
 export type {

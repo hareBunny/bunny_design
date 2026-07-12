@@ -7,10 +7,12 @@
 import type { MiaomaDesignDiagnostic } from '../validation/diagnostics';
 
 import type { MiaomaDesignNode } from './node';
+import type { MiaomaDesignVariables } from './variable';
 
 export type MiaomaDesignDocument = {
     version: string;
     fileToken?: string;
+    variables?: MiaomaDesignVariables;
     children: MiaomaDesignNode[];
 };
 

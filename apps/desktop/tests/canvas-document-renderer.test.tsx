@@ -391,4 +391,46 @@ describe('CanvasDocumentRenderer', () => {
 
         expect(markup).toContain('opacity:0.25');
     });
+
+    it('resolves document variables into canvas styles', () => {
+        const markup = renderToStaticMarkup(
+            <CanvasDocumentRenderer
+                document={{
+                    version: '2.14',
+                    variables: {
+                        surface: { type: 'color', value: '#f8fcf6' },
+                        ink: { type: 'color', value: '#18302b' },
+                        radius: { type: 'number', value: 8 },
+                        body: { type: 'string', value: 'Inter' }
+                    },
+                    children: [
+                        {
+                            id: 'frame-variable',
+                            type: 'frame',
+                            width: 100,
+                            height: 80,
+                            fill: '$surface',
+                            cornerRadius: '$radius',
+                            children: [
+                                {
+                                    id: 'text-variable',
+                                    type: 'text',
+                                    content: 'Variables',
+                                    fill: '$ink',
+                                    fontFamily: '$body'
+                                }
+                            ]
+                        }
+                    ]
+                }}
+            />
+        );
+
+        expect(markup).toContain('background-color:#f8fcf6');
+        expect(markup).toContain('border-radius:8px');
+        expect(markup).toContain('color:#18302b');
+        expect(markup).toContain(
+            'font-family:&#x27;Inter&#x27;, system-ui, sans-serif'
+        );
+    });
 });
