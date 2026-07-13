@@ -73,3 +73,6 @@ export const isMiaomaCollaboratorAgentId = (
     value: string
 ): value is MiaomaCollaboratorAgentId =>
     MIAOMA_COLLABORATOR_AGENT_IDS.includes(value as MiaomaCollaboratorAgentId);
+
+export const isMiaomaAgentId = (value: string): value is MiaomaAgentId =>
+    value === MIAOMA_COORDINATOR_AGENT_ID || isMiaomaCollaboratorAgentId(value);

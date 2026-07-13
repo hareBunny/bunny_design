@@ -17,6 +17,7 @@ export type {
     MiaomaCoordinatorAgentId
 } from './agents';
 export {
+    isMiaomaAgentId,
     isMiaomaCollaboratorAgentId,
     MIAOMA_AGENT_ROSTER,
     MIAOMA_COLLABORATOR_AGENT_IDS,
@@ -40,3 +41,4 @@ export {
     MIAOMA_MAX_PARALLEL_COLLABORATORS,
     validateMiaomaGenerationAssignments
 } from './run';
+export { parseMiaomaGenerationRun } from './validation';

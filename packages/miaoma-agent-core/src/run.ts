@@ -199,7 +199,7 @@ export const createMiaomaGenerationRun = ({
     projectId: string;
     prompt: string;
     createdAt: string;
-}): MiaomaGenerationRun => {
+}): MiaomaGenerationRunBase & { status: 'queued' } => {
     assertNotBlank(runId, 'Run id');
     assertNotBlank(projectId, 'Project id');
     assertNotBlank(prompt, 'Prompt');

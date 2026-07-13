@@ -13,6 +13,7 @@ import {
     MIAOMA_AGENT_ROSTER,
     MIAOMA_COLLABORATOR_AGENT_IDS,
     type MiaomaGenerationAssignment,
+    parseMiaomaGenerationRun,
     validateMiaomaGenerationAssignments
 } from '../src';
 
@@ -101,6 +102,42 @@ describe('miaoma agent core', () => {
                 assignment('newton', 5)
             ])
         ).toThrow('at most five assignments');
+    });
+
+    it('parses persisted runs only when activity relationships are valid', () => {
+        const run = {
+            ...createMiaomaGenerationRun({
+                runId: 'run-1',
+                projectId: 'project-1',
+                prompt: 'Create a CRM dashboard',
+                createdAt: '2026-07-20T00:00:00.000Z'
+            }),
+            status: 'designing' as const,
+            assignments: [assignment('newton', 0)],
+            activities: [
+                {
+                    activityId: 'activity-1',
+                    runId: 'run-1',
+                    agentId: 'newton' as const,
+                    assignmentId: 'assignment-0',
+                    kind: 'bash' as const,
+                    input: { command: '/bin/zsh -lc pwd' },
+                    status: 'completed' as const,
+                    createdAt: '2026-07-20T00:00:00.000Z',
+                    startedAt: '2026-07-20T00:00:00.000Z',
+                    completedAt: '2026-07-20T00:00:01.000Z',
+                    output: { summary: '/Users/heyi/Downloads' }
+                }
+            ]
+        };
+
+        expect(parseMiaomaGenerationRun(run)).toEqual(run);
+        expect(
+            parseMiaomaGenerationRun({
+                ...run,
+                activities: [{ ...run.activities[0], runId: 'other-run' }]
+            })
+        ).toBeNull();
     });
 
     it.each([
