@@ -1,0 +1,34 @@
+{
+    "name": "@miaoma-design-ai/miaoma-design-generation",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist",
+        "schemas"
+    ],
+    "scripts": {
+        "build": "tsdown",
+        "lint": "eslint .",
+        "format": "prettier --ignore-path ../../.prettierignore --write . && eslint --fix .",
+        "format:check": "prettier --ignore-path ../../.prettierignore --check . && eslint .",
+        "test": "vitest",
+        "test:run": "vitest run"
+    },
+    "dependencies": {
+        "@miaoma-design-ai/miaoma-agent-core": "workspace:*",
+        "@miaoma-design-ai/miaoma-design-schema": "workspace:*"
+    },
+    "devDependencies": {
+        "tsdown": "^0.22.3",
+        "vitest": "^2.1.8"
+    }
+}

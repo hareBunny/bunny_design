@@ -1,0 +1,65 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "formatVersion": { "const": 1 },
+        "assignments": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 5,
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "assignmentId": { "type": "string", "minLength": 1 },
+                    "agentId": {
+                        "enum": [
+                            "newton",
+                            "tesla",
+                            "maxwell",
+                            "curie",
+                            "faraday"
+                        ]
+                    },
+                    "order": { "type": "integer", "minimum": 0 },
+                    "objective": { "type": "string", "minLength": 1 },
+                    "region": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                            "regionId": { "type": "string", "minLength": 1 },
+                            "label": { "type": "string", "minLength": 1 },
+                            "bounds": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                    "x": { "type": "number" },
+                                    "y": { "type": "number" },
+                                    "width": { "type": "number", "minimum": 0 },
+                                    "height": { "type": "number", "minimum": 0 }
+                                },
+                                "required": ["x", "y", "width", "height"]
+                            },
+                            "targetNodeIds": {
+                                "type": "array",
+                                "minItems": 1,
+                                "maxItems": 1,
+                                "items": { "type": "string", "minLength": 1 }
+                            }
+                        },
+                        "required": ["regionId", "label", "targetNodeIds"]
+                    }
+                },
+                "required": [
+                    "assignmentId",
+                    "agentId",
+                    "order",
+                    "objective",
+                    "region"
+                ]
+            }
+        }
+    },
+    "required": ["formatVersion", "assignments"]
+}
