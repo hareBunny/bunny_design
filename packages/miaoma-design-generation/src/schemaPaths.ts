@@ -12,5 +12,7 @@ const schemaPath = (fileName: string) =>
 export const MIAOMA_DESIGN_GENERATION_SCHEMA_PATHS = {
     fragment: schemaPath('design-fragment.schema.json'),
     plan: schemaPath('design-plan.schema.json'),
+    repair: schemaPath('design-repair.schema.json'),
+    visualCheck: schemaPath('design-visual-check.schema.json'),
     variables: schemaPath('design-variables.schema.json')
 } as const;

@@ -11,8 +11,19 @@ export {
 } from './contracts';
 export {
     appendMiaomaDesignFragment,
-    applyMiaomaDesignVariables
+    applyMiaomaDesignVariables,
+    replaceMiaomaDesignRepairs
 } from './documentAssembly';
+export { createMiaomaDesignVisualHarness } from './harness';
+export type {
+    MiaomaDesignScreenshot,
+    MiaomaDesignScreenshotCapture,
+    MiaomaDesignVisualHarness,
+    MiaomaDesignVisualHarnessOptions,
+    MiaomaDesignVisualLoopInput,
+    MiaomaDesignVisualLoopResult,
+    MiaomaDesignVisualValidationResult
+} from './harnessTypes';
 export { createMiaomaDesignGenerationOrchestrator } from './orchestrator';
 export type {
     MiaomaDesignGenerationExecution,
@@ -29,5 +40,13 @@ export {
     MiaomaDesignGenerationError,
     type MiaomaDesignGenerationErrorCode,
     type MiaomaDesignGenerationPlan,
-    type MiaomaDesignVariablesDraft
+    type MiaomaDesignRepair,
+    type MiaomaDesignRepairBatch,
+    type MiaomaDesignVariablesDraft,
+    type MiaomaDesignVisualCheck,
+    type MiaomaDesignVisualIssue
 } from './types';
+export {
+    parseMiaomaDesignRepairBatch,
+    parseMiaomaDesignVisualCheck
+} from './visualContracts';

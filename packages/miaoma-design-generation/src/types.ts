@@ -31,6 +31,35 @@ export type MiaomaDesignFragment = {
     nodes: MiaomaDesignNode[];
 };
 
+export type MiaomaDesignVisualIssue = {
+    issueId: string;
+    severity: 'error' | 'warning';
+    message: string;
+    nodeId?: string;
+    assignmentId?: string;
+    regionId?: string;
+    suggestedFix?: string;
+};
+
+export type MiaomaDesignVisualCheck = {
+    formatVersion: typeof MIAOMA_DESIGN_GENERATION_FORMAT_VERSION;
+    passed: boolean;
+    summary: string;
+    issues: MiaomaDesignVisualIssue[];
+};
+
+export type MiaomaDesignRepair = {
+    repairId: string;
+    assignmentId?: string;
+    nodeIds: string[];
+    nodes: MiaomaDesignNode[];
+};
+
+export type MiaomaDesignRepairBatch = {
+    formatVersion: typeof MIAOMA_DESIGN_GENERATION_FORMAT_VERSION;
+    repairs: MiaomaDesignRepair[];
+};
+
 export type MiaomaDesignDocumentState = {
     document: MiaomaDesignDocument;
     revision: number;
@@ -42,7 +71,9 @@ export type MiaomaDesignGenerationErrorCode =
     | 'invalid-document'
     | 'invalid-fragment'
     | 'invalid-plan'
+    | 'invalid-repair'
     | 'invalid-variables'
+    | 'invalid-visual-check'
     | 'revision-conflict'
     | 'target-not-found'
     | 'target-not-frame';

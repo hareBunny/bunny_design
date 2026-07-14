@@ -1,0 +1,28 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "formatVersion": { "const": 1 },
+        "passed": { "type": "boolean" },
+        "summary": { "type": "string", "minLength": 1 },
+        "issues": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "issueId": { "type": "string", "minLength": 1 },
+                    "severity": { "enum": ["error", "warning"] },
+                    "message": { "type": "string", "minLength": 1 },
+                    "nodeId": { "type": "string", "minLength": 1 },
+                    "assignmentId": { "type": "string", "minLength": 1 },
+                    "regionId": { "type": "string", "minLength": 1 },
+                    "suggestedFix": { "type": "string", "minLength": 1 }
+                },
+                "required": ["issueId", "severity", "message"]
+            }
+        }
+    },
+    "required": ["formatVersion", "passed", "summary", "issues"]
+}

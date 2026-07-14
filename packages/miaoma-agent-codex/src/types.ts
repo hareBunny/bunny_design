@@ -62,6 +62,7 @@ type MiaomaCodexExecRequestBase = {
     sandbox: MiaomaCodexSandbox;
     conversation: MiaomaCodexConversation;
     model?: string;
+    images?: string[];
     signal?: AbortSignal;
     onEvent?: (event: MiaomaCodexEvent) => Promise<void> | void;
 };

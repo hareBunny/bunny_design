@@ -70,6 +70,7 @@ describe('Codex exec provider', () => {
             sandbox: 'workspace-write',
             conversation: { type: 'new' },
             model: 'gpt-test',
+            images: ['/tmp/design.png'],
             response: {
                 format: 'json',
                 schemaPath: './schemas/fragment.json'
@@ -86,6 +87,8 @@ describe('Codex exec provider', () => {
                 'workspace-write',
                 '--model',
                 'gpt-test',
+                '--image',
+                '/tmp/design.png',
                 '--output-schema',
                 '/workspace/project/schemas/fragment.json',
                 '-'

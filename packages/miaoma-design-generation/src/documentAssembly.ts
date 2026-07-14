@@ -14,6 +14,7 @@ import {
     type MiaomaDesignDocumentState,
     type MiaomaDesignFragment,
     MiaomaDesignGenerationError,
+    type MiaomaDesignRepairBatch,
     type MiaomaDesignVariablesDraft
 } from './types';
 
@@ -188,6 +189,64 @@ export const appendMiaomaDesignFragment = ({
         throw new MiaomaDesignGenerationError({
             code: 'target-not-frame',
             message: `Target node is not a frame: ${targetNodeIds[0]}.`
+        });
+    }
+
+    return {
+        document: validateDocument({ ...state.document, children }),
+        revision: state.revision + 1
+    };
+};
+
+const replaceNodes = (
+    node: MiaomaDesignNode,
+    replacements: ReadonlyMap<string, MiaomaDesignNode>
+): { node: MiaomaDesignNode; found: Set<string> } => {
+    const replacement = replacements.get(node.id);
+    if (replacement) {
+        return { node: replacement, found: new Set([node.id]) };
+    }
+
+    if (node.type !== 'frame' || !node.children) {
+        return { node, found: new Set() };
+    }
+
+    const found = new Set<string>();
+    const children = node.children.map((child) => {
+        const result = replaceNodes(child, replacements);
+        result.found.forEach((id) => found.add(id));
+        return result.node;
+    });
+
+    return { node: { ...node, children }, found };
+};
+
+export const replaceMiaomaDesignRepairs = ({
+    state,
+    expectedRevision,
+    batch
+}: {
+    state: MiaomaDesignDocumentState;
+    expectedRevision: number;
+    batch: MiaomaDesignRepairBatch;
+}): MiaomaDesignDocumentState => {
+    assertRevision(state, expectedRevision);
+    const replacements = new Map<string, MiaomaDesignNode>();
+    batch.repairs.forEach((repair) =>
+        repair.nodes.forEach((node) => replacements.set(node.id, node))
+    );
+
+    const found = new Set<string>();
+    const children = state.document.children.map((node) => {
+        const result = replaceNodes(node, replacements);
+        result.found.forEach((id) => found.add(id));
+        return result.node;
+    });
+    const missing = [...replacements.keys()].filter((id) => !found.has(id));
+    if (missing.length > 0) {
+        throw new MiaomaDesignGenerationError({
+            code: 'target-not-found',
+            message: `Repair target was not found: ${missing[0]}.`
         });
     }
 

@@ -48,6 +48,10 @@ const buildArguments = (request: MiaomaCodexExecRequest) => {
         args.push('--model', request.model);
     }
 
+    if (request.images?.length) {
+        args.push('--image', ...request.images);
+    }
+
     if (request.response.format === 'json') {
         args.push(
             '--output-schema',
@@ -102,6 +106,9 @@ export const createMiaomaCodexExecProvider = ({
         if (request.model !== undefined) {
             assertNotBlank(request.model, 'Model');
         }
+        request.images?.forEach((image, index) =>
+            assertNotBlank(image, `Image path ${index}`)
+        );
         if (request.response.format === 'json') {
             assertNotBlank(request.response.schemaPath, 'Output schema path');
         }
