@@ -25,6 +25,8 @@
     },
     "dependencies": {
         "@miaoma-design-ai/miaoma-agent-core": "workspace:*",
+        "@miaoma-design-ai/miaoma-agent-codex": "workspace:*",
+        "@miaoma-design-ai/miaoma-agent-history": "workspace:*",
         "@miaoma-design-ai/miaoma-design-schema": "workspace:*"
     },
     "devDependencies": {

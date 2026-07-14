@@ -13,6 +13,14 @@ export {
     appendMiaomaDesignFragment,
     applyMiaomaDesignVariables
 } from './documentAssembly';
+export { createMiaomaDesignGenerationOrchestrator } from './orchestrator';
+export type {
+    MiaomaDesignGenerationExecution,
+    MiaomaDesignGenerationOrchestrator,
+    MiaomaDesignGenerationOrchestratorOptions,
+    MiaomaDesignGenerationResult,
+    MiaomaDesignGenerationStartInput
+} from './orchestratorTypes';
 export { MIAOMA_DESIGN_GENERATION_SCHEMA_PATHS } from './schemaPaths';
 export {
     MIAOMA_DESIGN_GENERATION_FORMAT_VERSION,

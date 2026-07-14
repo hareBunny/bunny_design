@@ -59,14 +59,15 @@ const parseRegion = (input: unknown): MiaomaDesignRegion | null => {
         return null;
     }
 
-    if (input.bounds !== undefined) {
+    const bounds = input.bounds;
+    if (bounds !== undefined) {
         if (
-            !isRecord(input.bounds) ||
+            !isRecord(bounds) ||
             !['x', 'y', 'width', 'height'].every((key) =>
-                isFiniteNumber(input.bounds?.[key])
+                isFiniteNumber(bounds[key])
             ) ||
-            (input.bounds.width as number) < 0 ||
-            (input.bounds.height as number) < 0
+            (bounds.width as number) < 0 ||
+            (bounds.height as number) < 0
         ) {
             return null;
         }
@@ -75,7 +76,7 @@ const parseRegion = (input: unknown): MiaomaDesignRegion | null => {
     return {
         regionId: input.regionId,
         label: input.label,
-        bounds: input.bounds as MiaomaDesignRegion['bounds'],
+        bounds: bounds as MiaomaDesignRegion['bounds'],
         targetNodeIds: input.targetNodeIds
     };
 };
