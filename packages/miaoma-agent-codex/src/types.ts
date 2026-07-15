@@ -46,6 +46,7 @@ export type MiaomaCodexActivityDraft =
       };
 
 export type MiaomaCodexEvent =
+    | { type: 'process-started'; processId: number }
     | { type: 'thread-started'; threadId: string }
     | { type: 'turn-started' }
     | { type: 'activity'; activity: MiaomaCodexActivityDraft }
@@ -72,6 +73,7 @@ export type MiaomaCodexExecRequest = MiaomaCodexExecRequestBase & {
 };
 
 export type MiaomaCodexExecResult = {
+    processId?: number;
     threadId: string;
     response:
         | { format: 'json'; value: MiaomaAgentJsonValue }

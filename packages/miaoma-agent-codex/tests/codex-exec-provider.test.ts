@@ -27,6 +27,7 @@ const createProcess = ({
     stderr?: string;
     exit?: MiaomaCodexProcessExit;
 }): MiaomaCodexProcess => ({
+    processId: 4242,
     stdout: stream([stdout]),
     stderr: stream([stderr]),
     waitForExit: () => Promise.resolve(exit),
@@ -56,6 +57,7 @@ describe('Codex exec provider', () => {
         const events: string[] = [];
         const provider = createMiaomaCodexExecProvider({
             executable: '/opt/codex',
+            skipGitRepoCheck: true,
             spawnProcess: (input) => {
                 spawned = input;
                 return createProcess({
@@ -75,13 +77,16 @@ describe('Codex exec provider', () => {
                 format: 'json',
                 schemaPath: './schemas/fragment.json'
             },
-            onEvent: (event) => events.push(event.type)
+            onEvent: (event) => {
+                events.push(event.type);
+            }
         });
 
         expect(spawned).toEqual({
             command: '/opt/codex',
             args: [
                 'exec',
+                '--skip-git-repo-check',
                 '--json',
                 '--sandbox',
                 'workspace-write',
@@ -97,12 +102,14 @@ describe('Codex exec provider', () => {
             stdin: 'Create the assigned region'
         });
         expect(events).toEqual([
+            'process-started',
             'thread-started',
             'turn-started',
             'message',
             'turn-completed'
         ]);
         expect(result).toEqual({
+            processId: 4242,
             threadId: 'thread-1',
             response: { format: 'json', value: { nodes: [] } },
             usage: { input_tokens: 10, output_tokens: 5 }
@@ -112,6 +119,7 @@ describe('Codex exec provider', () => {
     it('resumes a session with text output', async () => {
         let spawned: MiaomaCodexSpawnInput | undefined;
         const provider = createMiaomaCodexExecProvider({
+            skipGitRepoCheck: true,
             spawnProcess: (input) => {
                 spawned = input;
                 return createProcess({ stdout: successfulJsonl('Repaired') });
@@ -129,6 +137,7 @@ describe('Codex exec provider', () => {
         expect(spawned?.args).toEqual([
             'exec',
             'resume',
+            '--skip-git-repo-check',
             '--json',
             '-c',
             'sandbox_mode="workspace-write"',
@@ -136,6 +145,67 @@ describe('Codex exec provider', () => {
             '-'
         ]);
         expect(result.response).toEqual({ format: 'text', value: 'Repaired' });
+    });
+
+    it('injects schemas into prompts when native structured output is unavailable', async () => {
+        let spawned: MiaomaCodexSpawnInput | undefined;
+        const provider = createMiaomaCodexExecProvider({
+            jsonSchemaMode: 'prompt',
+            loadSchema: async () => '{"type":"object"}',
+            spawnProcess: (input) => {
+                spawned = input;
+                return createProcess({
+                    stdout: successfulJsonl('{"ok":true}')
+                });
+            }
+        });
+
+        const result = await provider.execute({
+            prompt: 'Create structured output',
+            workingDirectory: '/workspace/project',
+            sandbox: 'workspace-write',
+            conversation: { type: 'new' },
+            response: {
+                format: 'json',
+                schemaPath: './schemas/output.json'
+            }
+        });
+
+        expect(spawned?.args).not.toContain('--output-schema');
+        expect(spawned?.stdin).toBe(
+            'Create structured output\n\nJSON output schema:\n{"type":"object"}'
+        );
+        expect(result.response).toEqual({
+            format: 'json',
+            value: { ok: true }
+        });
+    });
+
+    it('extracts JSON from a decorated final response', async () => {
+        const provider = createMiaomaCodexExecProvider({
+            spawnProcess: () =>
+                createProcess({
+                    stdout: successfulJsonl(
+                        'Result:\n```json\n{"ok":true}\n```\nDone.'
+                    )
+                })
+        });
+
+        const result = await provider.execute({
+            prompt: 'Create structured output',
+            workingDirectory: '/workspace/project',
+            sandbox: 'workspace-write',
+            conversation: { type: 'new' },
+            response: {
+                format: 'json',
+                schemaPath: './schemas/output.json'
+            }
+        });
+
+        expect(result.response).toEqual({
+            format: 'json',
+            value: { ok: true }
+        });
     });
 
     it('reports a failed process with stderr and its exit code', async () => {

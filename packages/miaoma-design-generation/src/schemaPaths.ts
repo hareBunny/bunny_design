@@ -13,8 +13,13 @@ const schemaPath = (fileName: string) => {
     const moduleDirectory = moduleUrl.startsWith('file:')
         ? path.dirname(fileURLToPath(moduleUrl))
         : null;
+    const runtimeProcess = process as typeof process & {
+        resourcesPath?: string;
+    };
     const processResourcesPath =
-        typeof process !== 'undefined' ? process.resourcesPath : undefined;
+        typeof process !== 'undefined'
+            ? runtimeProcess.resourcesPath
+            : undefined;
     const candidates = [
         moduleDirectory
             ? path.resolve(moduleDirectory, '../schemas', fileName)

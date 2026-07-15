@@ -19,6 +19,7 @@ export type MiaomaCodexSpawnInput = {
 };
 
 export type MiaomaCodexProcess = {
+    processId?: number;
     stdout: AsyncIterable<string | Uint8Array>;
     stderr: AsyncIterable<string | Uint8Array>;
     waitForExit(): Promise<MiaomaCodexProcessExit>;
@@ -45,6 +46,7 @@ export const spawnMiaomaCodexProcess: MiaomaCodexProcessSpawner = ({
     child.stdin.end(stdin);
 
     return {
+        processId: child.pid,
         stdout: child.stdout,
         stderr: child.stderr,
         waitForExit: () =>
