@@ -120,6 +120,33 @@ export const createEditorSession = (
         },
         getNodeById: (nodeId) => selectNodeById(snapshot.document, nodeId),
         getSelectedNode: () => selectSelectedNode(snapshot),
+        replaceDocument: (document) => {
+            const selectedNodeId = snapshot.selection.selectedNodeId;
+            const selectedNode = selectedNodeId
+                ? selectNodeById(document, selectedNodeId)
+                : null;
+
+            snapshot = {
+                ...snapshot,
+                document,
+                selection: {
+                    ...snapshot.selection,
+                    selectedNodeId: selectedNode?.id ?? null
+                },
+                inspectorUi: {
+                    activeFillId: getNextActiveStyleId(selectedNode, 'fills'),
+                    activeStrokeId: getNextActiveStyleId(
+                        selectedNode,
+                        'strokes'
+                    ),
+                    activeEffectId: getNextActiveStyleId(
+                        selectedNode,
+                        'effects'
+                    )
+                }
+            };
+            notify();
+        },
         selectNode: (nodeId) => {
             if (snapshot.selection.selectedNodeId === nodeId) {
                 return;

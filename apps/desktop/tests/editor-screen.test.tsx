@@ -486,7 +486,9 @@ describe('MiaomaEditorScreen', () => {
         expect(viewportShellSource).toContain('pointer-events-none');
         expect(canvasStageSource).not.toContain('const PromptDock');
         expect(agentPanelSource).toContain('import { PromptDock }');
-        expect(agentPanelSource).toContain('<PromptDock variant="agent" />');
+        expect(agentPanelSource).toContain('variant="agent"');
+        expect(agentPanelSource).toContain('onSubmit={generation?.start}');
+        expect(agentPanelSource).toContain('onCancel={generation?.cancel}');
         expect(agentPanelSource).not.toContain('const AgentPromptDock');
         expect(promptDockSource).toContain(
             "type PromptDockVariant = 'agent' | 'canvas'"

@@ -45,7 +45,11 @@
         "vitest": "^2.1.8"
     },
     "dependencies": {
+        "@miaoma-design-ai/miaoma-agent-core": "workspace:*",
         "@miaoma-design-ai/miaoma-canvas-ruler": "workspace:*",
+        "@miaoma-design-ai/miaoma-agent-codex": "workspace:*",
+        "@miaoma-design-ai/miaoma-agent-history": "workspace:*",
+        "@miaoma-design-ai/miaoma-design-generation": "workspace:*",
         "@miaoma-design-ai/miaoma-design-schema": "workspace:*",
         "@miaoma-design-ai/miaoma-editor-core": "workspace:*",
         "@miaoma-design-ai/miaoma-editor-interaction": "workspace:*",

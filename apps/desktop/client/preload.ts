@@ -4,8 +4,13 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 
+import {
+    MIAOMA_GENERATION_IPC_CHANNELS,
+    type MiaomaGenerationEvent,
+    type MiaomaGenerationStartInput
+} from '../shared/generation';
 import {
     MIAOMA_PROJECT_IPC_CHANNELS,
     type MiaomaProjectCreateInput,
@@ -33,5 +38,25 @@ contextBridge.exposeInMainWorld('miaomaAPI', {
             ),
         delete: (projectId: string) =>
             ipcRenderer.invoke(MIAOMA_PROJECT_IPC_CHANNELS.delete, projectId)
+    },
+    generation: {
+        start: (input: MiaomaGenerationStartInput) =>
+            ipcRenderer.invoke(MIAOMA_GENERATION_IPC_CHANNELS.start, input),
+        cancel: (runId: string) =>
+            ipcRenderer.invoke(MIAOMA_GENERATION_IPC_CHANNELS.cancel, runId),
+        subscribe: (listener: (event: MiaomaGenerationEvent) => void) => {
+            const handleEvent = (
+                _event: IpcRendererEvent,
+                value: MiaomaGenerationEvent
+            ) => listener(value);
+            ipcRenderer.on(MIAOMA_GENERATION_IPC_CHANNELS.event, handleEvent);
+
+            return () => {
+                ipcRenderer.removeListener(
+                    MIAOMA_GENERATION_IPC_CHANNELS.event,
+                    handleEvent
+                );
+            };
+        }
     }
 });

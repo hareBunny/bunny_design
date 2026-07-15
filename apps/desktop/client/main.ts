@@ -8,6 +8,9 @@ import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron';
 import started from 'electron-squirrel-startup';
 import path from 'node:path';
 
+import { MIAOMA_GENERATION_HISTORY_DIRECTORY_NAME } from '@miaoma-design-ai/miaoma-agent-history';
+
+import { MIAOMA_GENERATION_IPC_CHANNELS } from '../shared/generation';
 import {
     isMiaomaProjectImportKind,
     MIAOMA_PROJECT_IPC_CHANNELS,
@@ -22,6 +25,7 @@ import {
     type MiaomaProjectUpdateInput
 } from '../shared/projects';
 
+import { createMiaomaDesktopGenerationRuntime } from './generation/generationRuntime';
 import {
     getProjectImportDialogOptions,
     readProjectImportDocument
@@ -364,6 +368,18 @@ const registerProjectIpcHandlers = (projectStore: ProjectStore) => {
     );
 };
 
+const registerGenerationIpcHandlers = (
+    generation: ReturnType<typeof createMiaomaDesktopGenerationRuntime>
+) => {
+    ipcMain.handle(MIAOMA_GENERATION_IPC_CHANNELS.start, async (event, input) =>
+        generation.start(event.sender, input)
+    );
+    ipcMain.handle(
+        MIAOMA_GENERATION_IPC_CHANNELS.cancel,
+        async (_event, runId: string) => generation.cancel(runId)
+    );
+};
+
 app.whenReady().then(() => {
     const projectStore = createProjectStore({
         projectsDirectory: path.join(
@@ -373,6 +389,21 @@ app.whenReady().then(() => {
     });
 
     registerProjectIpcHandlers(projectStore);
+    registerGenerationIpcHandlers(
+        createMiaomaDesktopGenerationRuntime({
+            projectStore,
+            historyRoot: path.join(
+                app.getPath('userData'),
+                MIAOMA_GENERATION_HISTORY_DIRECTORY_NAME
+            ),
+            screenshotRoot: path.join(
+                app.getPath('temp'),
+                'miaoma-design-ai',
+                'generation-screenshots'
+            ),
+            workingDirectory: app.getPath('userData')
+        })
+    );
     createDashboardWindow();
 
     app.on('activate', () => {

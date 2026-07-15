@@ -7,10 +7,18 @@
 import { Check, ChevronDown } from 'lucide-react';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
+import {
+    MIAOMA_AGENT_ACTIVITY_LABELS,
+    MIAOMA_AGENT_ROSTER,
+    type MiaomaAgentActivity,
+    type MiaomaGenerationRun
+} from '@miaoma-design-ai/miaoma-agent-core';
+
 import { AGENT_TIMELINE_ITEMS } from '../../constants/editor';
 import type { AgentTimelineItem } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
 
+import type { MiaomaGenerationController } from './state/useMiaomaGeneration';
 import { PromptDock } from './PromptDock';
 
 type AgentSelectorOption = {
@@ -37,18 +45,48 @@ const AGENT_SELECTOR_OPTIONS: AgentSelectorOption[] = [
 
 const DEFAULT_AGENT_ID = AGENT_SELECTOR_OPTIONS[0]?.id ?? 'newton';
 
-const AgentTopControl = () => {
+const AgentTopControl = ({ run }: { run?: MiaomaGenerationRun | null }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [selectedAgentId, setSelectedAgentId] = useState(DEFAULT_AGENT_ID);
     const controlRef = useRef<HTMLDivElement | null>(null);
     const listboxId = useId();
+    const selectorOptions = useMemo(() => {
+        if (!run) {
+            return AGENT_SELECTOR_OPTIONS;
+        }
+
+        const ids = [
+            run.coordinatorAgentId,
+            ...run.assignments.map(({ agentId }) => agentId)
+        ];
+
+        return ids.flatMap((id) => {
+            const agent = MIAOMA_AGENT_ROSTER.find(
+                (candidate) => candidate.id === id
+            );
+
+            return agent
+                ? [
+                      {
+                          id: agent.id,
+                          label: agent.name,
+                          dotColor: agent.color,
+                          isRunning:
+                              run.status !== 'completed' &&
+                              run.status !== 'failed' &&
+                              run.status !== 'cancelled'
+                      }
+                  ]
+                : [];
+        });
+    }, [run]);
     const selectedAgent = useMemo(
         () =>
-            AGENT_SELECTOR_OPTIONS.find(({ id }) => id === selectedAgentId) ??
-            AGENT_SELECTOR_OPTIONS[0],
-        [selectedAgentId]
+            selectorOptions.find(({ id }) => id === selectedAgentId) ??
+            selectorOptions[0],
+        [selectedAgentId, selectorOptions]
     );
-    const runningAgentCount = AGENT_SELECTOR_OPTIONS.filter(
+    const runningAgentCount = selectorOptions.filter(
         ({ isRunning }) => isRunning
     ).length;
 
@@ -91,8 +129,7 @@ const AgentTopControl = () => {
         >
             <div className="flex h-[27px] w-[132px] shrink-0 items-center gap-2">
                 <span className="truncate text-[12px]/[normal] font-normal text-[#828282]">
-                    {runningAgentCount}/{AGENT_SELECTOR_OPTIONS.length} agent
-                    running
+                    {runningAgentCount}/{selectorOptions.length} agent running
                 </span>
             </div>
 
@@ -142,7 +179,7 @@ const AgentTopControl = () => {
                     id={listboxId}
                     role="listbox"
                 >
-                    {AGENT_SELECTOR_OPTIONS.map((option) => {
+                    {selectorOptions.map((option) => {
                         const isSelected = option.id === selectedAgent.id;
 
                         return (
@@ -174,14 +211,6 @@ const AgentTopControl = () => {
                                         {option.label}
                                     </span>
                                 </span>
-                                {isSelected ? (
-                                    <Check
-                                        aria-hidden="true"
-                                        className="shrink-0 text-[#12b76a]"
-                                        size={14}
-                                        strokeWidth={2.3}
-                                    />
-                                ) : null}
                             </button>
                         );
                     })}
@@ -229,6 +258,76 @@ const AgentStatusRow = ({ label }: { label: string }) => (
     </button>
 );
 
+const AgentActivityRow = ({ activity }: { activity: MiaomaAgentActivity }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const label = MIAOMA_AGENT_ACTIVITY_LABELS[activity.kind];
+    const isRunning = activity.status === 'running';
+
+    return (
+        <div className="w-full shrink-0">
+            <button
+                aria-expanded={isExpanded}
+                className="editor-agent-status-row flex h-7 w-full cursor-default items-center justify-between gap-2 rounded-[12px] border border-[#e8eaee] bg-white px-2 text-[#1f2937] shadow-[0_1px_2px_#00000008]"
+                onClick={() => setIsExpanded((expanded) => !expanded)}
+                type="button"
+            >
+                <span className="flex min-w-0 items-center gap-1.5">
+                    <span
+                        className={classNames(
+                            'grid h-4 w-4 shrink-0 place-items-center rounded-full',
+                            isRunning
+                                ? 'bg-[#eff6ff] text-[#2563eb]'
+                                : activity.status === 'failed'
+                                  ? 'bg-[#fff1f0] text-[#d92d20]'
+                                  : 'bg-[#e9fff4] text-[#12b76a]'
+                        )}
+                    >
+                        {isRunning ? (
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+                        ) : (
+                            <Check
+                                aria-hidden="true"
+                                size={9}
+                                strokeWidth={2.8}
+                            />
+                        )}
+                    </span>
+                    <span className="min-w-0 truncate text-[12px]/[normal] font-normal">
+                        {label}
+                    </span>
+                </span>
+                <ChevronDown
+                    aria-hidden="true"
+                    className={classNames(
+                        'shrink-0 text-[#9ca3af] transition-transform duration-150',
+                        isExpanded ? 'rotate-180' : 'rotate-0'
+                    )}
+                    size={13}
+                    strokeWidth={1.9}
+                />
+            </button>
+            {isExpanded ? (
+                <div className="mx-1 mt-1 rounded-[9px] bg-[#f7f8fa] px-2.5 py-2 text-[11px]/[16px] text-[#5f6068]">
+                    <div className="font-medium text-[#3f4652]">Input</div>
+                    <pre className="m-0 mt-1 max-h-32 overflow-auto whitespace-pre-wrap break-words font-mono text-[10px]/[14px]">
+                        {JSON.stringify(activity.input, null, 2)}
+                    </pre>
+                    {activity.status !== 'running' ? (
+                        <>
+                            <div className="mt-2 font-medium text-[#3f4652]">
+                                Output
+                            </div>
+                            <p className="m-0 mt-1 whitespace-pre-wrap break-words">
+                                {activity.output.summary}
+                            </p>
+                        </>
+                    ) : null}
+                </div>
+            ) : null}
+        </div>
+    );
+};
+
 const AgentSummaryBlock = ({
     agent,
     height,
@@ -264,20 +363,52 @@ const AgentTimelineNode = ({ item }: { item: AgentTimelineItem }) => {
     return <AgentSummaryBlock {...item} />;
 };
 
-export const SidebarAgentPanel = () => (
+const AgentRunTimeline = ({ run }: { run: MiaomaGenerationRun }) => (
+    <div className="editor-agent-timeline-stack flex w-full flex-col gap-2.5 px-3 pr-[11px]">
+        <AgentTitlePill
+            height={28}
+            id={`prompt-${run.runId}`}
+            text={run.prompt}
+            type="pill"
+        />
+        {run.activities.map((activity) => (
+            <AgentActivityRow activity={activity} key={activity.activityId} />
+        ))}
+    </div>
+);
+
+type SidebarAgentPanelProps = {
+    generation?: MiaomaGenerationController;
+};
+
+export const SidebarAgentPanel = ({ generation }: SidebarAgentPanelProps) => (
     <div className="editor-agent-panel flex h-full min-h-0 flex-col overflow-hidden py-3">
         <div className="shrink-0 px-3 pr-[11px]">
-            <AgentTopControl />
+            <AgentTopControl run={generation?.run} />
         </div>
         <div className="editor-agent-timeline mt-2.5 min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-            <div className="editor-agent-timeline-stack flex w-full flex-col gap-2.5 px-3 pr-[11px]">
-                {AGENT_TIMELINE_ITEMS.map((item) => (
-                    <AgentTimelineNode item={item} key={item.id} />
-                ))}
-            </div>
+            {generation?.run ? (
+                <AgentRunTimeline run={generation.run} />
+            ) : (
+                <div className="editor-agent-timeline-stack flex w-full flex-col gap-2.5 px-3 pr-[11px]">
+                    {AGENT_TIMELINE_ITEMS.map((item) => (
+                        <AgentTimelineNode item={item} key={item.id} />
+                    ))}
+                </div>
+            )}
         </div>
+        {generation?.error ? (
+            <p className="m-0 shrink-0 px-4 pt-2 text-[11px]/[16px] text-[#d92d20]">
+                {generation.error}
+            </p>
+        ) : null}
         <div className="shrink-0 px-3 pr-[11px] pt-2.5">
-            <PromptDock variant="agent" />
+            <PromptDock
+                isRunning={generation?.isRunning}
+                onCancel={generation?.cancel}
+                onSubmit={generation?.start}
+                variant="agent"
+            />
         </div>
     </div>
 );

@@ -49,6 +49,35 @@ describe('editor session', () => {
         expect(getNodeById(snapshot.document, 'frame-1')?.name).toBe('Frame 1');
     });
 
+    it('replaces the document while preserving a valid selection', () => {
+        const session = createEditorSession(sampleDocument);
+        session.selectNode('frame-1');
+
+        session.replaceDocument({
+            ...sampleDocument,
+            children: [
+                {
+                    ...sampleDocument.children[0],
+                    name: 'Generated frame',
+                    fills: [
+                        {
+                            id: 'fill-1',
+                            enabled: true,
+                            type: 'color',
+                            color: '#ffffff'
+                        }
+                    ]
+                }
+            ]
+        });
+
+        expect(session.getSnapshot()).toMatchObject({
+            document: { children: [{ name: 'Generated frame' }] },
+            selection: { selectedNodeId: 'frame-1' },
+            inspectorUi: { activeFillId: 'fill-1' }
+        });
+    });
+
     it('appends, updates, and removes style array items by stable id', () => {
         const session = createEditorSession(sampleDocument);
 

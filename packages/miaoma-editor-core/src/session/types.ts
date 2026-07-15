@@ -65,6 +65,7 @@ export type EditorSession = {
     subscribe(listener: () => void): () => void;
     getNodeById(nodeId: string): EditorNode | null;
     getSelectedNode(): EditorNode | null;
+    replaceDocument(document: EditorDocument): void;
     selectNode(nodeId: string | null): void;
     appendNode(node: EditorNode): void;
     appendChildNode(parentId: string, node: EditorNode): void;

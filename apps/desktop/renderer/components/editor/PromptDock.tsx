@@ -4,6 +4,7 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import { ArrowUp, Square } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 type PromptDockVariant = 'agent' | 'canvas';
@@ -22,6 +23,9 @@ type PromptDockConfig = {
 
 type PromptDockProps = {
     variant: PromptDockVariant;
+    isRunning?: boolean;
+    onCancel?: () => Promise<void> | void;
+    onSubmit?: (prompt: string) => Promise<void> | void;
 };
 
 const AGENT_PROMPT_MAX_DOCK_HEIGHT = 400;
@@ -77,7 +81,12 @@ const PromptChevronIcon = () => (
     </svg>
 );
 
-export const PromptDock = ({ variant }: PromptDockProps) => {
+export const PromptDock = ({
+    isRunning = false,
+    onCancel,
+    onSubmit,
+    variant
+}: PromptDockProps) => {
     const config = PROMPT_DOCK_CONFIG[variant];
     const [promptValue, setPromptValue] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -111,6 +120,16 @@ export const PromptDock = ({ variant }: PromptDockProps) => {
                 : 'hidden';
     }, [promptValue, variant]);
 
+    const submitPrompt = () => {
+        const normalizedPrompt = promptValue.trim();
+        if (!normalizedPrompt || !onSubmit) {
+            return;
+        }
+
+        setPromptValue('');
+        void onSubmit(normalizedPrompt);
+    };
+
     return (
         <section
             aria-label={config.sectionAriaLabel}
@@ -127,6 +146,16 @@ export const PromptDock = ({ variant }: PromptDockProps) => {
                 onChange={(event) => {
                     setPromptValue(event.target.value);
                 }}
+                onKeyDown={(event) => {
+                    if (
+                        event.key === 'Enter' &&
+                        (event.metaKey || event.ctrlKey) &&
+                        variant === 'agent'
+                    ) {
+                        event.preventDefault();
+                        submitPrompt();
+                    }
+                }}
                 placeholder="Design anything..."
                 ref={textareaRef}
                 rows={1}
@@ -139,13 +168,30 @@ export const PromptDock = ({ variant }: PromptDockProps) => {
                         GPT 5.5
                         <PromptChevronIcon />
                     </button>
-                    <button
-                        aria-label={config.sendAriaLabel}
-                        className={config.sendClassName}
-                        type="button"
-                    >
-                        ↑
-                    </button>
+                    {variant === 'agent' && isRunning ? (
+                        <button
+                            aria-label="Cancel agent generation"
+                            className={config.sendClassName}
+                            onClick={() => {
+                                void onCancel?.();
+                            }}
+                            type="button"
+                        >
+                            <Square aria-hidden="true" size={10} />
+                        </button>
+                    ) : (
+                        <button
+                            aria-label={config.sendAriaLabel}
+                            className={config.sendClassName}
+                            disabled={
+                                variant === 'agent' && !promptValue.trim()
+                            }
+                            onClick={submitPrompt}
+                            type="button"
+                        >
+                            <ArrowUp aria-hidden="true" size={14} />
+                        </button>
+                    )}
                 </div>
             </footer>
         </section>

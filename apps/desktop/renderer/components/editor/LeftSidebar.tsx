@@ -13,6 +13,7 @@ import { classNames } from '../../utils/classNames';
 
 import { useEditorSession } from './state/useEditorSession';
 import { useEditorSnapshot } from './state/useEditorSnapshot';
+import type { MiaomaGenerationController } from './state/useMiaomaGeneration';
 import { EditorIconButton } from './EditorIconButton';
 import { SidebarAgentPanel } from './SidebarAgentPanel';
 import { SidebarLayersPanel } from './SidebarLayersPanel';
@@ -56,6 +57,7 @@ const SidebarTabs = ({
 type SidebarContentProps = {
     activeTab: SidebarTab;
     document?: EditorDocument;
+    generation?: MiaomaGenerationController;
     selectedNodeId?: string | null;
     onSelectNode?: (nodeId: string) => void;
 };
@@ -63,11 +65,12 @@ type SidebarContentProps = {
 export const SidebarContent = ({
     activeTab,
     document = CANVAS_SAMPLE_EDITOR_DOCUMENT,
+    generation,
     selectedNodeId,
     onSelectNode
 }: SidebarContentProps) =>
     activeTab === 'agent' ? (
-        <SidebarAgentPanel />
+        <SidebarAgentPanel generation={generation} />
     ) : (
         <SidebarLayersPanel
             document={document}
@@ -78,17 +81,20 @@ export const SidebarContent = ({
 
 type LeftSidebarProps = {
     activeTab: SidebarTab;
+    generation?: MiaomaGenerationController;
     onLayerSelect?: () => void;
     onSelectTab: (tab: SidebarTab) => void;
 };
 
 export const LeftSidebar = ({
     activeTab,
+    generation,
     onLayerSelect,
     onSelectTab
 }: LeftSidebarProps) => (
     <LeftSidebarContent
         activeTab={activeTab}
+        generation={generation}
         onLayerSelect={onLayerSelect}
         onSelectTab={onSelectTab}
     />
@@ -96,6 +102,7 @@ export const LeftSidebar = ({
 
 const LeftSidebarContent = ({
     activeTab,
+    generation,
     onLayerSelect,
     onSelectTab
 }: LeftSidebarProps) => {
@@ -127,6 +134,7 @@ const LeftSidebarContent = ({
                 <SidebarContent
                     activeTab={activeTab}
                     document={snapshot.document}
+                    generation={generation}
                     onSelectNode={(nodeId) => {
                         session.selectNode(nodeId);
                         onLayerSelect?.();

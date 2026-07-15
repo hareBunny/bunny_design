@@ -25,6 +25,7 @@ import { classNames } from '../../utils/classNames';
 import { EditorInteractionProvider } from './state/EditorInteractionProvider';
 import { EditorSessionProvider } from './state/EditorSessionProvider';
 import { useEditorSession } from './state/useEditorSession';
+import { useMiaomaGeneration } from './state/useMiaomaGeneration';
 import { CanvasStage } from './CanvasStage';
 import { LeftSidebar } from './LeftSidebar';
 import { RightInspector } from './RightInspector';
@@ -195,9 +196,6 @@ export const MiaomaEditor = ({
     initialProjectTitle = DEFAULT_PROJECT_TITLE,
     projectId
 }: MiaomaEditorProps) => {
-    const [activeSidebarTab, setActiveSidebarTab] =
-        useState<SidebarTab>('agent');
-    const [isInspectorBodyVisible, setIsInspectorBodyVisible] = useState(true);
     const [projectTitle, setProjectTitle] = useState(initialProjectTitle);
 
     return (
@@ -211,48 +209,72 @@ export const MiaomaEditor = ({
                     projectId={projectId}
                     projectTitle={projectTitle}
                 />
-                <div
-                    className="miaoma-editor-screen grid h-screen min-h-[700px] w-screen grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)] overflow-hidden"
-                    data-canvas-width={EDITOR_DESIGN_METRICS.canvasWidth}
-                    data-content-width={EDITOR_DESIGN_METRICS.contentWidth}
-                    data-design-frame={EDITOR_DESIGN_METRICS.frameId}
-                    data-inspector-width={EDITOR_DESIGN_METRICS.inspectorWidth}
-                    data-sidebar-width={EDITOR_DESIGN_METRICS.sidebarWidth}
-                >
-                    <LeftSidebar
-                        activeTab={activeSidebarTab}
-                        onLayerSelect={() => {
-                            setIsInspectorBodyVisible(true);
-                        }}
-                        onSelectTab={setActiveSidebarTab}
-                    />
-                    <section
-                        className={classNames(
-                            'editor-content grid h-full min-w-0 grid-rows-[var(--editor-header-height)_minmax(0,1fr)] overflow-hidden rounded-l-3xl border-l border-[#e6e6e6] bg-[#f6f6f6] shadow-[-4px_0_20px_#0000001a]',
-                            'grid-cols-[minmax(0,1fr)_var(--editor-inspector-width)] max-[980px]:grid-cols-[minmax(520px,1fr)]'
-                        )}
-                        data-inspector-body-visible={
-                            isInspectorBodyVisible ? 'true' : 'false'
-                        }
-                    >
-                        <MainHeader
-                            onProjectTitleChange={setProjectTitle}
-                            projectTitle={projectTitle}
-                        />
-                        <CanvasStage
-                            activeSidebarTab={activeSidebarTab}
-                            onCanvasBlankSelect={() => {
-                                setIsInspectorBodyVisible(false);
-                            }}
-                            onCanvasNodeSelect={() => {
-                                setIsInspectorBodyVisible(true);
-                            }}
-                            spanInspectorColumn={!isInspectorBodyVisible}
-                        />
-                        <RightInspector bodyVisible={isInspectorBodyVisible} />
-                    </section>
-                </div>
+                <MiaomaEditorContent
+                    projectId={projectId}
+                    projectTitle={projectTitle}
+                    setProjectTitle={setProjectTitle}
+                />
             </EditorInteractionProvider>
         </EditorSessionProvider>
+    );
+};
+
+const MiaomaEditorContent = ({
+    projectId,
+    projectTitle,
+    setProjectTitle
+}: {
+    projectId?: string;
+    projectTitle: string;
+    setProjectTitle: (title: string) => void;
+}) => {
+    const generation = useMiaomaGeneration({ projectId });
+    const [activeSidebarTab, setActiveSidebarTab] =
+        useState<SidebarTab>('agent');
+    const [isInspectorBodyVisible, setIsInspectorBodyVisible] = useState(true);
+
+    return (
+        <div
+            className="miaoma-editor-screen grid h-screen min-h-[700px] w-screen grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)] overflow-hidden"
+            data-canvas-width={EDITOR_DESIGN_METRICS.canvasWidth}
+            data-content-width={EDITOR_DESIGN_METRICS.contentWidth}
+            data-design-frame={EDITOR_DESIGN_METRICS.frameId}
+            data-inspector-width={EDITOR_DESIGN_METRICS.inspectorWidth}
+            data-sidebar-width={EDITOR_DESIGN_METRICS.sidebarWidth}
+        >
+            <LeftSidebar
+                activeTab={activeSidebarTab}
+                generation={generation}
+                onLayerSelect={() => {
+                    setIsInspectorBodyVisible(true);
+                }}
+                onSelectTab={setActiveSidebarTab}
+            />
+            <section
+                className={classNames(
+                    'editor-content grid h-full min-w-0 grid-rows-[var(--editor-header-height)_minmax(0,1fr)] overflow-hidden rounded-l-3xl border-l border-[#e6e6e6] bg-[#f6f6f6] shadow-[-4px_0_20px_#0000001a]',
+                    'grid-cols-[minmax(0,1fr)_var(--editor-inspector-width)] max-[980px]:grid-cols-[minmax(520px,1fr)]'
+                )}
+                data-inspector-body-visible={
+                    isInspectorBodyVisible ? 'true' : 'false'
+                }
+            >
+                <MainHeader
+                    onProjectTitleChange={setProjectTitle}
+                    projectTitle={projectTitle}
+                />
+                <CanvasStage
+                    activeSidebarTab={activeSidebarTab}
+                    onCanvasBlankSelect={() => {
+                        setIsInspectorBodyVisible(false);
+                    }}
+                    onCanvasNodeSelect={() => {
+                        setIsInspectorBodyVisible(true);
+                    }}
+                    spanInspectorColumn={!isInspectorBodyVisible}
+                />
+                <RightInspector bodyVisible={isInspectorBodyVisible} />
+            </section>
+        </div>
     );
 };

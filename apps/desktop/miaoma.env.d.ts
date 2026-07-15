@@ -5,6 +5,12 @@
   */
 
 import type {
+    MiaomaGenerationCancelResult,
+    MiaomaGenerationEvent,
+    MiaomaGenerationStartInput,
+    MiaomaGenerationStartResult
+} from './shared/generation';
+import type {
     MiaomaProjectCreateInput,
     MiaomaProjectDeleteResult,
     MiaomaProjectImportKind,
@@ -40,6 +46,17 @@ declare global {
                 delete: (
                     projectId: string
                 ) => Promise<MiaomaProjectDeleteResult>;
+            };
+            generation?: {
+                start: (
+                    input: MiaomaGenerationStartInput
+                ) => Promise<MiaomaGenerationStartResult>;
+                cancel: (
+                    runId: string
+                ) => Promise<MiaomaGenerationCancelResult>;
+                subscribe: (
+                    listener: (event: MiaomaGenerationEvent) => void
+                ) => () => void;
             };
         };
     }
