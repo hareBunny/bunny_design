@@ -21,7 +21,9 @@ import type { MiaomaGenerationHistoryStore } from '@miaoma-design-ai/miaoma-agen
 
 import {
     createMiaomaDesignGenerationOrchestrator,
-    type MiaomaDesignDocumentState
+    type MiaomaDesignDocumentState,
+    type MiaomaDesignVisualHarness,
+    type MiaomaDesignVisualValidationResult
 } from '../src';
 
 const documentState: MiaomaDesignDocumentState = {
@@ -183,19 +185,64 @@ const createCodex = ({
 };
 
 const createOrchestrator = ({
-    failContent = false
-}: { failContent?: boolean } = {}) => {
+    failContent = false,
+    visualHarness
+}: {
+    failContent?: boolean;
+    visualHarness?: MiaomaDesignVisualHarness;
+} = {}) => {
     const saved: MiaomaGenerationRun[] = [];
     const codex = createCodex({ failContent });
     const orchestrator = createMiaomaDesignGenerationOrchestrator({
         codex: codex.provider,
         history: createHistory(saved),
+        visualHarness,
         createRunId: () => 'run-1',
         now: () => new Date('2026-07-20T00:00:00.000Z')
     });
 
     return { codex, orchestrator, saved };
 };
+
+const visualResult = ({
+    passed,
+    attempt
+}: {
+    passed: boolean;
+    attempt: number;
+}): MiaomaDesignVisualValidationResult => ({
+    check: {
+        formatVersion: 1,
+        passed,
+        summary: passed ? 'Visual check passed.' : 'Spacing needs repair.',
+        issues: passed
+            ? []
+            : [
+                  {
+                      issueId: `spacing-${attempt}`,
+                      severity: 'error',
+                      message: 'Spacing needs repair.'
+                  }
+              ]
+    },
+    screenshot: { path: `/tmp/design-${attempt}.png` },
+    threadId: `visual-thread-${attempt}`
+});
+
+const createVisualHarness = ({
+    passAfterRepair
+}: {
+    passAfterRepair: boolean;
+}): MiaomaDesignVisualHarness => ({
+    validate: vi.fn(async ({ attempt }) =>
+        visualResult({ passed: passAfterRepair && attempt > 0, attempt })
+    ),
+    repair: vi.fn(async ({ state }) => ({
+        ...state,
+        revision: state.revision + 1
+    })),
+    run: vi.fn()
+});
 
 describe('design generation orchestrator', () => {
     it('runs coordinator preparation and parallel workers in plan order', async () => {
@@ -286,6 +333,70 @@ describe('design generation orchestrator', () => {
                 })
             ])
         );
+    });
+
+    it('validates, repairs, and revalidates the assembled document', async () => {
+        const visualHarness = createVisualHarness({ passAfterRepair: true });
+        const { orchestrator } = createOrchestrator({ visualHarness });
+        const updates: number[] = [];
+
+        const result = await orchestrator.start({
+            projectId: 'project-1',
+            prompt: 'Create a dashboard',
+            documentState,
+            maxRepairAttempts: 1,
+            onDocumentUpdated: (state) => {
+                updates.push(state.revision);
+            }
+        }).result;
+
+        expect(result.run.status).toBe('completed');
+        expect(visualHarness.validate).toHaveBeenCalledTimes(2);
+        expect(visualHarness.repair).toHaveBeenCalledTimes(1);
+        expect(updates).toEqual([1, 2, 3, 4]);
+        expect(result.run.activities).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    kind: 'visual-check',
+                    status: 'completed',
+                    output: { summary: 'Spacing needs repair.' }
+                }),
+                expect.objectContaining({
+                    kind: 'repair',
+                    status: 'completed',
+                    output: {
+                        summary: 'Applied visual repairs for 1 issue(s).'
+                    }
+                }),
+                expect.objectContaining({
+                    kind: 'visual-check',
+                    status: 'completed',
+                    output: { summary: 'Visual check passed.' }
+                })
+            ])
+        );
+    });
+
+    it('fails the run when visual validation reaches the repair limit', async () => {
+        const visualHarness = createVisualHarness({ passAfterRepair: false });
+        const { orchestrator, saved } = createOrchestrator({ visualHarness });
+
+        const result = await orchestrator.start({
+            projectId: 'project-1',
+            prompt: 'Create a dashboard',
+            documentState,
+            maxRepairAttempts: 1
+        }).result;
+
+        expect(result.run.status).toBe('failed');
+        expect(result.run).toMatchObject({
+            error: {
+                message: 'Visual validation failed after 1 repair attempt(s).'
+            }
+        });
+        expect(visualHarness.validate).toHaveBeenCalledTimes(2);
+        expect(visualHarness.repair).toHaveBeenCalledTimes(1);
+        expect(saved.at(-1)?.status).toBe('failed');
     });
 
     it('persists a cancelled terminal run when the execution is interrupted', async () => {

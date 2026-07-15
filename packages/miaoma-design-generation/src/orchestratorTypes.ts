@@ -11,6 +11,7 @@ import type {
 import type { MiaomaGenerationHistoryStore } from '@miaoma-design-ai/miaoma-agent-history';
 import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schema';
 
+import type { MiaomaDesignVisualHarness } from './harnessTypes';
 import type { MiaomaDesignDocumentState } from './types';
 
 export type MiaomaDesignGenerationStartInput = {
@@ -18,6 +19,7 @@ export type MiaomaDesignGenerationStartInput = {
     prompt: string;
     documentState: MiaomaDesignDocumentState;
     workingDirectory?: string;
+    maxRepairAttempts?: number;
     model?: string;
     sandbox?: MiaomaCodexSandbox;
     onDocumentUpdated?: (
@@ -45,6 +47,7 @@ export type MiaomaDesignGenerationOrchestrator = {
 export type MiaomaDesignGenerationOrchestratorOptions = {
     codex: MiaomaCodexExecProvider;
     history: MiaomaGenerationHistoryStore;
+    visualHarness?: MiaomaDesignVisualHarness;
     now?: () => Date;
     createRunId?: () => string;
 };

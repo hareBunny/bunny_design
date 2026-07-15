@@ -179,6 +179,7 @@ ${prompt}
 export const createMiaomaDesignGenerationOrchestrator = ({
     codex,
     history,
+    visualHarness,
     now = () => new Date(),
     createRunId = randomUUID
 }: MiaomaDesignGenerationOrchestratorOptions): MiaomaDesignGenerationOrchestrator => ({
@@ -191,7 +192,8 @@ export const createMiaomaDesignGenerationOrchestrator = ({
             now,
             input,
             runId,
-            signal: controller.signal
+            signal: controller.signal,
+            visualHarness
         });
 
         return {
@@ -208,7 +210,8 @@ const executeGeneration = async ({
     now,
     input,
     runId,
-    signal
+    signal,
+    visualHarness
 }: Omit<MiaomaDesignGenerationOrchestratorOptions, 'now'> & {
     now: () => Date;
     input: MiaomaDesignGenerationStartInput;
@@ -406,13 +409,15 @@ const executeGeneration = async ({
         assignmentId,
         kind,
         activityInput,
-        work
+        work,
+        outputSummary
     }: {
         agentId: MiaomaAgentActivity['agentId'];
         assignmentId?: string;
         kind: MiaomaAgentActivityKind;
         activityInput: MiaomaAgentJsonObject;
         work: () => Promise<T>;
+        outputSummary?: (result: T) => string;
     }) => {
         const activityId = await addActivity({
             agentId,
@@ -423,7 +428,7 @@ const executeGeneration = async ({
 
         try {
             const result = await work();
-            await completeActivity(activityId, 'OK');
+            await completeActivity(activityId, outputSummary?.(result) ?? 'OK');
             return result;
         } catch (error) {
             await failActivity(activityId, error);
@@ -685,6 +690,84 @@ const executeGeneration = async ({
         await mergeQueue;
 
         await transition('validating');
+
+        if (visualHarness) {
+            const maxRepairAttempts = input.maxRepairAttempts ?? 2;
+            if (!Number.isInteger(maxRepairAttempts) || maxRepairAttempts < 0) {
+                throw new Error(
+                    'Max repair attempts must be a non-negative integer.'
+                );
+            }
+
+            for (let attempt = 0; ; attempt += 1) {
+                const visualInput = {
+                    projectId: input.projectId,
+                    runId,
+                    prompt: input.prompt,
+                    state,
+                    attempt,
+                    workingDirectory: input.workingDirectory ?? process.cwd(),
+                    model: input.model,
+                    sandbox,
+                    signal,
+                    maxRepairAttempts,
+                    onEvent: (event: MiaomaCodexEvent) =>
+                        recordCodexEvent({
+                            event,
+                            agentId: MIAOMA_COORDINATOR_AGENT_ID
+                        })
+                };
+                const check = await runActivity({
+                    agentId: MIAOMA_COORDINATOR_AGENT_ID,
+                    kind: 'visual-check',
+                    activityInput: {
+                        attempt,
+                        schemaPath:
+                            MIAOMA_DESIGN_GENERATION_SCHEMA_PATHS.visualCheck
+                    },
+                    work: () => visualHarness.validate(visualInput),
+                    outputSummary: (result) => result.check.summary
+                });
+
+                if (check.check.passed) {
+                    break;
+                }
+
+                if (attempt >= maxRepairAttempts) {
+                    throw new Error(
+                        `Visual validation failed after ${maxRepairAttempts} repair attempt(s).`
+                    );
+                }
+
+                await transition('repairing');
+                await runActivity({
+                    agentId: MIAOMA_COORDINATOR_AGENT_ID,
+                    kind: 'repair',
+                    activityInput: {
+                        attempt: attempt + 1,
+                        issueIds: check.check.issues.map(
+                            ({ issueId }) => issueId
+                        ),
+                        schemaPath: MIAOMA_DESIGN_GENERATION_SCHEMA_PATHS.repair
+                    },
+                    work: async () => {
+                        const nextState = await visualHarness.repair({
+                            loop: visualInput,
+                            state,
+                            check
+                        });
+                        state = nextState;
+                        await input.onDocumentUpdated?.(state);
+                        return nextState;
+                    },
+                    outputSummary: () =>
+                        `Applied visual repairs for ${check.check.issues.length} issue(s).`
+                });
+                await persist();
+                await transition('validating');
+            }
+        }
+
         run = {
             ...run,
             status: 'completed',
@@ -748,6 +831,7 @@ const designAssignment = async ({
         kind: MiaomaAgentActivityKind;
         activityInput: MiaomaAgentJsonObject;
         work: () => Promise<T>;
+        outputSummary?: (result: T) => string;
     }) => Promise<T>;
     executeCodex: (input: {
         agentId: MiaomaAgentActivity['agentId'];
