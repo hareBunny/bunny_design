@@ -74,14 +74,48 @@ const publish = (sender: WebContents, event: MiaomaGenerationEvent) => {
     }
 };
 
-const waitForRendererPaint = async (sender: WebContents) => {
+const waitForRendererDocument = async ({
+    sender,
+    runId,
+    revision
+}: {
+    sender: WebContents;
+    runId: string;
+    revision: number;
+}) => {
     if (!isAlive(sender)) {
-        return;
+        throw new Error('The editor window was closed during generation.');
     }
 
-    await sender.executeJavaScript(
-        `new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))`
-    );
+    const expected = JSON.stringify({ runId, revision: String(revision) });
+
+    await sender.executeJavaScript(`new Promise((resolve, reject) => {
+        const expected = ${expected};
+        const deadline = performance.now() + 5000;
+        const check = () => {
+            const element = document.querySelector('[data-region="canvas-stage"]');
+            const matches =
+                element?.getAttribute('data-generation-run-id') === expected.runId &&
+                element?.getAttribute('data-document-revision') === expected.revision;
+
+            if (matches) {
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+                return;
+            }
+
+            if (performance.now() >= deadline) {
+                reject(new Error(
+                    'Timed out waiting for the renderer to display document revision ' +
+                    expected.runId + ':' + expected.revision
+                ));
+                return;
+            }
+
+            requestAnimationFrame(check);
+        };
+
+        check();
+    })`);
 };
 
 const createScreenshotCapture =
@@ -197,9 +231,14 @@ export const createMiaomaDesktopGenerationRuntime = ({
                 publish(sender, {
                     type: 'document-updated',
                     runId: execution.runId,
+                    revision: state.revision,
                     document: state.document
                 });
-                await waitForRendererPaint(sender);
+                await waitForRendererDocument({
+                    sender,
+                    runId: execution.runId,
+                    revision: state.revision
+                });
             }
         });
 

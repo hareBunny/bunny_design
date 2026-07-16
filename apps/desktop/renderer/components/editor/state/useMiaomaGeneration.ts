@@ -28,6 +28,8 @@ const hasGenerationApi = () =>
     typeof window !== 'undefined' && Boolean(window.miaomaAPI?.generation);
 
 export type MiaomaGenerationController = {
+    documentRevision: number;
+    documentRunId: string | null;
     error: string | null;
     isRunning: boolean;
     run: MiaomaGenerationRun | null;
@@ -44,6 +46,9 @@ export const useMiaomaGeneration = ({
     const [run, setRun] = useState<MiaomaGenerationRun | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [activeRunId, setActiveRunId] = useState<string | null>(null);
+    const [documentRunId, setDocumentRunId] = useState<string | null>(null);
+    const [documentRevision, setDocumentRevision] = useState(0);
+    const [isStarting, setIsStarting] = useState(false);
 
     useEffect(() => {
         if (!hasGenerationApi()) {
@@ -54,10 +59,22 @@ export const useMiaomaGeneration = ({
             if (event.type === 'run-updated') {
                 setRun(event.run);
                 setActiveRunId(event.run.runId);
+                setError(null);
                 return;
             }
 
             session.replaceDocument(schemaToEditorDocument(event.document));
+
+            setDocumentRunId(
+                event.type === 'document-updated'
+                    ? event.runId
+                    : event.run.runId
+            );
+            setDocumentRevision(
+                event.type === 'document-updated'
+                    ? event.revision
+                    : event.run.documentRevision
+            );
 
             if (event.type === 'run-finished') {
                 setRun(event.run);
@@ -84,24 +101,36 @@ export const useMiaomaGeneration = ({
             }
 
             setError(null);
+            setIsStarting(true);
             const generation = window.miaomaAPI.generation;
             if (!generation) {
                 setError('Design generation is unavailable in this window.');
+                setIsStarting(false);
                 return;
             }
 
-            const result = await generation.start({
-                projectId,
-                prompt: normalizedPrompt,
-                document: editorDocumentToRenderable(
-                    session.getSnapshot().document
-                )
-            });
+            try {
+                const result = await generation.start({
+                    projectId,
+                    prompt: normalizedPrompt,
+                    document: editorDocumentToRenderable(
+                        session.getSnapshot().document
+                    )
+                });
 
-            if (result.success === false) {
-                setError(result.error);
-            } else {
-                setActiveRunId(result.runId);
+                if (result.success === false) {
+                    setError(result.error);
+                } else {
+                    setActiveRunId(result.runId);
+                }
+            } catch (startError) {
+                setError(
+                    startError instanceof Error
+                        ? startError.message
+                        : 'Failed to start design generation.'
+                );
+            } finally {
+                setIsStarting(false);
             }
         },
         [projectId, session]
@@ -117,18 +146,35 @@ export const useMiaomaGeneration = ({
             return;
         }
 
-        const result = await generation.cancel(activeRunId);
-        if (result.success === false) {
-            setError(result.error);
+        try {
+            const result = await generation.cancel(activeRunId);
+            if (result.success === false) {
+                setError(result.error);
+            }
+        } catch (cancelError) {
+            setError(
+                cancelError instanceof Error
+                    ? cancelError.message
+                    : 'Failed to cancel design generation.'
+            );
         }
     }, [activeRunId]);
 
     const isRunning = useMemo(
         () =>
             (run !== null && ACTIVE_RUN_STATUSES.has(run.status)) ||
-            activeRunId !== null,
-        [activeRunId, run]
+            activeRunId !== null ||
+            isStarting,
+        [activeRunId, isStarting, run]
     );
 
-    return { cancel, error, isRunning, run, start };
+    return {
+        cancel,
+        documentRevision,
+        documentRunId,
+        error,
+        isRunning,
+        run,
+        start
+    };
 };

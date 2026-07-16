@@ -19,6 +19,8 @@ import { PromptDock } from './PromptDock';
 
 type CanvasStageProps = {
     activeSidebarTab: SidebarTab;
+    documentRevision?: number;
+    documentRunId?: string | null;
     onCanvasBlankSelect?: () => void;
     onCanvasNodeSelect?: (nodeId: string) => void;
     spanInspectorColumn?: boolean;
@@ -26,12 +28,16 @@ type CanvasStageProps = {
 
 export const CanvasStage = ({
     activeSidebarTab,
+    documentRevision,
+    documentRunId,
     onCanvasBlankSelect,
     onCanvasNodeSelect,
     spanInspectorColumn
 }: CanvasStageProps) => (
     <CanvasStageInner
         activeSidebarTab={activeSidebarTab}
+        documentRevision={documentRevision}
+        documentRunId={documentRunId}
         onCanvasBlankSelect={onCanvasBlankSelect}
         onCanvasNodeSelect={onCanvasNodeSelect}
         spanInspectorColumn={spanInspectorColumn}
@@ -40,6 +46,8 @@ export const CanvasStage = ({
 
 const CanvasStageInner = ({
     activeSidebarTab,
+    documentRevision = 0,
+    documentRunId,
     onCanvasBlankSelect,
     onCanvasNodeSelect,
     spanInspectorColumn
@@ -55,6 +63,8 @@ const CanvasStageInner = ({
                 'editor-canvas-stage relative col-start-1 row-start-2 min-h-0 min-w-0 overflow-hidden bg-[#f6f6f6]',
                 spanInspectorColumn && 'col-span-2'
             )}
+            data-document-revision={documentRevision}
+            data-generation-run-id={documentRunId ?? undefined}
             data-region="canvas-stage"
         >
             <CanvasViewportShell

@@ -265,6 +265,8 @@ const MiaomaEditorContent = ({
                 />
                 <CanvasStage
                     activeSidebarTab={activeSidebarTab}
+                    documentRevision={generation.documentRevision}
+                    documentRunId={generation.documentRunId}
                     onCanvasBlankSelect={() => {
                         setIsInspectorBodyVisible(false);
                     }}

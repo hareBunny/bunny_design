@@ -377,6 +377,12 @@ const AgentRunTimeline = ({ run }: { run: MiaomaGenerationRun }) => (
     </div>
 );
 
+const AgentStartingRow = () => (
+    <div className="editor-agent-timeline-stack flex w-full flex-col gap-2.5 px-3 pr-[11px]">
+        <AgentStatusRow label="Starting" />
+    </div>
+);
+
 type SidebarAgentPanelProps = {
     generation?: MiaomaGenerationController;
 };
@@ -389,6 +395,8 @@ export const SidebarAgentPanel = ({ generation }: SidebarAgentPanelProps) => (
         <div className="editor-agent-timeline mt-2.5 min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
             {generation?.run ? (
                 <AgentRunTimeline run={generation.run} />
+            ) : generation?.isRunning ? (
+                <AgentStartingRow />
             ) : (
                 <div className="editor-agent-timeline-stack flex w-full flex-col gap-2.5 px-3 pr-[11px]">
                     {AGENT_TIMELINE_ITEMS.map((item) => (

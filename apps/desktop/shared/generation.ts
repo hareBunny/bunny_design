@@ -47,6 +47,7 @@ export type MiaomaGenerationEvent =
     | {
           type: 'document-updated';
           runId: string;
+          revision: number;
           document: MiaomaDesignDocument;
       }
     | {

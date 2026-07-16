@@ -92,10 +92,145 @@ type AppendResult =
     | { status: 'not-frame'; node: MiaomaDesignNode }
     | { status: 'updated'; node: MiaomaDesignNode };
 
+const upsertRegionInTarget = (
+    node: MiaomaDesignNode,
+    targetNodeId: string,
+    region: MiaomaDesignNode,
+    bounds?: MiaomaGenerationAssignment['region']['bounds']
+): AppendResult => {
+    if (node.id === targetNodeId) {
+        if (node.type !== 'frame') {
+            return { status: 'not-frame', node };
+        }
+
+        const existingChildren = node.children ?? [];
+        const hasRegion = existingChildren.some(({ id }) => id === region.id);
+
+        return {
+            status: 'updated',
+            node: {
+                ...node,
+                width:
+                    bounds && typeof node.width === 'number'
+                        ? Math.max(node.width, bounds.x + bounds.width)
+                        : node.width,
+                height:
+                    bounds && typeof node.height === 'number'
+                        ? Math.max(node.height, bounds.y + bounds.height)
+                        : node.height,
+                children: hasRegion
+                    ? existingChildren.map((child) =>
+                          child.id === region.id ? region : child
+                      )
+                    : [...existingChildren, region]
+            }
+        };
+    }
+
+    if (node.type !== 'frame' || !node.children) {
+        return { status: 'not-found', node };
+    }
+
+    let status: AppendResult['status'] = 'not-found';
+    const children = node.children.map((child) => {
+        if (status !== 'not-found') {
+            return child;
+        }
+
+        const result = upsertRegionInTarget(
+            child,
+            targetNodeId,
+            region,
+            bounds
+        );
+        status = result.status;
+        return result.node;
+    });
+
+    return status === 'not-found'
+        ? { status, node }
+        : { status, node: { ...node, children } };
+};
+
+export const placeMiaomaDesignRegionScaffolds = ({
+    state,
+    expectedRevision,
+    assignments
+}: {
+    state: MiaomaDesignDocumentState;
+    expectedRevision: number;
+    assignments: readonly MiaomaGenerationAssignment[];
+}): MiaomaDesignDocumentState => {
+    assertRevision(state, expectedRevision);
+    let children = state.document.children;
+
+    for (const assignment of assignments) {
+        const targetNodeIds = assignment.region.targetNodeIds;
+        if (!targetNodeIds || targetNodeIds.length !== 1) {
+            throw new MiaomaDesignGenerationError({
+                code: 'target-not-found',
+                message: 'Assignment must identify one target frame.'
+            });
+        }
+
+        const bounds = assignment.region.bounds;
+        const scaffold: MiaomaDesignNode = {
+            id: assignment.region.regionId,
+            type: 'frame',
+            name: assignment.region.label,
+            ...(bounds
+                ? {
+                      x: bounds.x,
+                      y: bounds.y,
+                      width: bounds.width,
+                      height: bounds.height
+                  }
+                : { width: 'fill_container' as const, height: 160 }),
+            clip: true,
+            layout: 'none',
+            children: []
+        };
+        let status: AppendResult['status'] = 'not-found';
+
+        children = children.map((node) => {
+            if (status !== 'not-found') {
+                return node;
+            }
+            const result = upsertRegionInTarget(
+                node,
+                targetNodeIds[0],
+                scaffold,
+                bounds
+            );
+            status = result.status;
+            return result.node;
+        });
+
+        if (status === 'not-found') {
+            throw new MiaomaDesignGenerationError({
+                code: 'target-not-found',
+                message: `Target node was not found: ${targetNodeIds[0]}.`
+            });
+        }
+        if (status === 'not-frame') {
+            throw new MiaomaDesignGenerationError({
+                code: 'target-not-frame',
+                message: `Target node is not a frame: ${targetNodeIds[0]}.`
+            });
+        }
+    }
+
+    return {
+        document: validateDocument({ ...state.document, children }),
+        revision: state.revision + 1
+    };
+};
+
 const appendToTarget = (
     node: MiaomaDesignNode,
     targetNodeId: string,
-    nodes: MiaomaDesignNode[]
+    nodes: MiaomaDesignNode[],
+    bounds?: MiaomaGenerationAssignment['region']['bounds']
 ): AppendResult => {
     if (node.id === targetNodeId) {
         return node.type === 'frame'
@@ -103,6 +238,14 @@ const appendToTarget = (
                   status: 'updated',
                   node: {
                       ...node,
+                      width:
+                          bounds && typeof node.width === 'number'
+                              ? Math.max(node.width, bounds.x + bounds.width)
+                              : node.width,
+                      height:
+                          bounds && typeof node.height === 'number'
+                              ? Math.max(node.height, bounds.y + bounds.height)
+                              : node.height,
                       children: [...(node.children ?? []), ...nodes]
                   }
               }
@@ -119,7 +262,7 @@ const appendToTarget = (
             return child;
         }
 
-        const result = appendToTarget(child, targetNodeId, nodes);
+        const result = appendToTarget(child, targetNodeId, nodes, bounds);
         status = result.status;
         return result.node;
     });
@@ -157,7 +300,17 @@ export const appendMiaomaDesignFragment = ({
     }
 
     const documentNodeIds = collectNodeIds(state.document.children);
-    const fragmentNodeIds = collectNodeIds(fragment.nodes);
+    const bounds = assignment.region.bounds;
+    const fragmentNodes = bounds
+        ? fragment.nodes.map((node) => ({
+              ...node,
+              x: bounds.x,
+              y: bounds.y,
+              width: bounds.width,
+              height: bounds.height
+          }))
+        : fragment.nodes;
+    const fragmentNodeIds = collectNodeIds(fragmentNodes);
     const collision = [...fragmentNodeIds].find((id) =>
         documentNodeIds.has(id)
     );
@@ -174,7 +327,12 @@ export const appendMiaomaDesignFragment = ({
             return node;
         }
 
-        const result = appendToTarget(node, targetNodeIds[0], fragment.nodes);
+        const result = appendToTarget(
+            node,
+            targetNodeIds[0],
+            fragmentNodes,
+            bounds
+        );
         status = result.status;
         return result.node;
     });
@@ -219,6 +377,64 @@ const replaceNodes = (
     });
 
     return { node: { ...node, children }, found };
+};
+
+export const replaceMiaomaDesignRegionFragment = ({
+    state,
+    expectedRevision,
+    assignment,
+    fragment
+}: {
+    state: MiaomaDesignDocumentState;
+    expectedRevision: number;
+    assignment: MiaomaGenerationAssignment;
+    fragment: MiaomaDesignFragment;
+}): MiaomaDesignDocumentState => {
+    assertRevision(state, expectedRevision);
+    if (fragment.assignmentId !== assignment.assignmentId) {
+        throw new MiaomaDesignGenerationError({
+            code: 'assignment-mismatch',
+            message: 'Design fragment does not match its assignment.'
+        });
+    }
+
+    const region = fragment.nodes[0];
+    if (!region || region.id !== assignment.region.regionId) {
+        throw new MiaomaDesignGenerationError({
+            code: 'assignment-mismatch',
+            message: `Design fragment must replace region ${assignment.region.regionId}.`
+        });
+    }
+
+    const bounds = assignment.region.bounds;
+    const replacement = bounds
+        ? {
+              ...region,
+              x: bounds.x,
+              y: bounds.y,
+              width: bounds.width,
+              height: bounds.height
+          }
+        : region;
+    const replacements = new Map([[replacement.id, replacement]]);
+    const found = new Set<string>();
+    const children = state.document.children.map((node) => {
+        const result = replaceNodes(node, replacements);
+        result.found.forEach((id) => found.add(id));
+        return result.node;
+    });
+
+    if (!found.has(replacement.id)) {
+        throw new MiaomaDesignGenerationError({
+            code: 'target-not-found',
+            message: `Planned region was not found: ${replacement.id}.`
+        });
+    }
+
+    return {
+        document: validateDocument({ ...state.document, children }),
+        revision: state.revision + 1
+    };
 };
 
 export const replaceMiaomaDesignRepairs = ({

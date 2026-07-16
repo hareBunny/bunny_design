@@ -13,7 +13,9 @@ import {
     applyMiaomaDesignVariables,
     type MiaomaDesignDocumentState,
     type MiaomaDesignFragment,
-    type MiaomaDesignVariablesDraft
+    type MiaomaDesignVariablesDraft,
+    placeMiaomaDesignRegionScaffolds,
+    replaceMiaomaDesignRegionFragment
 } from '../src';
 
 const state: MiaomaDesignDocumentState = {
@@ -89,17 +91,92 @@ describe('design document assembly', () => {
     });
 
     it('appends a fragment to its planned target frame', () => {
+        const boundedAssignment: MiaomaGenerationAssignment = {
+            ...assignment,
+            region: {
+                ...assignment.region,
+                bounds: { x: 0, y: 900, width: 1440, height: 600 }
+            }
+        };
         const updated = appendMiaomaDesignFragment({
             state,
             expectedRevision: 0,
-            assignment,
+            assignment: boundedAssignment,
             fragment
         });
 
         expect(updated.revision).toBe(1);
         expect(updated.document.children[0]).toMatchObject({
             id: 'root',
-            children: [expect.objectContaining({ id: 'hero-frame' })]
+            height: 1500,
+            children: [
+                expect.objectContaining({
+                    id: 'hero-frame',
+                    x: 0,
+                    y: 900,
+                    width: 1440,
+                    height: 600
+                })
+            ]
+        });
+    });
+
+    it('places fixed region scaffolds and replaces them as workers finish', () => {
+        const plannedAssignment: MiaomaGenerationAssignment = {
+            ...assignment,
+            region: {
+                ...assignment.region,
+                bounds: { x: 0, y: 900, width: 1440, height: 600 }
+            }
+        };
+        const planned = placeMiaomaDesignRegionScaffolds({
+            state,
+            expectedRevision: 0,
+            assignments: [plannedAssignment]
+        });
+        const updated = replaceMiaomaDesignRegionFragment({
+            state: planned,
+            expectedRevision: 1,
+            assignment: plannedAssignment,
+            fragment: {
+                ...fragment,
+                nodes: [
+                    {
+                        id: 'hero',
+                        type: 'frame',
+                        children: [
+                            {
+                                id: 'hero-title',
+                                type: 'text',
+                                content: 'Generated hero'
+                            }
+                        ]
+                    }
+                ]
+            }
+        });
+
+        expect(planned.document.children[0]).toMatchObject({
+            height: 1500,
+            children: [
+                {
+                    id: 'hero',
+                    x: 0,
+                    y: 900,
+                    width: 1440,
+                    height: 600,
+                    children: []
+                }
+            ]
+        });
+        expect(updated.revision).toBe(2);
+        expect(updated.document.children[0]).toMatchObject({
+            children: [
+                {
+                    id: 'hero',
+                    children: [expect.objectContaining({ id: 'hero-title' })]
+                }
+            ]
         });
     });
 

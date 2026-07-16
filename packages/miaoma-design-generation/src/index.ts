@@ -12,6 +12,8 @@ export {
 export {
     appendMiaomaDesignFragment,
     applyMiaomaDesignVariables,
+    placeMiaomaDesignRegionScaffolds,
+    replaceMiaomaDesignRegionFragment,
     replaceMiaomaDesignRepairs
 } from './documentAssembly';
 export { createMiaomaDesignVisualHarness } from './harness';

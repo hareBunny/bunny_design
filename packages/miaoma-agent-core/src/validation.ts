@@ -84,13 +84,14 @@ const isRegion = (value: unknown): value is MiaomaDesignRegion => {
     }
 
     if (value.bounds !== undefined) {
+        const bounds = value.bounds;
         if (
-            !isRecord(value.bounds) ||
+            !isRecord(bounds) ||
             !['x', 'y', 'width', 'height'].every((key) =>
-                isFiniteNumber(value.bounds?.[key])
+                isFiniteNumber(bounds[key])
             ) ||
-            (value.bounds.width as number) < 0 ||
-            (value.bounds.height as number) < 0
+            (bounds.width as number) < 0 ||
+            (bounds.height as number) < 0
         ) {
             return false;
         }

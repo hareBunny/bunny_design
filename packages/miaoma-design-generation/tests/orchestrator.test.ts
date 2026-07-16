@@ -54,6 +54,7 @@ const plan = {
             region: {
                 regionId: 'hero',
                 label: 'Hero',
+                bounds: { x: 0, y: 0, width: 1440, height: 500 },
                 targetNodeIds: ['root']
             }
         },
@@ -65,6 +66,7 @@ const plan = {
             region: {
                 regionId: 'content',
                 label: 'Content',
+                bounds: { x: 0, y: 500, width: 1440, height: 400 },
                 targetNodeIds: ['root']
             }
         }
@@ -163,8 +165,9 @@ const createCodex = ({
                 assignmentId,
                 nodes: [
                     {
-                        id: `${assignmentId}-frame`,
+                        id: assignmentId,
                         type: 'frame',
+                        name: `Designed ${assignmentId}`,
                         width: 'fill_container',
                         height: 240,
                         children: []
@@ -248,6 +251,7 @@ describe('design generation orchestrator', () => {
     it('runs coordinator preparation and parallel workers in plan order', async () => {
         const { codex, orchestrator, saved } = createOrchestrator();
         const updates: number[] = [];
+        const completedRegions: string[][] = [];
 
         const execution = orchestrator.start({
             projectId: 'project-1',
@@ -256,6 +260,16 @@ describe('design generation orchestrator', () => {
             documentState,
             onDocumentUpdated: (state) => {
                 updates.push(state.revision);
+                const root = state.document.children[0];
+                completedRegions.push(
+                    root?.type === 'frame'
+                        ? (root.children ?? [])
+                              .filter(({ name }) =>
+                                  name?.startsWith('Designed')
+                              )
+                              .map(({ id }) => id)
+                        : []
+                );
             }
         });
         const result = await execution.result;
@@ -272,9 +286,15 @@ describe('design generation orchestrator', () => {
             result.document.children[0].type === 'frame'
                 ? result.document.children[0].children?.map(({ id }) => id)
                 : []
-        ).toEqual(['hero-frame', 'content-frame']);
+        ).toEqual(['hero', 'content']);
         expect(codex.maxActiveWorkers).toBe(2);
-        expect(updates).toEqual([1, 2, 3]);
+        expect(updates).toEqual([1, 2, 3, 4]);
+        expect(completedRegions).toEqual([
+            [],
+            [],
+            ['content'],
+            ['hero', 'content']
+        ]);
         expect(result.run.activities).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ kind: 'bash', status: 'completed' }),
@@ -289,6 +309,15 @@ describe('design generation orchestrator', () => {
             type: 'resume',
             threadId: 'thread-1'
         });
+        expect(codex.calls[2].prompt).toContain(
+            'Set assignmentId to exactly "hero"'
+        );
+        expect(codex.calls[2].prompt).toContain(
+            'top-level frame id to exactly "hero"'
+        );
+        expect(codex.calls[3].prompt).toContain(
+            'Set assignmentId to exactly "content"'
+        );
         expect(
             codex.calls.every(
                 ({ workingDirectory }) =>
@@ -345,14 +374,14 @@ describe('design generation orchestrator', () => {
                 expect.objectContaining({
                     assignmentId: 'content',
                     status: 'placeholder',
-                    placeholderNodeId: 'placeholder-content'
+                    placeholderNodeId: 'content'
                 })
             ])
         );
         expect(result.document.children[0]).toMatchObject({
             children: [
-                expect.objectContaining({ id: 'hero-frame' }),
-                expect.objectContaining({ id: 'placeholder-content' })
+                expect.objectContaining({ id: 'hero' }),
+                expect.objectContaining({ id: 'content' })
             ]
         });
         expect(result.run.activities).toEqual(
@@ -384,7 +413,7 @@ describe('design generation orchestrator', () => {
         expect(result.run.status).toBe('completed');
         expect(visualHarness.validate).toHaveBeenCalledTimes(2);
         expect(visualHarness.repair).toHaveBeenCalledTimes(1);
-        expect(updates).toEqual([1, 2, 3, 4]);
+        expect(updates).toEqual([1, 2, 3, 4, 5]);
         expect(result.run.activities).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({

@@ -48,7 +48,12 @@
                                 "items": { "type": "string", "minLength": 1 }
                             }
                         },
-                        "required": ["regionId", "label", "targetNodeIds"]
+                        "required": [
+                            "regionId",
+                            "label",
+                            "bounds",
+                            "targetNodeIds"
+                        ]
                     }
                 },
                 "required": [

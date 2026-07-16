@@ -12,12 +12,13 @@ import {
     type MiaomaCodexExecProvider
 } from '@miaoma-design-ai/miaoma-agent-codex';
 import type { MiaomaGenerationHistoryStore } from '@miaoma-design-ai/miaoma-agent-history';
+import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schema';
 
 import { createMiaomaDesktopGenerationRuntime } from '../client/generation/generationRuntime';
 import type { ProjectStore } from '../client/projects/projectStore';
 import type { MiaomaGenerationStartInput } from '../shared/generation';
 
-const document = {
+const document: MiaomaDesignDocument = {
     version: '2.14',
     fileToken: 'project-1',
     children: [
@@ -67,7 +68,7 @@ describe('desktop generation runtime', () => {
         const codex: MiaomaCodexExecProvider = {
             execute: vi.fn(
                 ({ signal }) =>
-                    new Promise((_, reject) => {
+                    new Promise<never>((_, reject) => {
                         const rejectCancelled = () =>
                             reject(
                                 new MiaomaCodexExecError({
@@ -98,7 +99,7 @@ describe('desktop generation runtime', () => {
         const { sender, send } = createSender();
 
         const started = await runtime.start(sender, input);
-        if (!started.success) {
+        if (started.success === false) {
             throw new Error(started.error);
         }
 

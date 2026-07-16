@@ -22,6 +22,7 @@ const assignment = {
     region: {
         regionId: 'hero',
         label: 'Hero',
+        bounds: { x: 0, y: 0, width: 1440, height: 640 },
         targetNodeIds: ['root']
     },
     status: 'pending' as const
@@ -48,6 +49,7 @@ describe('generation output contracts', () => {
                     region: {
                         regionId: 'content',
                         label: 'Content',
+                        bounds: { x: 0, y: 640, width: 1440, height: 480 },
                         targetNodeIds: ['root']
                     }
                 },
@@ -110,7 +112,7 @@ describe('generation output contracts', () => {
                 assignmentId: 'hero',
                 nodes: [
                     {
-                        id: 'hero-frame',
+                        id: 'hero',
                         type: 'frame',
                         width: 'fill_container',
                         height: 640,
@@ -122,7 +124,7 @@ describe('generation output contracts', () => {
         });
 
         expect(fragment.nodes[0]).toMatchObject({
-            id: 'hero-frame',
+            id: 'hero',
             fill: ['$accent']
         });
     });
@@ -136,8 +138,22 @@ describe('generation output contracts', () => {
                     fragmentId: 'fragment-hero',
                     assignmentId: 'hero',
                     nodes: [
-                        { id: 'duplicate', type: 'frame', children: [] },
-                        { id: 'duplicate', type: 'frame', children: [] }
+                        {
+                            id: 'hero',
+                            type: 'frame',
+                            children: [
+                                {
+                                    id: 'duplicate',
+                                    type: 'frame',
+                                    children: []
+                                },
+                                {
+                                    id: 'duplicate',
+                                    type: 'frame',
+                                    children: []
+                                }
+                            ]
+                        }
                     ]
                 }
             })

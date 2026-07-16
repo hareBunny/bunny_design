@@ -31,8 +31,9 @@ import {
     parseMiaomaDesignVariablesDraft
 } from './contracts';
 import {
-    appendMiaomaDesignFragment,
-    applyMiaomaDesignVariables
+    applyMiaomaDesignVariables,
+    placeMiaomaDesignRegionScaffolds,
+    replaceMiaomaDesignRegionFragment
 } from './documentAssembly';
 import {
     type MiaomaDesignGenerationExecution,
@@ -85,7 +86,7 @@ const placeholderFragment = ({
         assignmentId: assignment.assignmentId,
         nodes: [
             {
-                id: `placeholder-${assignment.assignmentId}`,
+                id: assignment.region.regionId,
                 type: 'frame',
                 name: `Placeholder / ${assignment.region.label}`,
                 width: bounds?.width || 'fill_container',
@@ -105,14 +106,14 @@ const placeholderFragment = ({
                 gap: 8,
                 children: [
                     {
-                        id: `placeholder-${assignment.assignmentId}-title`,
+                        id: `${assignment.region.regionId}-placeholder-title`,
                         type: 'text',
                         content: `Unable to design ${assignment.region.label}`,
                         fontSize: 14,
                         fontWeight: '600'
                     },
                     {
-                        id: `placeholder-${assignment.assignmentId}-reason`,
+                        id: `${assignment.region.regionId}-placeholder-reason`,
                         type: 'text',
                         content: reason,
                         fontSize: 12
@@ -148,7 +149,8 @@ Plan the visual regions for this design request.
 Return only the JSON object required by the provided schema.
 Create no more than five assignments, use each collaborator at most once, and
 assign every region to the root frame ${rootNodeId}.
-Use contiguous order values beginning at zero.
+Use contiguous order values beginning at zero. Define non-overlapping bounds
+for every region so the complete page scaffold is fixed before workers start.
 
 Available variables: ${variableNames.join(', ')}
 Design request:
@@ -166,16 +168,26 @@ const buildWorkerPrompt = ({
 }) =>
     `
 Design only the assigned region and return only the JSON object required by the
-provided schema. Return one or more valid design nodes in nodes. Do not edit
-other regions, choose another target, or return a complete document.
+provided schema. Return exactly one top-level region frame in nodes. Do not
+edit other regions, choose another target, or return a complete document.
+The region frame already exists as a scaffold. Replace that fixed node and set
+the top-level frame id to exactly "${assignment.region.regionId}".
 
 Region: ${assignment.region.label}
 Region id: ${assignment.region.regionId}
+Assignment id: ${assignment.assignmentId}
 Objective: ${assignment.objective}
 Target frame: ${assignment.region.targetNodeIds?.[0] ?? 'root'}
 Available variables: ${variableNames.join(', ')}
 Design request:
 ${prompt}
+
+Set assignmentId to exactly "${assignment.assignmentId}" and fragmentId to
+"fragment-${assignment.assignmentId}" in the returned JSON.
+Prefix color, font-family, and corner-radius variable references with "$".
+Use literal values for all other node properties; never return a bare variable
+name as a fill, stroke, effect color, fontFamily, or cornerRadius value.
+Do not emit lineHeight, textGrowth, whiteSpace, or CSS-only properties.
 `.trim();
 
 export const createMiaomaDesignGenerationOrchestrator = ({
@@ -672,6 +684,12 @@ const executeGeneration = async ({
 
         run = { ...run, assignments: plan.assignments };
         await persist();
+        state = placeMiaomaDesignRegionScaffolds({
+            state,
+            expectedRevision: state.revision,
+            assignments: plan.assignments
+        });
+        await input.onDocumentUpdated?.(state);
         await transition('designing');
 
         const workerOutcomes = plan.assignments.map((assignment) =>
@@ -691,44 +709,26 @@ const executeGeneration = async ({
             })
         );
 
-        const ready = new Map<
-            number,
-            {
-                assignment: MiaomaGenerationAssignment;
-                fragment: MiaomaDesignFragment;
-                placeholder: boolean;
-            }
-        >();
-        let nextOrder = 0;
         let mergeQueue = Promise.resolve();
 
         await Promise.all(
-            workerOutcomes.map((worker, index) =>
+            workerOutcomes.map((worker) =>
                 worker.then((outcome) => {
                     mergeQueue = mergeQueue.then(async () => {
-                        ready.set(index, outcome);
-                        while (ready.has(nextOrder)) {
-                            const next = ready.get(nextOrder);
-                            if (!next) {
-                                break;
-                            }
-                            ready.delete(nextOrder);
-                            state = appendMiaomaDesignFragment({
-                                state,
-                                expectedRevision: state.revision,
-                                assignment: next.assignment,
-                                fragment: next.fragment
-                            });
-                            await input.onDocumentUpdated?.(state);
-                            if (!next.placeholder) {
-                                await markAssignmentCompleted(
-                                    next.assignment.assignmentId,
-                                    next.fragment.fragmentId
-                                );
-                            }
-                            await persist();
-                            nextOrder += 1;
+                        state = replaceMiaomaDesignRegionFragment({
+                            state,
+                            expectedRevision: state.revision,
+                            assignment: outcome.assignment,
+                            fragment: outcome.fragment
+                        });
+                        await input.onDocumentUpdated?.(state);
+                        if (!outcome.placeholder) {
+                            await markAssignmentCompleted(
+                                outcome.assignment.assignmentId,
+                                outcome.fragment.fragmentId
+                            );
                         }
+                        await persist();
                     });
                     return mergeQueue;
                 })
@@ -949,7 +949,7 @@ const designAssignment = async ({
         const placeholder = placeholderFragment({ assignment, reason });
         await markAssignmentPlaceholder({
             assignmentId: assignment.assignmentId,
-            placeholderNodeId: placeholder.nodes[0].id,
+            placeholderNodeId: assignment.region.regionId,
             reason
         });
         return { assignment, fragment: placeholder, placeholder: true };

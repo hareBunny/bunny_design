@@ -60,17 +60,15 @@ const parseRegion = (input: unknown): MiaomaDesignRegion | null => {
     }
 
     const bounds = input.bounds;
-    if (bounds !== undefined) {
-        if (
-            !isRecord(bounds) ||
-            !['x', 'y', 'width', 'height'].every((key) =>
-                isFiniteNumber(bounds[key])
-            ) ||
-            (bounds.width as number) < 0 ||
-            (bounds.height as number) < 0
-        ) {
-            return null;
-        }
+    if (
+        !isRecord(bounds) ||
+        !['x', 'y', 'width', 'height'].every((key) =>
+            isFiniteNumber(bounds[key])
+        ) ||
+        (bounds.width as number) < 0 ||
+        (bounds.height as number) < 0
+    ) {
+        return null;
     }
 
     return {
@@ -243,7 +241,7 @@ export const parseMiaomaDesignFragment = ({
         !isNonBlankString(input.fragmentId) ||
         !isNonBlankString(input.assignmentId) ||
         !Array.isArray(input.nodes) ||
-        input.nodes.length === 0
+        input.nodes.length !== 1
     ) {
         throw new MiaomaDesignGenerationError({
             code: 'invalid-fragment',
@@ -267,6 +265,13 @@ export const parseMiaomaDesignFragment = ({
             code: 'invalid-fragment',
             message: 'Design fragment nodes are invalid.',
             diagnostics: validation.diagnostics
+        });
+    }
+
+    if (validation.document.children[0]?.id !== assignment.region.regionId) {
+        throw new MiaomaDesignGenerationError({
+            code: 'assignment-mismatch',
+            message: `Design fragment must use the fixed region id ${assignment.region.regionId}.`
         });
     }
 
