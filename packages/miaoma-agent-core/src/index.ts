@@ -29,6 +29,7 @@ export type {
     MiaomaAgentJsonValue
 } from './json';
 export type {
+    MiaomaAgentSession,
     MiaomaDesignRegion,
     MiaomaGenerationAssignment,
     MiaomaGenerationRun,

@@ -8,6 +8,7 @@ import type { MiaomaAgentActivity } from './activity';
 import {
     isMiaomaCollaboratorAgentId,
     MIAOMA_COORDINATOR_AGENT_ID,
+    type MiaomaAgentId,
     type MiaomaCollaboratorAgentId
 } from './agents';
 
@@ -55,6 +56,13 @@ export type MiaomaDesignRegion = {
     targetNodeIds?: string[];
 };
 
+export type MiaomaAgentSession = {
+    agentId: MiaomaAgentId;
+    threadId?: string;
+    processId?: number;
+    updatedAt: string;
+};
+
 type MiaomaGenerationAssignmentBase = {
     assignmentId: string;
     agentId: MiaomaCollaboratorAgentId;
@@ -91,6 +99,7 @@ type MiaomaGenerationRunBase = {
     projectId: string;
     prompt: string;
     coordinatorAgentId: typeof MIAOMA_COORDINATOR_AGENT_ID;
+    agentSessions: MiaomaAgentSession[];
     assignments: MiaomaGenerationAssignment[];
     activities: MiaomaAgentActivity[];
     documentRevision: number;
@@ -210,6 +219,7 @@ export const createMiaomaGenerationRun = ({
         projectId,
         prompt,
         coordinatorAgentId: MIAOMA_COORDINATOR_AGENT_ID,
+        agentSessions: [],
         status: 'queued',
         assignments: [],
         activities: [],

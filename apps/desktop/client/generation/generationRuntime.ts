@@ -13,6 +13,7 @@ import {
     createMiaomaCodexExecProvider,
     type MiaomaCodexExecProvider
 } from '@miaoma-design-ai/miaoma-agent-codex';
+import type { MiaomaAgentSession } from '@miaoma-design-ai/miaoma-agent-core';
 import {
     createFileGenerationHistoryStore,
     type MiaomaGenerationHistoryStore
@@ -154,6 +155,17 @@ export const createMiaomaDesktopGenerationRuntime = ({
             };
         }
 
+        const sessionByAgent = new Map<string, MiaomaAgentSession>();
+        for (const previousRun of await history.listRuns({
+            projectId: input.projectId
+        })) {
+            for (const session of previousRun.agentSessions) {
+                if (session.threadId && !sessionByAgent.has(session.agentId)) {
+                    sessionByAgent.set(session.agentId, session);
+                }
+            }
+        }
+
         const visualHarness = createMiaomaDesignVisualHarness({
             codex,
             captureScreenshot: createScreenshotCapture({
@@ -173,6 +185,7 @@ export const createMiaomaDesktopGenerationRuntime = ({
                 revision: 0,
                 document: input.document
             },
+            agentSessions: [...sessionByAgent.values()],
             model: input.model,
             sandbox: 'workspace-write',
             workingDirectory,

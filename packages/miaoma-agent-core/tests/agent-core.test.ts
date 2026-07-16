@@ -73,6 +73,7 @@ describe('miaoma agent core', () => {
             formatVersion: 1,
             coordinatorAgentId: 'miaoma',
             status: 'queued',
+            agentSessions: [],
             assignments: [],
             activities: [],
             documentRevision: 0
@@ -113,6 +114,14 @@ describe('miaoma agent core', () => {
                 createdAt: '2026-07-20T00:00:00.000Z'
             }),
             status: 'designing' as const,
+            agentSessions: [
+                {
+                    agentId: 'newton' as const,
+                    threadId: 'thread-newton',
+                    processId: 4242,
+                    updatedAt: '2026-07-20T00:00:00.000Z'
+                }
+            ],
             assignments: [assignment('newton', 0)],
             activities: [
                 {

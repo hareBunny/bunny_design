@@ -17,7 +17,9 @@ import {
     MIAOMA_COORDINATOR_AGENT_ID,
     type MiaomaAgentActivity,
     type MiaomaAgentActivityKind,
+    type MiaomaAgentId,
     type MiaomaAgentJsonObject,
+    type MiaomaAgentSession,
     type MiaomaGenerationAssignment,
     type MiaomaGenerationRun
 } from '@miaoma-design-ai/miaoma-agent-core';
@@ -226,6 +228,7 @@ const executeGeneration = async ({
             prompt: input.prompt,
             createdAt: now().toISOString()
         }),
+        agentSessions: input.agentSessions ?? [],
         documentRevision: state.revision
     };
     let activitySequence = 0;
@@ -324,12 +327,44 @@ const executeGeneration = async ({
     const recordCodexEvent = async ({
         event,
         agentId,
-        assignmentId
+        assignmentId,
+        trackSession = true
     }: {
         event: MiaomaCodexEvent;
         agentId: MiaomaAgentActivity['agentId'];
         assignmentId?: string;
+        trackSession?: boolean;
     }) => {
+        if (
+            trackSession &&
+            (event.type === 'process-started' ||
+                event.type === 'thread-started')
+        ) {
+            const timestamp = now().toISOString();
+            const existing = run.agentSessions.find(
+                (session) => session.agentId === agentId
+            );
+            const session: MiaomaAgentSession = {
+                ...existing,
+                agentId,
+                ...(event.type === 'process-started'
+                    ? { processId: event.processId }
+                    : { threadId: event.threadId }),
+                updatedAt: timestamp
+            };
+
+            run = {
+                ...run,
+                agentSessions: existing
+                    ? run.agentSessions.map((candidate) =>
+                          candidate.agentId === agentId ? session : candidate
+                      )
+                    : [...run.agentSessions, session]
+            } as MiaomaGenerationRun;
+            await persist();
+            return;
+        }
+
         if (event.type !== 'activity') {
             return;
         }
@@ -531,7 +566,18 @@ const executeGeneration = async ({
 
     const sandbox = input.sandbox ?? DEFAULT_SANDBOX;
     const documentRoot = state.document.children[0];
-    let coordinatorThreadId: string | undefined;
+    let coordinatorThreadId = run.agentSessions.find(
+        ({ agentId }) => agentId === MIAOMA_COORDINATOR_AGENT_ID
+    )?.threadId;
+    const conversationFor = (agentId: MiaomaAgentId) => {
+        const threadId = run.agentSessions.find(
+            (session) => session.agentId === agentId
+        )?.threadId;
+
+        return threadId
+            ? ({ type: 'resume', threadId } as const)
+            : ({ type: 'new' } as const);
+    };
 
     try {
         await persist();
@@ -563,7 +609,7 @@ const executeGeneration = async ({
                         schemaPath:
                             MIAOMA_DESIGN_GENERATION_SCHEMA_PATHS.variables
                     },
-                    conversation: { type: 'new' },
+                    conversation: conversationFor(MIAOMA_COORDINATOR_AGENT_ID),
                     model: input.model,
                     sandbox
                 });
@@ -640,6 +686,7 @@ const executeGeneration = async ({
                 markAssignmentRunning,
                 markAssignmentPlaceholder,
                 signal,
+                conversation: conversationFor(assignment.agentId),
                 variables: state.document.variables
             })
         );
@@ -714,7 +761,8 @@ const executeGeneration = async ({
                     onEvent: (event: MiaomaCodexEvent) =>
                         recordCodexEvent({
                             event,
-                            agentId: MIAOMA_COORDINATOR_AGENT_ID
+                            agentId: MIAOMA_COORDINATOR_AGENT_ID,
+                            trackSession: false
                         })
                 };
                 const check = await runActivity({
@@ -817,7 +865,8 @@ const designAssignment = async ({
     executeCodex,
     markAssignmentRunning,
     markAssignmentPlaceholder,
-    signal
+    signal,
+    conversation
 }: {
     assignment: MiaomaGenerationAssignment;
     variableNames: string[];
@@ -849,6 +898,7 @@ const designAssignment = async ({
         reason: string;
     }) => Promise<void>;
     signal: AbortSignal;
+    conversation: { type: 'new' } | { type: 'resume'; threadId: string };
 }) => {
     await markAssignmentRunning(assignment.assignmentId);
 
@@ -877,7 +927,7 @@ const designAssignment = async ({
                         schemaPath:
                             MIAOMA_DESIGN_GENERATION_SCHEMA_PATHS.fragment
                     },
-                    conversation: { type: 'new' },
+                    conversation,
                     model: input.model,
                     sandbox
                 });

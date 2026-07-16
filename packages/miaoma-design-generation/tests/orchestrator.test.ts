@@ -299,6 +299,37 @@ describe('design generation orchestrator', () => {
         expect(parseMiaomaGenerationRun(saved.at(-1))).toEqual(result.run);
     });
 
+    it('resumes the saved Codex thread for each returning agent', async () => {
+        const { codex, orchestrator } = createOrchestrator();
+
+        await orchestrator.start({
+            projectId: 'project-1',
+            prompt: 'Refine the dashboard',
+            documentState,
+            agentSessions: [
+                {
+                    agentId: 'miaoma',
+                    threadId: 'thread-miaoma',
+                    updatedAt: '2026-07-19T00:00:00.000Z'
+                },
+                {
+                    agentId: 'newton',
+                    threadId: 'thread-newton',
+                    updatedAt: '2026-07-19T00:00:00.000Z'
+                }
+            ]
+        }).result;
+
+        expect(codex.calls[0].conversation).toEqual({
+            type: 'resume',
+            threadId: 'thread-miaoma'
+        });
+        expect(
+            codex.calls.find(({ prompt }) => prompt.includes('Region: Hero'))
+                ?.conversation
+        ).toEqual({ type: 'resume', threadId: 'thread-newton' });
+    });
+
     it('keeps the run complete with a placeholder for one failed worker', async () => {
         const { orchestrator } = createOrchestrator({ failContent: true });
 

@@ -16,6 +16,7 @@ import {
 import type { MiaomaAgentJsonValue } from './json';
 import {
     MIAOMA_GENERATION_RUN_FORMAT_VERSION,
+    type MiaomaAgentSession,
     type MiaomaDesignRegion,
     type MiaomaGenerationAssignment,
     type MiaomaGenerationRun,
@@ -224,6 +225,23 @@ const isActivity = (value: unknown): value is MiaomaAgentActivity => {
     );
 };
 
+const parseAgentSession = (value: unknown): MiaomaAgentSession | null => {
+    if (
+        !isRecord(value) ||
+        !isString(value.agentId) ||
+        !isMiaomaAgentId(value.agentId) ||
+        (value.threadId !== undefined && !isNonBlankString(value.threadId)) ||
+        (value.processId !== undefined &&
+            (!Number.isInteger(value.processId) ||
+                (value.processId as number) <= 0)) ||
+        !isString(value.updatedAt)
+    ) {
+        return null;
+    }
+
+    return value as MiaomaAgentSession;
+};
+
 const hasValidTerminalState = (
     run: UnknownRecord,
     status: MiaomaGenerationRunStatus
@@ -262,6 +280,8 @@ export const parseMiaomaGenerationRun = (
         !isString(input.status) ||
         !RUN_STATUSES.has(input.status as MiaomaGenerationRunStatus) ||
         !Array.isArray(input.assignments) ||
+        (input.agentSessions !== undefined &&
+            !Array.isArray(input.agentSessions)) ||
         !Array.isArray(input.activities) ||
         !Number.isInteger(input.documentRevision) ||
         (input.documentRevision as number) < 0 ||
@@ -273,6 +293,15 @@ export const parseMiaomaGenerationRun = (
 
     const assignments = input.assignments.map(parseAssignment);
     if (assignments.some((assignment) => assignment === null)) {
+        return null;
+    }
+
+    const agentSessions = (input.agentSessions ?? []).map(parseAgentSession);
+    if (
+        agentSessions.some((session) => session === null) ||
+        new Set(agentSessions.map((session) => session?.agentId)).size !==
+            agentSessions.length
+    ) {
         return null;
     }
 
@@ -313,5 +342,8 @@ export const parseMiaomaGenerationRun = (
         return null;
     }
 
-    return input as MiaomaGenerationRun;
+    return {
+        ...input,
+        agentSessions: agentSessions as MiaomaAgentSession[]
+    } as MiaomaGenerationRun;
 };

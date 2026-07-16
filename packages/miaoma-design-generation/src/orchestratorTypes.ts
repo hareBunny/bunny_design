@@ -8,6 +8,7 @@ import type {
     MiaomaCodexExecProvider,
     MiaomaCodexSandbox
 } from '@miaoma-design-ai/miaoma-agent-codex';
+import type { MiaomaAgentSession } from '@miaoma-design-ai/miaoma-agent-core';
 import type { MiaomaGenerationHistoryStore } from '@miaoma-design-ai/miaoma-agent-history';
 import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schema';
 
@@ -18,6 +19,7 @@ export type MiaomaDesignGenerationStartInput = {
     projectId: string;
     prompt: string;
     documentState: MiaomaDesignDocumentState;
+    agentSessions?: MiaomaAgentSession[];
     workingDirectory?: string;
     maxRepairAttempts?: number;
     model?: string;
