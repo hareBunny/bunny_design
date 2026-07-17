@@ -78,10 +78,6 @@ const CanvasTextNode = ({
     topLevelBounds,
     variables
 }: NodeRendererProps<TextNode>) => {
-    const lineHeight =
-        node.lineHeight && node.fontSize
-            ? px(node.lineHeight * node.fontSize)
-            : undefined;
     const style: CSSProperties = {
         ...getNodeBoxStyle({
             node,
@@ -94,14 +90,8 @@ const CanvasTextNode = ({
         fontFamily: toFontFamily(node.fontFamily, variables),
         fontSize: node.fontSize === undefined ? undefined : px(node.fontSize),
         fontWeight: node.fontWeight,
-        lineHeight,
         textAlign: node.textAlign,
         visibility: editingTextNodeId === node.id ? 'hidden' : undefined,
-        whiteSpace:
-            node.textGrowth === 'fixed-width' ||
-            node.textGrowth === 'fixed-width-height'
-                ? 'pre-wrap'
-                : 'nowrap',
         zIndex: 0
     };
 

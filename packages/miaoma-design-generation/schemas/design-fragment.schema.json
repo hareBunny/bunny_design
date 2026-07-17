@@ -165,14 +165,10 @@
                 "icon": { "type": "string" },
                 "library": { "type": "string" },
                 "content": { "type": "string" },
-                "textGrowth": {
-                    "enum": ["auto", "fixed-width", "fixed-width-height"]
-                },
                 "textAlign": { "enum": ["left", "center", "right", "justify"] },
                 "fontFamily": { "type": "string" },
                 "fontSize": { "type": "number" },
-                "fontWeight": { "type": "string" },
-                "lineHeight": { "type": "number" }
+                "fontWeight": { "type": "string" }
             },
             "required": ["id", "type"]
         },

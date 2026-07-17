@@ -16,6 +16,7 @@ import {
     strictValidateDesignDocument
 } from '@miaoma-design-ai/miaoma-design-schema';
 
+import { normalizeMiaomaGeneratedNodes } from './normalizeGeneratedNodes';
 import {
     MIAOMA_DESIGN_GENERATION_FORMAT_VERSION,
     type MiaomaDesignFragment,
@@ -258,7 +259,7 @@ export const parseMiaomaDesignFragment = ({
     const validation = strictValidateDesignDocument({
         version: '2.14',
         variables,
-        children: input.nodes
+        children: normalizeMiaomaGeneratedNodes(input.nodes, variables)
     });
     if (!validation.success) {
         throw new MiaomaDesignGenerationError({

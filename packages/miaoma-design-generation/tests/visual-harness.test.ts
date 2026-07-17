@@ -56,6 +56,7 @@ describe('visual validation harness', () => {
             schemaPath: string;
             images?: string[];
             conversation: unknown;
+            prompt: string;
         }[] = [];
         let visualChecks = 0;
         const codex: MiaomaCodexExecProvider = {
@@ -66,7 +67,8 @@ describe('visual validation harness', () => {
                 requests.push({
                     schemaPath: request.response.schemaPath,
                     images: request.images,
-                    conversation: request.conversation
+                    conversation: request.conversation,
+                    prompt: request.prompt
                 });
 
                 if (
@@ -156,6 +158,8 @@ describe('visual validation harness', () => {
             type: 'resume',
             threadId: 'check-thread'
         });
+        expect(requests[1].prompt).toContain('Current module JSON:');
+        expect(requests[1].prompt).toContain('"id":"hero-frame"');
         expect(requests[2].images).toEqual(['/tmp/miaoma-design-1.png']);
     });
 

@@ -10,6 +10,7 @@ import {
     strictValidateDesignDocument
 } from '@miaoma-design-ai/miaoma-design-schema';
 
+import { normalizeMiaomaGeneratedNodes } from './normalizeGeneratedNodes';
 import {
     MIAOMA_DESIGN_GENERATION_FORMAT_VERSION,
     MiaomaDesignGenerationError,
@@ -132,13 +133,14 @@ const parseRepair = ({
     const validation = strictValidateDesignDocument({
         version: '2.14',
         variables,
-        children: input.nodes
+        children: normalizeMiaomaGeneratedNodes(input.nodes, variables)
     });
     if (!validation.success) {
         return null;
     }
 
-    const nodeIds = collectNodeIds(validation.document.children);
+    collectNodeIds(validation.document.children);
+    const nodeIds = new Set(validation.document.children.map(({ id }) => id));
     const targetIds = new Set(input.nodeIds);
     if (
         nodeIds.size !== targetIds.size ||

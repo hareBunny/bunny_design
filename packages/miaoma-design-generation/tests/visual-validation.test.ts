@@ -91,7 +91,13 @@ describe('visual validation contracts', () => {
                                 width: 'fill_container',
                                 height: 320,
                                 padding: [24, 32],
-                                children: []
+                                children: [
+                                    {
+                                        id: 'hero-title',
+                                        type: 'text',
+                                        content: 'Repaired title'
+                                    }
+                                ]
                             }
                         ]
                     }
@@ -106,7 +112,12 @@ describe('visual validation contracts', () => {
 
         expect(updated.revision).toBe(1);
         expect(updated.document.children[0]).toMatchObject({
-            children: [expect.objectContaining({ name: 'Hero repaired' })]
+            children: [
+                expect.objectContaining({
+                    name: 'Hero repaired',
+                    children: [expect.objectContaining({ id: 'hero-title' })]
+                })
+            ]
         });
     });
 

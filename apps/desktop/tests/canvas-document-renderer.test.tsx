@@ -192,6 +192,12 @@ describe('CanvasDocumentRenderer', () => {
         expect(markup).toContain('/assets/image-import.png');
         expect(markup).toContain('background-clip:text');
         expect(markup).toContain('主讲讲师：合一');
+        const courseDescriptionStyle = markup.match(
+            /data-design-node-name="课程说明" style="([^"]+)"/
+        )?.[1];
+
+        expect(courseDescriptionStyle).not.toContain('line-height');
+        expect(courseDescriptionStyle).not.toContain('white-space');
     });
 
     it('renders the complete Miaoma design schema with layout nodes, icons, and shape styles', () => {

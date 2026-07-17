@@ -15,6 +15,7 @@ import type {
     MiaomaDesignVisualValidationResult
 } from './harnessTypes';
 import { MIAOMA_DESIGN_GENERATION_SCHEMA_PATHS } from './schemaPaths';
+import type { MiaomaDesignDocumentState } from './types';
 import {
     parseMiaomaDesignRepairBatch,
     parseMiaomaDesignVisualCheck
@@ -55,16 +56,31 @@ ${prompt}
 
 const buildRepairPrompt = ({
     prompt,
-    check
+    check,
+    state
 }: {
     prompt: string;
     check: MiaomaDesignVisualValidationResult;
+    state: MiaomaDesignDocumentState;
 }) =>
     `
 Repair the concrete visual issues reported for the attached screenshot.
 Return only the JSON object required by the provided repair schema.
 Only replace the listed nodeIds. Keep every replacement node id identical to
 its target id and do not modify unrelated regions.
+Use the supplied module JSON directly; do not inspect the filesystem or run
+commands. nodeIds must contain only the top-level ids returned in nodes. Child
+ids belong inside those replacement nodes and must not be listed in nodeIds.
+
+Available variables:
+${Object.keys(state.document.variables ?? {}).join(', ')}
+
+Current module JSON:
+${JSON.stringify(
+    state.document.children[0]?.type === 'frame'
+        ? (state.document.children[0].children ?? [])
+        : state.document.children
+)}
 
 Design request:
 ${prompt}
@@ -129,7 +145,11 @@ export const createMiaomaDesignVisualHarness = ({
         check
     }: Parameters<MiaomaDesignVisualHarness['repair']>[0]) => {
         const result = await codex.execute({
-            prompt: buildRepairPrompt({ prompt: loop.prompt, check }),
+            prompt: buildRepairPrompt({
+                prompt: loop.prompt,
+                check,
+                state
+            }),
             workingDirectory: loop.workingDirectory,
             sandbox: loop.sandbox,
             conversation: { type: 'resume', threadId: check.threadId },

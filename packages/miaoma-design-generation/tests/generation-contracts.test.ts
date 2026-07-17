@@ -105,7 +105,12 @@ describe('generation output contracts', () => {
     it('validates fragment nodes and their assignment ownership', () => {
         const fragment = parseMiaomaDesignFragment({
             assignment,
-            variables: { accent: { type: 'color', value: '#2563eb' } },
+            variables: {
+                accent: { type: 'color', value: '#2563eb' },
+                body: { type: 'string', value: 'Inter' },
+                radius: { type: 'number', value: 8 },
+                semibold: { type: 'number', value: 600 }
+            },
             input: {
                 formatVersion: 1,
                 fragmentId: 'fragment-hero',
@@ -116,8 +121,21 @@ describe('generation output contracts', () => {
                         type: 'frame',
                         width: 'fill_container',
                         height: 640,
-                        fill: '$accent',
-                        children: []
+                        fill: 'accent',
+                        cornerRadius: 'radius',
+                        children: [
+                            {
+                                id: 'hero-title',
+                                type: 'text',
+                                content: 'Hero',
+                                fill: 'accent',
+                                fontFamily: 'body',
+                                fontWeight: 'semibold',
+                                lineHeight: 64,
+                                textGrowth: 'fixed-width-height',
+                                whiteSpace: 'nowrap'
+                            }
+                        ]
                     }
                 ]
             }
@@ -125,8 +143,28 @@ describe('generation output contracts', () => {
 
         expect(fragment.nodes[0]).toMatchObject({
             id: 'hero',
-            fill: ['$accent']
+            fill: ['$accent'],
+            cornerRadius: '$radius',
+            children: [
+                expect.objectContaining({
+                    fill: ['$accent'],
+                    fontFamily: '$body',
+                    fontWeight: '600'
+                })
+            ]
         });
+        const title =
+            fragment.nodes[0].type === 'frame'
+                ? fragment.nodes[0].children?.[0]
+                : undefined;
+
+        expect(
+            title?.type === 'text' ? title.lineHeight : undefined
+        ).toBeUndefined();
+        expect(
+            title?.type === 'text' ? title.textGrowth : undefined
+        ).toBeUndefined();
+        expect(title && 'whiteSpace' in title).toBe(false);
     });
 
     it('rejects duplicate node ids inside a fragment', () => {
