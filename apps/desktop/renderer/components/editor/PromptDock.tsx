@@ -7,6 +7,8 @@
 import { ArrowUp, Square } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { classNames } from '../../utils/classNames';
+
 type PromptDockVariant = 'agent' | 'canvas';
 
 type PromptDockConfig = {
@@ -25,7 +27,9 @@ type PromptDockProps = {
     variant: PromptDockVariant;
     isRunning?: boolean;
     onCancel?: () => Promise<void> | void;
+    onValueChange?: (value: string) => void;
     onSubmit?: (prompt: string) => Promise<void> | void;
+    value?: string;
 };
 
 const AGENT_PROMPT_MAX_DOCK_HEIGHT = 400;
@@ -43,7 +47,7 @@ const PROMPT_DOCK_CONFIG: Record<PromptDockVariant, PromptDockConfig> = {
         modelClassName:
             'flex cursor-default items-center gap-1.5 border-0 bg-transparent p-0 text-xs text-[#5e5f67]',
         sendClassName:
-            'grid h-[22px] w-[22px] cursor-default place-items-center rounded-[11px] border-0 bg-[#f1f2f4] p-0 text-sm/[normal] text-[#b7b8bf]',
+            'grid h-[22px] w-[22px] cursor-default place-items-center rounded-[11px] border-0 p-0 text-sm/[normal]',
         inputAriaLabel: 'Agent prompt',
         sendAriaLabel: 'Send agent prompt',
         sectionAriaLabel: 'Agent prompt dock'
@@ -67,6 +71,19 @@ const PROMPT_DOCK_CONFIG: Record<PromptDockVariant, PromptDockConfig> = {
     }
 };
 
+const getSendClassName = (variant: PromptDockVariant, isRunning: boolean) => {
+    if (variant === 'agent') {
+        return classNames(
+            PROMPT_DOCK_CONFIG[variant].sendClassName,
+            isRunning
+                ? 'bg-[#f1f2f4] text-[#b7b8bf]'
+                : 'bg-[#202328] text-white'
+        );
+    }
+
+    return PROMPT_DOCK_CONFIG[variant].sendClassName;
+};
+
 const PromptChevronIcon = () => (
     <svg
         aria-hidden="true"
@@ -84,12 +101,21 @@ const PromptChevronIcon = () => (
 export const PromptDock = ({
     isRunning = false,
     onCancel,
+    onValueChange,
     onSubmit,
+    value,
     variant
 }: PromptDockProps) => {
     const config = PROMPT_DOCK_CONFIG[variant];
-    const [promptValue, setPromptValue] = useState('');
+    const [internalPromptValue, setInternalPromptValue] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const promptValue = value ?? internalPromptValue;
+    const updatePromptValue = (nextValue: string) => {
+        if (value === undefined) {
+            setInternalPromptValue(nextValue);
+        }
+        onValueChange?.(nextValue);
+    };
 
     useEffect(() => {
         if (variant !== 'agent') {
@@ -126,7 +152,7 @@ export const PromptDock = ({
             return;
         }
 
-        setPromptValue('');
+        updatePromptValue('');
         void onSubmit(normalizedPrompt);
     };
 
@@ -144,17 +170,21 @@ export const PromptDock = ({
                 aria-label={config.inputAriaLabel}
                 className={config.inputClassName}
                 onChange={(event) => {
-                    setPromptValue(event.target.value);
+                    updatePromptValue(event.target.value);
                 }}
                 onKeyDown={(event) => {
                     if (
-                        event.key === 'Enter' &&
-                        (event.metaKey || event.ctrlKey) &&
-                        variant === 'agent'
+                        event.key !== 'Enter' ||
+                        event.shiftKey ||
+                        event.nativeEvent.isComposing ||
+                        variant !== 'agent' ||
+                        isRunning
                     ) {
-                        event.preventDefault();
-                        submitPrompt();
+                        return;
                     }
+
+                    event.preventDefault();
+                    submitPrompt();
                 }}
                 placeholder="Design anything..."
                 ref={textareaRef}
@@ -171,7 +201,7 @@ export const PromptDock = ({
                     {variant === 'agent' && isRunning ? (
                         <button
                             aria-label="Cancel agent generation"
-                            className={config.sendClassName}
+                            className={getSendClassName(variant, isRunning)}
                             onClick={() => {
                                 void onCancel?.();
                             }}
@@ -182,7 +212,7 @@ export const PromptDock = ({
                     ) : (
                         <button
                             aria-label={config.sendAriaLabel}
-                            className={config.sendClassName}
+                            className={getSendClassName(variant, isRunning)}
                             disabled={
                                 variant === 'agent' && !promptValue.trim()
                             }

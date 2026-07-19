@@ -318,6 +318,8 @@ describe('design generation orchestrator', () => {
         expect(codex.calls[3].prompt).toContain(
             'Set assignmentId to exactly "content"'
         );
+        expect(codex.calls[2].prompt).toContain('images.unsplash.com');
+        expect(codex.calls[2].prompt).toContain('"type":"image"');
         expect(
             codex.calls.every(
                 ({ workingDirectory }) =>

@@ -135,18 +135,9 @@ describe('MiaomaEditorScreen', () => {
         );
 
         expect(markup).toContain('editor-agent-panel');
-        expect(markup).toContain('妙码学院 crm 系统');
-        expect(markup).toContain(
-            '正在检查 /Users/heyi/Downloads/miaoma-crm.pen'
-        );
-        expect(markup).toContain('1/2 agent running');
-        expect(markup).toContain('aria-haspopup="listbox"');
-        expect(markup).toContain('Checked guidelines');
-        expect(markup).toContain('Read variables');
-        expect(markup).toContain('Read objects');
-        expect(markup).toContain('Set variables');
-        expect(markup).toContain('项激活后，请优化修改');
-        expect(markup).toContain('Newton');
+        expect(markup).toContain('Hi, I am your design agent.');
+        expect(markup).not.toContain('个智能体运行中');
+        expect(markup).not.toContain('aria-haspopup="listbox"');
         expect(markup).toContain('Design anything...');
         expect(markup).toContain('GPT 5.5');
         expect(markup).toContain('editor-agent-prompt-dock');
@@ -174,7 +165,8 @@ describe('MiaomaEditorScreen', () => {
         expect(styles).toContain('--font-cn:');
         expect(agentPanelSource).toContain('font-cn');
         expect(agentPanelSource).toContain('text-[12px]/[normal]');
-        expect(agentPanelSource).toContain('text-[12.5px]/[19px]');
+        expect(agentPanelSource).toContain('text-[15px]/[22px]');
+        expect(agentPanelSource).toContain('text-[13px]/[20px]');
         expect(agentPanelSource).toContain('editor-agent-top-control');
         expect(agentPanelSource).toContain('editor-agent-selector-menu');
         expect(promptDockSource).toContain('editor-agent-prompt-dock');

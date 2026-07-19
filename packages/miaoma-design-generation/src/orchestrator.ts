@@ -151,6 +151,9 @@ Create no more than five assignments, use each collaborator at most once, and
 assign every region to the root frame ${rootNodeId}.
 Use contiguous order values beginning at zero. Define non-overlapping bounds
 for every region so the complete page scaffold is fixed before workers start.
+When the subject benefits from photography, mention the intended image role in
+the relevant assignment objective so workers can plan backgrounds or supporting
+imagery. Do not force photography into purely operational interfaces.
 
 Available variables: ${variableNames.join(', ')}
 Design request:
@@ -188,6 +191,12 @@ Prefix color, font-family, and corner-radius variable references with "$".
 Use literal values for all other node properties; never return a bare variable
 name as a fill, stroke, effect color, fontFamily, or cornerRadius value.
 Do not emit lineHeight, textGrowth, whiteSpace, or CSS-only properties.
+When photography materially improves the region, use a real direct
+images.unsplash.com photo URL on a frame or rectangle using
+fill: {"type":"image","url":"...","mode":"fill"} (or "fit" when the full
+image must remain visible). Choose imagery that clearly matches the subject, and
+do not use placeholder URL tokens or add decorative photos where they do not
+serve the design.
 `.trim();
 
 export const createMiaomaDesignGenerationOrchestrator = ({

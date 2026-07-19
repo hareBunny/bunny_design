@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 
 import type {
-    AgentTimelineItem,
     DesignMetrics,
     EditorIconButtonConfig,
     LayerRow,
@@ -104,33 +103,6 @@ export const SIDEBAR_ACTIONS: EditorIconButtonConfig[] = [
 export const SIDEBAR_TABS: SidebarTabConfig[] = [
     { id: 'agent', label: 'Agent' },
     { id: 'layers', label: 'Layers' }
-];
-
-export const AGENT_TIMELINE_ITEMS: AgentTimelineItem[] = [
-    { id: 'crm-title', type: 'pill', text: '妙码学院 crm 系统', height: 28 },
-    { id: 'bash-primary', type: 'status', label: 'Bash' },
-    { id: 'bash-secondary', type: 'status', label: 'Bash' },
-    {
-        id: 'mendel-summary',
-        type: 'summary',
-        agent: 'Mendel',
-        height: 157,
-        text: '正在检查 /Users/heyi/Downloads/miaoma-crm.pen，并整理当前执行摘要：\n• 已定位 Agent Smart Screen 的中间说明区域\n• 正在核对节点层级、尺寸和文本密度\n• 仅补充这段运行状态说明，不新增图形元素\n• 保持偏左对齐、舒展行距和黑灰色正文'
-    },
-    { id: 'checked-guidelines', type: 'status', label: 'Checked guidelines' },
-    { id: 'read-variables', type: 'status', label: 'Read variables' },
-    { id: 'read-objects', type: 'status', label: 'Read objects' },
-    { id: 'set-variables', type: 'status', label: 'Set variables' },
-    { id: 'designed-primary', type: 'status', label: 'Designed' },
-    { id: 'activation-title', type: 'pill', text: '项激活后，请优化修改' },
-    {
-        id: 'newton-summary',
-        type: 'summary',
-        agent: 'Newton',
-        height: 146,
-        text: '已把右侧 Design Goodies 属性栏按图重做，包含顶部动作区、选中对象块、Context、Alignment、Position、Layout、Appearance、Fill、Stroke、Effects、Export 各分组的结构和细节。'
-    },
-    { id: 'designed-secondary', type: 'status', label: 'Designed' }
 ];
 
 export const ALIGNMENT_BUTTONS: EditorIconButtonConfig[] = [

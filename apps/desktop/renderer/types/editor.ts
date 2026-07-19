@@ -54,26 +54,6 @@ export type SidebarTabConfig = {
     label: string;
 };
 
-export type AgentTimelineItem =
-    | {
-          id: string;
-          type: 'pill';
-          text: string;
-          height?: 24 | 28;
-      }
-    | {
-          id: string;
-          type: 'status';
-          label: string;
-      }
-    | {
-          id: string;
-          type: 'summary';
-          agent: string;
-          text: string;
-          height: 146 | 157;
-      };
-
 export type DesignMetrics = {
     frameId: string;
     sidebarWidth: number;

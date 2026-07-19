@@ -8,7 +8,10 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-import type { MiaomaGenerationRun } from '@miaoma-design-ai/miaoma-agent-core';
+import type {
+    MiaomaAgentActivity,
+    MiaomaGenerationRun
+} from '@miaoma-design-ai/miaoma-agent-core';
 import {
     act,
     fireEvent,
@@ -28,6 +31,23 @@ class TestResizeObserver {
     disconnect(): void {}
 }
 
+const completedBashActivities: MiaomaAgentActivity[] = Array.from(
+    { length: 4 },
+    (_, index) => ({
+        activityId: `newton-bash-${index}`,
+        runId: 'run-1',
+        agentId: 'newton',
+        assignmentId: 'hero',
+        kind: 'bash',
+        input: { command: `echo ${index}` },
+        createdAt: '2026-07-20T00:00:00.000Z',
+        startedAt: '2026-07-20T00:00:00.000Z',
+        completedAt: '2026-07-20T00:00:01.000Z',
+        status: 'completed',
+        output: { summary: 'OK' }
+    })
+);
+
 const run: MiaomaGenerationRun = {
     formatVersion: 1,
     runId: 'run-1',
@@ -35,8 +55,23 @@ const run: MiaomaGenerationRun = {
     prompt: 'Create a landing page',
     coordinatorAgentId: 'miaoma',
     agentSessions: [],
-    status: 'preparing',
-    assignments: [],
+    status: 'designing',
+    assignments: [
+        {
+            assignmentId: 'hero',
+            agentId: 'newton',
+            order: 0,
+            objective: '设计官网首屏和核心行动入口',
+            region: {
+                regionId: 'hero',
+                label: '官网首屏',
+                bounds: { x: 0, y: 0, width: 1440, height: 640 },
+                targetNodeIds: ['root']
+            },
+            status: 'running',
+            startedAt: '2026-07-20T00:00:00.000Z'
+        }
+    ],
     activities: [
         {
             activityId: 'visual-check-1',
@@ -49,11 +84,60 @@ const run: MiaomaGenerationRun = {
             completedAt: '2026-07-20T00:00:01.000Z',
             status: 'completed',
             output: { summary: 'Hierarchy passed.' }
+        },
+        ...completedBashActivities,
+        {
+            activityId: 'newton-bash-failed',
+            runId: 'run-1',
+            agentId: 'newton',
+            assignmentId: 'hero',
+            kind: 'bash',
+            input: { command: 'invalid-command' },
+            createdAt: '2026-07-20T00:00:00.000Z',
+            startedAt: '2026-07-20T00:00:00.000Z',
+            completedAt: '2026-07-20T00:00:01.000Z',
+            status: 'failed',
+            output: { summary: 'Command failed.' },
+            error: { code: 'PROCESS_FAILED', message: 'Command failed.' }
+        },
+        {
+            activityId: 'newton-design',
+            runId: 'run-1',
+            agentId: 'newton',
+            assignmentId: 'hero',
+            kind: 'design',
+            input: { objective: '设计官网首屏和核心行动入口' },
+            createdAt: '2026-07-20T00:00:00.000Z',
+            startedAt: '2026-07-20T00:00:00.000Z',
+            completedAt: '2026-07-20T00:00:01.000Z',
+            status: 'completed',
+            output: { summary: 'Hero completed.' }
         }
     ],
     documentRevision: 0,
     createdAt: '2026-07-20T00:00:00.000Z',
     updatedAt: '2026-07-20T00:00:01.000Z'
+};
+
+const completedRun: MiaomaGenerationRun = {
+    ...run,
+    status: 'validating',
+    assignments: [
+        {
+            ...run.assignments[0]!,
+            status: 'completed',
+            startedAt: '2026-07-20T00:00:00.000Z',
+            completedAt: '2026-07-20T00:00:02.000Z',
+            fragmentId: 'fragment-hero'
+        }
+    ],
+    updatedAt: '2026-07-20T00:00:02.000Z'
+};
+
+const pendingRun: MiaomaGenerationRun = {
+    ...run,
+    status: 'preparing',
+    assignments: [{ ...run.assignments[0]!, status: 'pending' }]
 };
 
 describe('editor generation UI', () => {
@@ -104,6 +188,15 @@ describe('editor generation UI', () => {
                     projectId="project-1"
                 />
             );
+            expect(
+                screen.getByText('Hi, I am your design agent.')
+            ).toBeTruthy();
+            expect(
+                screen.queryByRole('button', {
+                    name: '切换智能体，当前为 miaoma'
+                })
+            ).toBeNull();
+
             fireEvent.change(screen.getByLabelText('Agent prompt'), {
                 target: { value: 'Create a landing page' }
             });
@@ -116,6 +209,15 @@ describe('editor generation UI', () => {
                 projectId: 'project-1',
                 prompt: 'Create a landing page'
             });
+
+            act(() => {
+                listener?.({ type: 'run-updated', run: pendingRun });
+            });
+            expect(
+                screen.queryByRole('button', {
+                    name: '切换智能体，当前为 miaoma'
+                })
+            ).toBeNull();
 
             act(() => {
                 listener?.({ type: 'run-updated', run });
@@ -145,6 +247,54 @@ describe('editor generation UI', () => {
             expect(screen.getByText(/"attempt": 0/)).toBeTruthy();
             expect(screen.getByText('Output')).toBeTruthy();
             expect(screen.getByText('Hierarchy passed.')).toBeTruthy();
+            expect(screen.getByLabelText('已完成')).toBeTruthy();
+            expect(screen.getByText('Newton 正在执行')).toBeTruthy();
+
+            fireEvent.click(
+                screen.getByRole('button', {
+                    name: '切换智能体，当前为 miaoma'
+                })
+            );
+            expect(screen.getByLabelText('Newton 正在执行')).toBeTruthy();
+            fireEvent.click(screen.getByRole('option', { name: 'Newton' }));
+
+            expect(
+                screen.getByText(
+                    '任务分配：负责「官网首屏」模块。设计官网首屏和核心行动入口'
+                )
+            ).toBeTruthy();
+            expect(screen.queryByText('Visual check')).toBeNull();
+            expect(screen.getByText('Designed')).toBeTruthy();
+            expect(screen.getAllByText('Bash')).toHaveLength(3);
+            expect(
+                screen.getByLabelText('失败').querySelector('svg')
+            ).not.toBeNull();
+
+            act(() => {
+                listener?.({ type: 'run-updated', run: completedRun });
+            });
+            expect(screen.getByText('Newton 已完成任务')).toBeTruthy();
+            expect(screen.getByText('模块：官网首屏')).toBeTruthy();
+            expect(
+                screen.getByText('目标：设计官网首屏和核心行动入口')
+            ).toBeTruthy();
+            expect(screen.getByText('结果：已完成设计并写入画布')).toBeTruthy();
+            fireEvent.click(
+                screen.getByRole('button', {
+                    name: '切换智能体，当前为 Newton'
+                })
+            );
+            expect(screen.queryByLabelText('Newton 正在执行')).toBeNull();
+            fireEvent.click(screen.getByRole('option', { name: 'miaoma' }));
+
+            expect(
+                screen.getByText('已完成本轮并行设计，结果如下：')
+            ).toBeTruthy();
+            expect(
+                screen.getByText(
+                    '：完成「官网首屏」模块，设计官网首屏和核心行动入口'
+                )
+            ).toBeTruthy();
         } finally {
             globalThis.ResizeObserver = originalResizeObserver;
         }

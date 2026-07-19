@@ -17,23 +17,51 @@ describe('agent prompt dock', () => {
         const onSubmit = vi.fn();
 
         render(<PromptDock onSubmit={onSubmit} variant="agent" />);
+        const idleSendButton = screen.getByRole('button', {
+            name: 'Send agent prompt'
+        });
+        expect(idleSendButton.hasAttribute('disabled')).toBe(true);
+        expect(idleSendButton.classList.contains('bg-[#202328]')).toBe(true);
+        expect(idleSendButton.classList.contains('text-white')).toBe(true);
         fireEvent.change(screen.getByLabelText('Agent prompt'), {
             target: { value: 'Create a landing page' }
         });
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Send agent prompt' })
-        );
+        const sendButton = screen.getByRole('button', {
+            name: 'Send agent prompt'
+        });
+        expect(sendButton.classList.contains('bg-[#202328]')).toBe(true);
+        expect(sendButton.classList.contains('text-white')).toBe(true);
+        fireEvent.click(sendButton);
 
         expect(onSubmit).toHaveBeenCalledWith('Create a landing page');
+    });
+
+    it('submits with Enter and keeps Shift+Enter for line breaks', () => {
+        const onSubmit = vi.fn();
+
+        render(<PromptDock onSubmit={onSubmit} variant="agent" />);
+        const input = screen.getByLabelText('Agent prompt');
+        fireEvent.change(input, {
+            target: { value: 'Create a dashboard' }
+        });
+
+        fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
+        expect(onSubmit).not.toHaveBeenCalled();
+
+        fireEvent.keyDown(input, { key: 'Enter' });
+        expect(onSubmit).toHaveBeenCalledWith('Create a dashboard');
     });
 
     it('routes the running state to cancel instead of send', () => {
         const onCancel = vi.fn();
 
         render(<PromptDock isRunning onCancel={onCancel} variant="agent" />);
-        fireEvent.click(
-            screen.getByRole('button', { name: 'Cancel agent generation' })
-        );
+        const cancelButton = screen.getByRole('button', {
+            name: 'Cancel agent generation'
+        });
+        expect(cancelButton.classList.contains('bg-[#f1f2f4]')).toBe(true);
+        expect(cancelButton.classList.contains('text-[#b7b8bf]')).toBe(true);
+        fireEvent.click(cancelButton);
 
         expect(onCancel).toHaveBeenCalledTimes(1);
         expect(
