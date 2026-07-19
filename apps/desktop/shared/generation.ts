@@ -10,6 +10,7 @@ import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schem
 export const MIAOMA_GENERATION_IPC_CHANNELS = {
     start: 'miaoma:generation:start',
     cancel: 'miaoma:generation:cancel',
+    latestRun: 'miaoma:generation:latest-run',
     event: 'miaoma:generation:event'
 } as const;
 
@@ -33,6 +34,16 @@ export type MiaomaGenerationStartResult =
 export type MiaomaGenerationCancelResult =
     | {
           success: true;
+      }
+    | {
+          success: false;
+          error: string;
+      };
+
+export type MiaomaGenerationLatestRunResult =
+    | {
+          success: true;
+          run: MiaomaGenerationRun | null;
       }
     | {
           success: false;

@@ -28,6 +28,7 @@ import {
     MIAOMA_GENERATION_IPC_CHANNELS,
     type MiaomaGenerationCancelResult,
     type MiaomaGenerationEvent,
+    type MiaomaGenerationLatestRunResult,
     type MiaomaGenerationStartInput,
     type MiaomaGenerationStartResult
 } from '../../shared/generation';
@@ -271,5 +272,22 @@ export const createMiaomaDesktopGenerationRuntime = ({
         return { success: true };
     };
 
-    return { start, cancel };
+    const getLatestRun = async (
+        projectId: string
+    ): Promise<MiaomaGenerationLatestRunResult> => {
+        try {
+            const runs = await history.listRuns({ projectId });
+            return { success: true, run: runs[0] ?? null };
+        } catch (error) {
+            return {
+                success: false,
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to load generation history.'
+            };
+        }
+    };
+
+    return { start, cancel, getLatestRun };
 };

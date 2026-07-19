@@ -88,6 +88,7 @@ type CanvasViewportShellProps = {
     onTextCancel?: () => void;
     selectionEnabled?: boolean;
     resolveAsset: (url: string) => string;
+    renderDocumentOverlay?: (context: { zoom: number }) => ReactNode;
     overlay?: ReactNode;
 };
 
@@ -175,6 +176,7 @@ export const CanvasViewportShell = ({
     onTextCancel,
     selectionEnabled = true,
     resolveAsset,
+    renderDocumentOverlay,
     overlay
 }: CanvasViewportShellProps) => {
     const scrollRef = useRef<HTMLDivElement | null>(null);
@@ -929,6 +931,21 @@ export const CanvasViewportShell = ({
                                 zoom={state.zoom}
                             />
                         </div>
+                        {renderDocumentOverlay ? (
+                            <div
+                                aria-hidden="true"
+                                className="pointer-events-none absolute z-30 overflow-visible"
+                                data-region="canvas-document-overlay"
+                                style={{
+                                    height: `${documentBounds.height}px`,
+                                    left: `${documentBounds.x}px`,
+                                    top: `${documentBounds.y}px`,
+                                    width: `${documentBounds.width}px`
+                                }}
+                            >
+                                {renderDocumentOverlay({ zoom: state.zoom })}
+                            </div>
+                        ) : null}
                     </div>
                     {!isDraggingSelection && selectionBounds ? (
                         <div

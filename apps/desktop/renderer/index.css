@@ -59,3 +59,51 @@
         font: inherit;
     }
 }
+
+@keyframes editor-agent-cursor-orbit {
+    0%,
+    100% {
+        transform: translate(0, -3px);
+    }
+
+    12.5% {
+        transform: translate(2.5px, -2px);
+    }
+
+    25% {
+        transform: translate(4px, 0);
+    }
+
+    37.5% {
+        transform: translate(2.5px, 2px);
+    }
+
+    50% {
+        transform: translate(0, 3px);
+    }
+
+    62.5% {
+        transform: translate(-2.5px, 2px);
+    }
+
+    75% {
+        transform: translate(-4px, 0);
+    }
+
+    87.5% {
+        transform: translate(-2.5px, -2px);
+    }
+}
+
+.editor-agent-cursor-orbit {
+    animation: editor-agent-cursor-orbit linear infinite;
+    transform-origin: 0 0;
+    will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .editor-agent-cursor-orbit {
+        animation: none;
+        transform: none;
+    }
+}

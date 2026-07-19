@@ -87,4 +87,17 @@ describe('desktop windows', () => {
         expect(source).toContain('delete:');
         expect(source).toContain('MIAOMA_PROJECT_IPC_CHANNELS');
     });
+
+    it('connects generation history through the preload boundary', () => {
+        const mainSource = readFileSync(mainProcessFile, 'utf8');
+        const preloadSource = readFileSync(preloadFile, 'utf8');
+
+        expect(mainSource).toContain(
+            'MIAOMA_GENERATION_IPC_CHANNELS.latestRun'
+        );
+        expect(preloadSource).toContain('getLatestRun:');
+        expect(preloadSource).toContain(
+            'MIAOMA_GENERATION_IPC_CHANNELS.latestRun'
+        );
+    });
 });

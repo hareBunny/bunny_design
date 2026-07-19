@@ -11,6 +11,7 @@ import {
     MiaomaCodexExecError,
     type MiaomaCodexExecProvider
 } from '@miaoma-design-ai/miaoma-agent-codex';
+import { createMiaomaGenerationRun } from '@miaoma-design-ai/miaoma-agent-core';
 import type { MiaomaGenerationHistoryStore } from '@miaoma-design-ai/miaoma-agent-history';
 import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schema';
 
@@ -64,6 +65,34 @@ const createProjectStore = () =>
     }) as unknown as ProjectStore;
 
 describe('desktop generation runtime', () => {
+    it('returns the latest persisted run for a project', async () => {
+        const history = createHistory();
+        const codex: MiaomaCodexExecProvider = { execute: vi.fn() };
+        const latestRun = createMiaomaGenerationRun({
+            runId: 'run-latest',
+            projectId: 'project-1',
+            prompt: 'Create a dashboard',
+            createdAt: '2026-07-20T00:00:00.000Z'
+        });
+        vi.mocked(history.listRuns).mockResolvedValue([latestRun]);
+        const runtime = createMiaomaDesktopGenerationRuntime({
+            codex,
+            history,
+            historyRoot: '/tmp/miaoma-history',
+            projectStore: createProjectStore(),
+            screenshotRoot: '/tmp/miaoma-screenshots',
+            workingDirectory: '/tmp'
+        });
+
+        await expect(runtime.getLatestRun('project-1')).resolves.toEqual({
+            success: true,
+            run: latestRun
+        });
+        expect(history.listRuns).toHaveBeenCalledWith({
+            projectId: 'project-1'
+        });
+    });
+
     it('allows one active run and cancels it through the runtime', async () => {
         const codex: MiaomaCodexExecProvider = {
             execute: vi.fn(

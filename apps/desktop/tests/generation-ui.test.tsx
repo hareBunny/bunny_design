@@ -31,6 +31,16 @@ class TestResizeObserver {
     disconnect(): void {}
 }
 
+const createProjectsApi = () => ({
+    list: vi.fn(),
+    create: vi.fn(),
+    importFromFile: vi.fn(),
+    get: vi.fn(),
+    open: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn()
+});
+
 const completedBashActivities: MiaomaAgentActivity[] = Array.from(
     { length: 4 },
     (_, index) => ({
@@ -134,10 +144,29 @@ const completedRun: MiaomaGenerationRun = {
     updatedAt: '2026-07-20T00:00:02.000Z'
 };
 
-const pendingRun: MiaomaGenerationRun = {
+const restoredRun: MiaomaGenerationRun = {
+    ...completedRun,
+    status: 'completed',
+    completedAt: '2026-07-20T00:00:03.000Z',
+    updatedAt: '2026-07-20T00:00:03.000Z'
+};
+
+const planningRun: MiaomaGenerationRun = {
     ...run,
     status: 'preparing',
-    assignments: [{ ...run.assignments[0]!, status: 'pending' }]
+    assignments: [],
+    activities: [
+        {
+            activityId: 'plan-visual',
+            runId: 'run-1',
+            agentId: 'miaoma',
+            kind: 'plan-visual',
+            input: { prompt: 'Create a landing page' },
+            createdAt: '2026-07-20T00:00:00.000Z',
+            startedAt: '2026-07-20T00:00:00.000Z',
+            status: 'running'
+        }
+    ]
 };
 
 describe('editor generation UI', () => {
@@ -155,21 +184,17 @@ describe('editor generation UI', () => {
         globalThis.ResizeObserver = TestResizeObserver;
         window.miaomaAPI = {
             ping: vi.fn(async () => ({ success: true })),
-            projects: {
-                list: vi.fn(),
-                create: vi.fn(),
-                importFromFile: vi.fn(),
-                get: vi.fn(),
-                open: vi.fn(),
-                update: vi.fn(),
-                delete: vi.fn()
-            },
+            projects: createProjectsApi(),
             generation: {
                 start,
                 cancel: vi.fn(async (runId: string) => {
                     void runId;
                     return { success: true as const };
                 }),
+                getLatestRun: vi.fn(async () => ({
+                    success: true as const,
+                    run: null
+                })),
                 subscribe: vi.fn(
                     (
                         nextListener: (event: MiaomaGenerationEvent) => void
@@ -211,17 +236,37 @@ describe('editor generation UI', () => {
             });
 
             act(() => {
-                listener?.({ type: 'run-updated', run: pendingRun });
+                listener?.({ type: 'run-updated', run: planningRun });
             });
             expect(
                 screen.queryByRole('button', {
                     name: '切换智能体，当前为 miaoma'
                 })
             ).toBeNull();
+            const planningCursor = document.querySelector<HTMLElement>(
+                '[data-agent-cursor-id="miaoma"]'
+            );
+            expect(planningCursor?.dataset.agentCursorState).toBe('planning');
+            expect(
+                planningCursor?.closest('[data-region="canvas-world-surface"]')
+            ).not.toBeNull();
 
             act(() => {
                 listener?.({ type: 'run-updated', run });
             });
+            expect(
+                document.querySelector('[data-agent-cursor-id="miaoma"]')
+            ).toBeNull();
+            const agentCursor = document.querySelector<HTMLElement>(
+                '[data-agent-cursor-id="newton"]'
+            );
+            expect(agentCursor).not.toBeNull();
+            expect(agentCursor?.dataset.agentCursorRegionId).toBe('hero');
+            expect(agentCursor?.style.left).toBe('0px');
+            expect(agentCursor?.style.top).toBe('0px');
+            expect(agentCursor?.style.width).toBe('1440px');
+            expect(agentCursor?.style.height).toBe('640px');
+            expect(agentCursor?.textContent).toContain('Newton');
             act(() => {
                 listener?.({
                     type: 'document-updated',
@@ -273,6 +318,9 @@ describe('editor generation UI', () => {
             act(() => {
                 listener?.({ type: 'run-updated', run: completedRun });
             });
+            expect(
+                document.querySelector('[data-agent-cursor-layer="true"]')
+            ).toBeNull();
             expect(screen.getByText('Newton 已完成任务')).toBeTruthy();
             expect(screen.getByText('模块：官网首屏')).toBeTruthy();
             expect(
@@ -293,6 +341,56 @@ describe('editor generation UI', () => {
             expect(
                 screen.getByText(
                     '：完成「官网首屏」模块，设计官网首屏和核心行动入口'
+                )
+            ).toBeTruthy();
+        } finally {
+            globalThis.ResizeObserver = originalResizeObserver;
+        }
+    });
+
+    it('restores the latest agent conversation when reopening a project', async () => {
+        const originalResizeObserver = globalThis.ResizeObserver;
+        const getLatestRun = vi.fn(async () => ({
+            success: true as const,
+            run: restoredRun
+        }));
+
+        globalThis.ResizeObserver = TestResizeObserver;
+        window.miaomaAPI = {
+            ping: vi.fn(async () => ({ success: true })),
+            projects: createProjectsApi(),
+            generation: {
+                start: vi.fn(),
+                cancel: vi.fn(),
+                getLatestRun,
+                subscribe: vi.fn(() => () => undefined)
+            }
+        };
+
+        try {
+            render(
+                <MiaomaEditor
+                    initialDocument={CANVAS_SAMPLE_EDITOR_DOCUMENT}
+                    projectId="project-1"
+                />
+            );
+
+            expect(
+                await screen.findByText('已完成本轮并行设计，结果如下：')
+            ).toBeTruthy();
+            expect(getLatestRun).toHaveBeenCalledWith('project-1');
+
+            fireEvent.click(
+                screen.getByRole('button', {
+                    name: '切换智能体，当前为 miaoma'
+                })
+            );
+            fireEvent.click(screen.getByRole('option', { name: 'Newton' }));
+
+            expect(screen.getByText('Newton 已完成任务')).toBeTruthy();
+            expect(
+                screen.getByText(
+                    '任务分配：负责「官网首屏」模块。设计官网首屏和核心行动入口'
                 )
             ).toBeTruthy();
         } finally {

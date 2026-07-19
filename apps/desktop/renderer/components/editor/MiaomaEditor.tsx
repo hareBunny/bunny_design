@@ -267,6 +267,7 @@ const MiaomaEditorContent = ({
                     activeSidebarTab={activeSidebarTab}
                     documentRevision={generation.documentRevision}
                     documentRunId={generation.documentRunId}
+                    generationRun={generation.run}
                     onCanvasBlankSelect={() => {
                         setIsInspectorBodyVisible(false);
                     }}

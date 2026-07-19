@@ -4,6 +4,7 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import type { MiaomaGenerationRun } from '@miaoma-design-ai/miaoma-agent-core';
 import { editorDocumentToRenderable } from '@miaoma-design-ai/miaoma-editor-core';
 
 import type { SidebarTab } from '../../types/editor';
@@ -13,6 +14,7 @@ import { resolveCanvasAsset } from '../document/canvasAssets';
 import { useCanvasCreationBridge } from './bridges/useCanvasCreationBridge';
 import { useEditorSession } from './state/useEditorSession';
 import { useEditorSnapshot } from './state/useEditorSnapshot';
+import { CanvasAgentCursorLayer } from './CanvasAgentCursorLayer';
 import { CanvasToolRail } from './CanvasToolRail';
 import { CanvasViewportShell } from './CanvasViewportShell';
 import { PromptDock } from './PromptDock';
@@ -21,6 +23,7 @@ type CanvasStageProps = {
     activeSidebarTab: SidebarTab;
     documentRevision?: number;
     documentRunId?: string | null;
+    generationRun?: MiaomaGenerationRun | null;
     onCanvasBlankSelect?: () => void;
     onCanvasNodeSelect?: (nodeId: string) => void;
     spanInspectorColumn?: boolean;
@@ -30,6 +33,7 @@ export const CanvasStage = ({
     activeSidebarTab,
     documentRevision,
     documentRunId,
+    generationRun,
     onCanvasBlankSelect,
     onCanvasNodeSelect,
     spanInspectorColumn
@@ -38,6 +42,7 @@ export const CanvasStage = ({
         activeSidebarTab={activeSidebarTab}
         documentRevision={documentRevision}
         documentRunId={documentRunId}
+        generationRun={generationRun}
         onCanvasBlankSelect={onCanvasBlankSelect}
         onCanvasNodeSelect={onCanvasNodeSelect}
         spanInspectorColumn={spanInspectorColumn}
@@ -48,6 +53,7 @@ const CanvasStageInner = ({
     activeSidebarTab,
     documentRevision = 0,
     documentRunId,
+    generationRun,
     onCanvasBlankSelect,
     onCanvasNodeSelect,
     spanInspectorColumn
@@ -92,6 +98,16 @@ const CanvasStageInner = ({
                     ) : null
                 }
                 resolveAsset={resolveCanvasAsset}
+                renderDocumentOverlay={
+                    generationRun
+                        ? ({ zoom }) => (
+                              <CanvasAgentCursorLayer
+                                  run={generationRun}
+                                  zoom={zoom}
+                              />
+                          )
+                        : undefined
+                }
                 selectedNodeId={snapshot.selection.selectedNodeId}
                 textEditorState={creationBridge.textEditorState}
             />

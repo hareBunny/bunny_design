@@ -44,6 +44,11 @@ contextBridge.exposeInMainWorld('miaomaAPI', {
             ipcRenderer.invoke(MIAOMA_GENERATION_IPC_CHANNELS.start, input),
         cancel: (runId: string) =>
             ipcRenderer.invoke(MIAOMA_GENERATION_IPC_CHANNELS.cancel, runId),
+        getLatestRun: (projectId: string) =>
+            ipcRenderer.invoke(
+                MIAOMA_GENERATION_IPC_CHANNELS.latestRun,
+                projectId
+            ),
         subscribe: (listener: (event: MiaomaGenerationEvent) => void) => {
             const handleEvent = (
                 _event: IpcRendererEvent,

@@ -7,6 +7,7 @@
 import type {
     MiaomaGenerationCancelResult,
     MiaomaGenerationEvent,
+    MiaomaGenerationLatestRunResult,
     MiaomaGenerationStartInput,
     MiaomaGenerationStartResult
 } from './shared/generation';
@@ -54,6 +55,9 @@ declare global {
                 cancel: (
                     runId: string
                 ) => Promise<MiaomaGenerationCancelResult>;
+                getLatestRun: (
+                    projectId: string
+                ) => Promise<MiaomaGenerationLatestRunResult>;
                 subscribe: (
                     listener: (event: MiaomaGenerationEvent) => void
                 ) => () => void;

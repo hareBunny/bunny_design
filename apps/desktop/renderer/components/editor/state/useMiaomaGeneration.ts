@@ -4,7 +4,7 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { MiaomaGenerationRun } from '@miaoma-design-ai/miaoma-agent-core';
 import {
@@ -15,14 +15,6 @@ import {
 import type { MiaomaGenerationEvent } from '../../../../shared/generation';
 
 import { useEditorSession } from './useEditorSession';
-
-const ACTIVE_RUN_STATUSES = new Set<MiaomaGenerationRun['status']>([
-    'queued',
-    'preparing',
-    'designing',
-    'validating',
-    'repairing'
-]);
 
 const hasGenerationApi = () =>
     typeof window !== 'undefined' && Boolean(window.miaomaAPI?.generation);
@@ -51,9 +43,11 @@ export const useMiaomaGeneration = ({
     const [isStarting, setIsStarting] = useState(false);
 
     useEffect(() => {
-        if (!hasGenerationApi()) {
+        const generation = window.miaomaAPI?.generation;
+        if (!generation) {
             return;
         }
+        let disposed = false;
 
         const handleEvent = (event: MiaomaGenerationEvent) => {
             if (event.type === 'run-updated') {
@@ -82,8 +76,53 @@ export const useMiaomaGeneration = ({
             }
         };
 
-        return window.miaomaAPI.generation?.subscribe(handleEvent);
-    }, [session]);
+        const unsubscribe = generation.subscribe(handleEvent);
+
+        if (projectId) {
+            void generation
+                .getLatestRun(projectId)
+                .then((result) => {
+                    if (disposed) {
+                        return;
+                    }
+                    if (result.success === false) {
+                        setError(result.error);
+                        return;
+                    }
+
+                    setRun((currentRun) => {
+                        const restoredRun = result.run;
+                        if (!restoredRun) {
+                            return currentRun?.projectId === projectId
+                                ? currentRun
+                                : null;
+                        }
+                        if (
+                            currentRun?.projectId === projectId &&
+                            currentRun.updatedAt >= restoredRun.updatedAt
+                        ) {
+                            return currentRun;
+                        }
+
+                        return restoredRun;
+                    });
+                })
+                .catch((historyError: unknown) => {
+                    if (!disposed) {
+                        setError(
+                            historyError instanceof Error
+                                ? historyError.message
+                                : 'Failed to load generation history.'
+                        );
+                    }
+                });
+        }
+
+        return () => {
+            disposed = true;
+            unsubscribe();
+        };
+    }, [projectId, session]);
 
     const start = useCallback(
         async (prompt: string) => {
@@ -160,13 +199,8 @@ export const useMiaomaGeneration = ({
         }
     }, [activeRunId]);
 
-    const isRunning = useMemo(
-        () =>
-            (run !== null && ACTIVE_RUN_STATUSES.has(run.status)) ||
-            activeRunId !== null ||
-            isStarting,
-        [activeRunId, isStarting, run]
-    );
+    const isRunning = activeRunId !== null || isStarting;
+    const visibleRun = run?.projectId === projectId ? run : null;
 
     return {
         cancel,
@@ -174,7 +208,7 @@ export const useMiaomaGeneration = ({
         documentRunId,
         error,
         isRunning,
-        run,
+        run: visibleRun,
         start
     };
 };

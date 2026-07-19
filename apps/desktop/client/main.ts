@@ -378,6 +378,10 @@ const registerGenerationIpcHandlers = (
         MIAOMA_GENERATION_IPC_CHANNELS.cancel,
         async (_event, runId: string) => generation.cancel(runId)
     );
+    ipcMain.handle(
+        MIAOMA_GENERATION_IPC_CHANNELS.latestRun,
+        async (_event, projectId: string) => generation.getLatestRun(projectId)
+    );
 };
 
 app.whenReady().then(() => {
