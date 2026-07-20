@@ -25,22 +25,37 @@ import {
     type MiaomaProjectUpdateInput
 } from '../shared/projects';
 
-import { createMiaomaDesktopGenerationRuntime } from './generation/generationRuntime';
+import type { createMiaomaDesktopGenerationRuntime } from './generation/generationRuntime';
+import { getMiaomaMcpBridgeEndpoint } from './mcp/endpoint';
+import {
+    buildMiaomaMcpStdioRegistration,
+    synchronizeMiaomaMcpRegistration
+} from './mcp/registration';
+import {
+    createMiaomaDesktopMcpRuntime,
+    startMiaomaMcpStdioMode
+} from './mcp/runtime';
 import {
     getProjectImportDialogOptions,
     readProjectImportDocument
 } from './projects/importProjectDocument';
 import { createProjectStore, type ProjectStore } from './projects/projectStore';
+import { getMiaomaCodexExecutable } from './codexExecutable';
 
-if (started) {
+const isMcpStdioMode = process.argv.includes('--mcp-stdio');
+
+if (started && !isMcpStdioMode) {
     app.quit();
 }
 
-nativeTheme.themeSource = 'light';
+if (!isMcpStdioMode) {
+    nativeTheme.themeSource = 'light';
+}
 
 const editorWindowProjects = new Map<number, string>();
 const WINDOW_CASCADE_OFFSET = 24;
 let editorWindowOpenCount = 0;
+let activeEditorWindowId: number | null = null;
 
 type RendererRoute =
     | {
@@ -64,6 +79,38 @@ const loadRendererRoute = (window: BrowserWindow, route: RendererRoute) => {
     window.loadFile(getRendererPath(), {
         hash: route.hash
     });
+};
+
+const loadMcpCaptureRoute = (
+    captureWindow: BrowserWindow,
+    captureId: string
+) => {
+    loadRendererRoute(captureWindow, {
+        hash: `/mcp-capture?captureId=${encodeURIComponent(captureId)}`
+    });
+};
+
+const getActiveEditorWebContents = () => {
+    const activeWindow =
+        activeEditorWindowId === null
+            ? null
+            : BrowserWindow.fromId(activeEditorWindowId);
+
+    if (activeWindow && !activeWindow.isDestroyed()) {
+        return activeWindow.webContents;
+    }
+
+    const fallbackWindowId = [...editorWindowProjects.keys()]
+        .reverse()
+        .find((windowId) => BrowserWindow.fromId(windowId) !== null);
+    const fallbackWindow =
+        fallbackWindowId === undefined
+            ? null
+            : BrowserWindow.fromId(fallbackWindowId);
+
+    activeEditorWindowId = fallbackWindow?.id ?? null;
+
+    return fallbackWindow?.webContents ?? null;
 };
 
 const createDashboardWindow = () => {
@@ -137,8 +184,15 @@ const createEditorWindow = (
     });
 
     editorWindowOpenCount += 1;
+    activeEditorWindowId = editorWindow.id;
+    editorWindow.on('focus', () => {
+        activeEditorWindowId = editorWindow.id;
+    });
     editorWindow.on('closed', () => {
         editorWindowProjects.delete(editorWindow.id);
+        if (activeEditorWindowId === editorWindow.id) {
+            activeEditorWindowId = null;
+        }
     });
 
     loadEditorProject(editorWindow, projectId);
@@ -384,7 +438,37 @@ const registerGenerationIpcHandlers = (
     );
 };
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+    const mcpEndpoint = getMiaomaMcpBridgeEndpoint({
+        platform: process.platform,
+        userDataPath: app.getPath('userData')
+    });
+
+    if (isMcpStdioMode) {
+        if (!mcpEndpoint) {
+            process.stderr.write(
+                `Miaoma MCP is not available on ${process.platform}.\n`
+            );
+            app.exit(1);
+            return;
+        }
+
+        try {
+            await startMiaomaMcpStdioMode({ endpoint: mcpEndpoint });
+            process.stdin.once('end', () => app.quit());
+        } catch (error) {
+            process.stderr.write(
+                `${error instanceof Error ? error.message : 'Unable to start Miaoma MCP.'}\n`
+            );
+            app.exit(1);
+        }
+        return;
+    }
+
+    const { createMiaomaDesktopGenerationRuntime } = await import(
+        './generation/generationRuntime'
+    );
+
     const projectStore = createProjectStore({
         projectsDirectory: path.join(
             app.getPath('userData'),
@@ -408,6 +492,39 @@ app.whenReady().then(() => {
             workingDirectory: app.getPath('userData')
         })
     );
+
+    if (mcpEndpoint) {
+        try {
+            const mcpRuntime = await createMiaomaDesktopMcpRuntime({
+                endpoint: mcpEndpoint,
+                getActiveEditorWebContents,
+                getPreloadPath,
+                loadCaptureRoute: loadMcpCaptureRoute
+            });
+
+            app.once('before-quit', () => {
+                void mcpRuntime.close();
+            });
+        } catch (error) {
+            process.stderr.write(
+                `Unable to start Miaoma MCP bridge: ${error instanceof Error ? error.message : 'Unknown error.'}\n`
+            );
+        }
+    }
+
+    void synchronizeMiaomaMcpRegistration({
+        codexExecutable: getMiaomaCodexExecutable(),
+        registration: buildMiaomaMcpStdioRegistration({
+            appPath: app.getAppPath(),
+            executablePath: process.execPath,
+            isPackaged: app.isPackaged,
+            platform: process.platform
+        })
+    }).catch((error) => {
+        process.stderr.write(
+            `Unable to register Miaoma MCP with Codex: ${error instanceof Error ? error.message : 'Unknown error.'}\n`
+        );
+    });
     createDashboardWindow();
 
     app.on('activate', () => {
@@ -418,7 +535,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    if (!isMcpStdioMode && process.platform !== 'darwin') {
         app.quit();
     }
 });

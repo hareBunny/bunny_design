@@ -12,10 +12,17 @@ import { MakerZIP } from '@electron-forge/maker-zip';
 import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import type { ForgeConfig } from '@electron-forge/shared-types';
+import path from 'node:path';
 
 const config: ForgeConfig = {
     packagerConfig: {
-        name: '妙码设计 AI 平台'
+        name: '妙码设计 AI 平台',
+        extraResource: [
+            path.resolve(
+                __dirname,
+                '../../packages/miaoma-design-generation/schemas'
+            )
+        ]
     },
     rebuildConfig: {},
     makers: [

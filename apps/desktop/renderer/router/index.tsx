@@ -7,6 +7,7 @@
 import { createHashRouter } from 'react-router-dom';
 
 import { DashboardScreen } from '../pages/DashboardScreen';
+import { McpCaptureScreen } from '../pages/McpCaptureScreen';
 import { MiaomaEditorScreen } from '../pages/MiaomaEditorScreen';
 
 export const router = createHashRouter([
@@ -17,5 +18,9 @@ export const router = createHashRouter([
     {
         path: '/editor',
         element: <MiaomaEditorScreen />
+    },
+    {
+        path: '/mcp-capture',
+        element: <McpCaptureScreen />
     }
 ]);

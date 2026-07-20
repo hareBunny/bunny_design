@@ -25,6 +25,9 @@
             "@miaoma-design-ai/miaoma-editor-interaction": [
                 "../../packages/miaoma-editor-interaction/src/index.ts"
             ],
+            "@miaoma-design-ai/miaoma-mcp": [
+                "../../packages/miaoma-mcp/src/index.ts"
+            ],
             "@/renderer/*": ["./renderer/*"]
         },
         "types": ["./miaoma.env.d.ts"]

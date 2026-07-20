@@ -5,7 +5,6 @@
   */
 
 import type { WebContents } from 'electron';
-import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -33,6 +32,7 @@ import {
     type MiaomaGenerationStartResult
 } from '../../shared/generation';
 import type { MiaomaProjectUpdateInput } from '../../shared/projects';
+import { getMiaomaCodexExecutable } from '../codexExecutable';
 import type { ProjectStore } from '../projects/projectStore';
 
 type ActiveGeneration = {
@@ -49,22 +49,6 @@ type GenerationRuntimeOptions = {
     workingDirectory: string;
     codex?: MiaomaCodexExecProvider;
     history?: MiaomaGenerationHistoryStore;
-};
-
-const getCodexExecutable = () => {
-    const configured = process.env.MIAOMA_CODEX_EXECUTABLE;
-    const candidates = [
-        configured,
-        path.join(process.resourcesPath, 'codex'),
-        '/Applications/ChatGPT.app/Contents/Resources/codex',
-        'codex'
-    ].filter((candidate): candidate is string => Boolean(candidate));
-
-    return (
-        candidates.find(
-            (candidate) => candidate === 'codex' || existsSync(candidate)
-        ) ?? 'codex'
-    );
 };
 
 const isAlive = (sender: WebContents) => !sender.isDestroyed();
@@ -159,7 +143,7 @@ export const createMiaomaDesktopGenerationRuntime = ({
     screenshotRoot,
     workingDirectory,
     codex = createMiaomaCodexExecProvider({
-        executable: getCodexExecutable(),
+        executable: getMiaomaCodexExecutable(),
         jsonSchemaMode: 'prompt',
         skipGitRepoCheck: true
     }),

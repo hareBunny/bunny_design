@@ -21,6 +21,12 @@ import type {
     MiaomaProjectSummary,
     MiaomaProjectUpdateInput
 } from './shared/projects';
+import type {
+    MiaomaMcpCapturePayload,
+    MiaomaMcpCaptureReadyInput,
+    MiaomaMcpRendererRequest,
+    MiaomaMcpRendererResponse
+} from './shared/mcp';
 
 declare global {
     interface Window {
@@ -61,6 +67,20 @@ declare global {
                 subscribe: (
                     listener: (event: MiaomaGenerationEvent) => void
                 ) => () => void;
+            };
+            mcp?: {
+                subscribeRendererRequests: (
+                    listener: (request: MiaomaMcpRendererRequest) => void
+                ) => () => void;
+                respondToRendererRequest: (
+                    response: MiaomaMcpRendererResponse
+                ) => void;
+                getCapturePayload: (
+                    captureId: string
+                ) => Promise<MiaomaMcpCapturePayload | null>;
+                notifyCaptureReady: (
+                    input: MiaomaMcpCaptureReadyInput
+                ) => Promise<boolean>;
             };
         };
     }

@@ -29,6 +29,7 @@ import { useMiaomaGeneration } from './state/useMiaomaGeneration';
 import { CanvasStage } from './CanvasStage';
 import { EditorIconButton } from './EditorIconButton';
 import { LeftSidebar } from './LeftSidebar';
+import { McpEditorBridge } from './McpEditorBridge';
 import { RightInspector } from './RightInspector';
 
 const DEFAULT_PROJECT_TITLE = 'miaoma-magicut';
@@ -228,6 +229,10 @@ export const MiaomaEditor = ({
             <EditorInteractionProvider>
                 <ProjectAutosaveBridge
                     intervalMs={autoSaveIntervalMs}
+                    projectId={projectId}
+                    projectTitle={projectTitle}
+                />
+                <McpEditorBridge
                     projectId={projectId}
                     projectTitle={projectTitle}
                 />

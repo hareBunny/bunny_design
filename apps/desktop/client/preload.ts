@@ -12,6 +12,12 @@ import {
     type MiaomaGenerationStartInput
 } from '../shared/generation';
 import {
+    MIAOMA_MCP_IPC_CHANNELS,
+    type MiaomaMcpCaptureReadyInput,
+    type MiaomaMcpRendererRequest,
+    type MiaomaMcpRendererResponse
+} from '../shared/mcp';
+import {
     MIAOMA_PROJECT_IPC_CHANNELS,
     type MiaomaProjectCreateInput,
     type MiaomaProjectImportKind,
@@ -63,5 +69,38 @@ contextBridge.exposeInMainWorld('miaomaAPI', {
                 );
             };
         }
+    },
+    mcp: {
+        subscribeRendererRequests: (
+            listener: (request: MiaomaMcpRendererRequest) => void
+        ) => {
+            const handleRequest = (
+                _event: IpcRendererEvent,
+                request: MiaomaMcpRendererRequest
+            ) => listener(request);
+            ipcRenderer.on(
+                MIAOMA_MCP_IPC_CHANNELS.rendererRequest,
+                handleRequest
+            );
+
+            return () => {
+                ipcRenderer.removeListener(
+                    MIAOMA_MCP_IPC_CHANNELS.rendererRequest,
+                    handleRequest
+                );
+            };
+        },
+        respondToRendererRequest: (response: MiaomaMcpRendererResponse) =>
+            ipcRenderer.send(
+                MIAOMA_MCP_IPC_CHANNELS.rendererResponse,
+                response
+            ),
+        getCapturePayload: (captureId: string) =>
+            ipcRenderer.invoke(
+                MIAOMA_MCP_IPC_CHANNELS.capturePayload,
+                captureId
+            ),
+        notifyCaptureReady: (input: MiaomaMcpCaptureReadyInput) =>
+            ipcRenderer.invoke(MIAOMA_MCP_IPC_CHANNELS.captureReady, input)
     }
 });

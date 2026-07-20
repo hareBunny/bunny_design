@@ -53,6 +53,7 @@
         "@miaoma-design-ai/miaoma-design-schema": "workspace:*",
         "@miaoma-design-ai/miaoma-editor-core": "workspace:*",
         "@miaoma-design-ai/miaoma-editor-interaction": "workspace:*",
+        "@miaoma-design-ai/miaoma-mcp": "workspace:*",
         "@use-gesture/react": "^10.3.1",
         "electron-squirrel-startup": "1.0.1",
         "fzstd": "0.1.1",
