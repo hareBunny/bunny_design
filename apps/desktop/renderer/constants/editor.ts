@@ -16,7 +16,6 @@ import {
     Minus,
     PanelLeft,
     PanelRight,
-    Plus,
     SlidersHorizontal,
     Square,
     Type
@@ -93,11 +92,6 @@ export const RECREATION_LAYER_ROWS: LayerRow[] = [
         depth: 1
     },
     { id: 'sidebar-body', label: 'Sidebar Body', icon: Frame, depth: 1 }
-];
-
-export const SIDEBAR_ACTIONS: EditorIconButtonConfig[] = [
-    { icon: PanelLeft, label: 'Toggle sidebar' },
-    { icon: Plus, label: 'Create item' }
 ];
 
 export const SIDEBAR_TABS: SidebarTabConfig[] = [

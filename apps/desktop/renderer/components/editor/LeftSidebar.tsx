@@ -4,9 +4,11 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
+import { PanelLeft } from 'lucide-react';
+
 import type { EditorDocument } from '@miaoma-design-ai/miaoma-editor-core';
 
-import { SIDEBAR_ACTIONS, SIDEBAR_TABS } from '../../constants/editor';
+import { SIDEBAR_TABS } from '../../constants/editor';
 import { CANVAS_SAMPLE_EDITOR_DOCUMENT } from '../../fixtures/canvasSampleDocument';
 import type { SidebarTab } from '../../types/editor';
 import { classNames } from '../../utils/classNames';
@@ -84,19 +86,22 @@ type LeftSidebarProps = {
     generation?: MiaomaGenerationController;
     onLayerSelect?: () => void;
     onSelectTab: (tab: SidebarTab) => void;
+    onToggle?: () => void;
 };
 
 export const LeftSidebar = ({
     activeTab,
     generation,
     onLayerSelect,
-    onSelectTab
+    onSelectTab,
+    onToggle
 }: LeftSidebarProps) => (
     <LeftSidebarContent
         activeTab={activeTab}
         generation={generation}
         onLayerSelect={onLayerSelect}
         onSelectTab={onSelectTab}
+        onToggle={onToggle}
     />
 );
 
@@ -104,7 +109,8 @@ const LeftSidebarContent = ({
     activeTab,
     generation,
     onLayerSelect,
-    onSelectTab
+    onSelectTab,
+    onToggle
 }: LeftSidebarProps) => {
     const session = useEditorSession();
     const snapshot = useEditorSnapshot();
@@ -114,15 +120,14 @@ const LeftSidebarContent = ({
             className="editor-sidebar h-full min-w-0 overflow-hidden"
             data-region="left-sidebar"
         >
-            <header className="editor-sidebar-toolbar flex h-[var(--editor-header-height)] w-[var(--editor-sidebar-width)] min-w-0 items-center pr-5 [padding-left:calc(var(--editor-system-traffic-light-space)+20px)] [-webkit-app-region:drag]">
-                <div className="editor-toolbar-actions flex items-center gap-2 [-webkit-app-region:no-drag]">
-                    {SIDEBAR_ACTIONS.map((action) => (
-                        <EditorIconButton
-                            key={action.label}
-                            variant="toolbar"
-                            {...action}
-                        />
-                    ))}
+            <header className="editor-sidebar-toolbar flex h-[var(--editor-header-height)] w-full min-w-0 items-center pr-2 [padding-left:calc(var(--editor-system-traffic-light-space)+20px)] [-webkit-app-region:drag]">
+                <div className="editor-toolbar-actions flex items-center [-webkit-app-region:no-drag]">
+                    <EditorIconButton
+                        icon={PanelLeft}
+                        label="Close sidebar"
+                        onClick={onToggle}
+                        variant="toolbar"
+                    />
                 </div>
             </header>
 

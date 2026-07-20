@@ -4,7 +4,7 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { Bot, ChevronDown } from 'lucide-react';
+import { Bot, ChevronDown, PanelLeft } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import {
@@ -27,6 +27,7 @@ import { EditorSessionProvider } from './state/EditorSessionProvider';
 import { useEditorSession } from './state/useEditorSession';
 import { useMiaomaGeneration } from './state/useMiaomaGeneration';
 import { CanvasStage } from './CanvasStage';
+import { EditorIconButton } from './EditorIconButton';
 import { LeftSidebar } from './LeftSidebar';
 import { RightInspector } from './RightInspector';
 
@@ -34,16 +35,37 @@ const DEFAULT_PROJECT_TITLE = 'miaoma-magicut';
 const DEFAULT_AUTOSAVE_INTERVAL_MS = 2000;
 
 type MainHeaderProps = {
-    projectTitle: string;
+    isSidebarCollapsed: boolean;
     onProjectTitleChange: (title: string) => void;
+    onSidebarToggle: () => void;
+    projectTitle: string;
 };
 
 const MainHeader = ({
-    projectTitle,
-    onProjectTitleChange
+    isSidebarCollapsed,
+    onProjectTitleChange,
+    onSidebarToggle,
+    projectTitle
 }: MainHeaderProps) => (
-    <header className="editor-main-header col-start-1 row-start-1 flex h-[var(--editor-header-height)] min-w-0 items-center justify-between border-b border-[#ededed] bg-[#f6f6f6] px-6 [-webkit-app-region:drag]">
+    <header
+        className={classNames(
+            'editor-main-header col-start-1 row-start-1 flex h-[var(--editor-header-height)] min-w-0 items-center justify-between border-b border-[#ededed] bg-[#f6f6f6] pr-6 [-webkit-app-region:drag]',
+            isSidebarCollapsed
+                ? '[padding-left:calc(var(--editor-system-traffic-light-space)+20px)]'
+                : 'pl-6'
+        )}
+    >
         <div className="editor-document-title flex min-w-0 items-center text-[13px] leading-none font-medium text-[#1a1a1a] [-webkit-app-region:no-drag]">
+            {isSidebarCollapsed ? (
+                <span className="mr-2 flex shrink-0">
+                    <EditorIconButton
+                        icon={PanelLeft}
+                        label="Open sidebar"
+                        onClick={onSidebarToggle}
+                        variant="toolbar"
+                    />
+                </span>
+            ) : null}
             <input
                 aria-label="Project name"
                 className="min-w-[88px] max-w-[360px] rounded-lg border border-transparent bg-transparent px-1.5 py-1 text-[13px] leading-none font-medium text-[#1a1a1a] outline-none hover:bg-white/80 focus:border-[#d4d4d8] focus:bg-white"
@@ -231,36 +253,55 @@ const MiaomaEditorContent = ({
     const generation = useMiaomaGeneration({ projectId });
     const [activeSidebarTab, setActiveSidebarTab] =
         useState<SidebarTab>('agent');
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isInspectorBodyVisible, setIsInspectorBodyVisible] = useState(true);
 
     return (
         <div
-            className="miaoma-editor-screen grid h-screen min-h-[700px] w-screen grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)] overflow-hidden"
+            className={classNames(
+                'miaoma-editor-screen grid h-screen min-h-[700px] w-screen overflow-hidden',
+                isSidebarCollapsed
+                    ? 'grid-cols-[minmax(0,1fr)]'
+                    : 'grid-cols-[var(--editor-sidebar-width)_minmax(0,1fr)]'
+            )}
             data-canvas-width={EDITOR_DESIGN_METRICS.canvasWidth}
             data-content-width={EDITOR_DESIGN_METRICS.contentWidth}
             data-design-frame={EDITOR_DESIGN_METRICS.frameId}
             data-inspector-width={EDITOR_DESIGN_METRICS.inspectorWidth}
             data-sidebar-width={EDITOR_DESIGN_METRICS.sidebarWidth}
+            data-sidebar-collapsed={isSidebarCollapsed ? 'true' : 'false'}
         >
-            <LeftSidebar
-                activeTab={activeSidebarTab}
-                generation={generation}
-                onLayerSelect={() => {
-                    setIsInspectorBodyVisible(true);
-                }}
-                onSelectTab={setActiveSidebarTab}
-            />
+            {isSidebarCollapsed ? null : (
+                <LeftSidebar
+                    activeTab={activeSidebarTab}
+                    generation={generation}
+                    onLayerSelect={() => {
+                        setIsInspectorBodyVisible(true);
+                    }}
+                    onSelectTab={setActiveSidebarTab}
+                    onToggle={() => {
+                        setIsSidebarCollapsed(true);
+                    }}
+                />
+            )}
             <section
                 className={classNames(
-                    'editor-content grid h-full min-w-0 grid-rows-[var(--editor-header-height)_minmax(0,1fr)] overflow-hidden rounded-l-3xl border-l border-[#e6e6e6] bg-[#f6f6f6] shadow-[-4px_0_20px_#0000001a]',
-                    'grid-cols-[minmax(0,1fr)_var(--editor-inspector-width)] max-[980px]:grid-cols-[minmax(520px,1fr)]'
+                    'editor-content grid h-full min-w-0 grid-rows-[var(--editor-header-height)_minmax(0,1fr)] overflow-hidden bg-[#f6f6f6]',
+                    'grid-cols-[minmax(0,1fr)_var(--editor-inspector-width)] max-[980px]:grid-cols-[minmax(520px,1fr)]',
+                    isSidebarCollapsed
+                        ? 'rounded-none border-l-0 shadow-none'
+                        : 'rounded-l-3xl border-l border-[#e6e6e6] shadow-[-4px_0_20px_#0000001a]'
                 )}
                 data-inspector-body-visible={
                     isInspectorBodyVisible ? 'true' : 'false'
                 }
             >
                 <MainHeader
+                    isSidebarCollapsed={isSidebarCollapsed}
                     onProjectTitleChange={setProjectTitle}
+                    onSidebarToggle={() => {
+                        setIsSidebarCollapsed(false);
+                    }}
                     projectTitle={projectTitle}
                 />
                 <CanvasStage

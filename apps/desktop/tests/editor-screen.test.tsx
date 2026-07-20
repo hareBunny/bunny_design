@@ -46,7 +46,7 @@ describe('MiaomaEditorScreen', () => {
         expect(markup).not.toContain('Ask Miaoma');
     });
 
-    it('keeps sidebar actions without custom window control lights', () => {
+    it('keeps only the sidebar toggle without custom window control lights', () => {
         const markup = renderToStaticMarkup(<MiaomaEditorScreen />);
         const leftSidebarSource = rendererSource(
             'components/editor/LeftSidebar.tsx'
@@ -55,16 +55,18 @@ describe('MiaomaEditorScreen', () => {
             'components/editor/EditorIconButton.tsx'
         );
 
-        expect(markup).toContain('Toggle sidebar');
-        expect(markup).toContain('Create item');
+        expect(markup).toContain('Close sidebar');
+        expect(markup).not.toContain('Create item');
         expect(markup).not.toContain('editor-traffic-light');
         expect(leftSidebarSource).toContain('variant="toolbar"');
         expect(editorIconButtonSource).toContain('editor-icon-button--toolbar');
         expect(editorIconButtonSource).toContain('rounded-[8px]');
-        expect(editorIconButtonSource).toContain('border-[#e5e7eb]');
-        expect(editorIconButtonSource).toContain('bg-[#f7f8fa]');
+        expect(editorIconButtonSource).toContain('border-transparent');
+        expect(editorIconButtonSource).toContain('bg-transparent');
+        expect(editorIconButtonSource).toContain('hover:border-[#e5e7eb]');
+        expect(editorIconButtonSource).toContain('hover:bg-[#f7f8fa]');
         expect(editorIconButtonSource).toContain(
-            'shadow-[0_1px_4px_#1118270d]'
+            'hover:shadow-[0_1px_4px_#1118270d]'
         );
     });
 
@@ -76,6 +78,9 @@ describe('MiaomaEditorScreen', () => {
 
         expect(styles).toContain('--editor-system-traffic-light-space: 72px;');
         expect(leftSidebarSource).toContain(
+            '[padding-left:calc(var(--editor-system-traffic-light-space)+20px)]'
+        );
+        expect(rendererSource('components/editor/MiaomaEditor.tsx')).toContain(
             '[padding-left:calc(var(--editor-system-traffic-light-space)+20px)]'
         );
     });

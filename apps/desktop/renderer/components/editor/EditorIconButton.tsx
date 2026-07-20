@@ -33,7 +33,7 @@ export const EditorIconButton = ({
                 active &&
                 'editor-icon-button--active h-8 border border-[#eaebed] bg-[#f6f6f6] shadow-[0_1px_6px_#00000012]',
             variant === 'toolbar' &&
-                'editor-icon-button--toolbar h-[30px] w-[30px] rounded-[8px] border border-[#e5e7eb] bg-[#f7f8fa] text-[#1a1a1a] shadow-[0_1px_4px_#1118270d]',
+                'editor-icon-button--toolbar h-[30px] w-[30px] rounded-[8px] border border-transparent bg-transparent text-[#1a1a1a] hover:border-[#e5e7eb] hover:bg-[#f7f8fa] hover:shadow-[0_1px_4px_#1118270d]',
             compact && 'editor-icon-button--compact h-4',
             disabled && 'opacity-60'
         )}
