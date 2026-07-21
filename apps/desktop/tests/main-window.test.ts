@@ -16,6 +16,17 @@ const preloadFile = fileURLToPath(
 );
 
 describe('desktop windows', () => {
+    it('keeps the macOS MCP process out of the Dock', () => {
+        const source = readFileSync(mainProcessFile, 'utf8');
+
+        expect(source).toContain(
+            "isMcpStdioMode && process.platform === 'darwin'"
+        );
+        expect(source).toContain('app.disableHardwareAcceleration()');
+        expect(source).toContain("app.setActivationPolicy('accessory')");
+        expect(source).toContain('app.dock.hide()');
+    });
+
     it('creates a Dashboard window as the default app surface', () => {
         const source = readFileSync(mainProcessFile, 'utf8');
 

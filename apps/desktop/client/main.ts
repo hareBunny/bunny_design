@@ -45,6 +45,12 @@ import { getMiaomaCodexExecutable } from './codexExecutable';
 
 const isMcpStdioMode = process.argv.includes('--mcp-stdio');
 
+if (isMcpStdioMode && process.platform === 'darwin') {
+    app.disableHardwareAcceleration();
+    app.setActivationPolicy('accessory');
+    app.dock.hide();
+}
+
 const startMcpStdioCommand = async () => {
     const endpoint = getMiaomaMcpBridgeEndpoint({
         platform: process.platform,
