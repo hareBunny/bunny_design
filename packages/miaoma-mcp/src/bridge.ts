@@ -238,7 +238,7 @@ export type MiaomaMcpBridgeServer = {
 export const createMiaomaMcpBridgeServer = async ({
     endpoint,
     handleRequest,
-    removeStaleEndpoint = true
+    removeStaleEndpoint
 }: {
     endpoint: string;
     handleRequest: (
@@ -246,7 +246,10 @@ export const createMiaomaMcpBridgeServer = async ({
     ) => Promise<MiaomaMcpAppResult>;
     removeStaleEndpoint?: boolean;
 }): Promise<MiaomaMcpBridgeServer> => {
-    if (removeStaleEndpoint) {
+    const shouldRemoveStaleEndpoint =
+        removeStaleEndpoint ?? !endpoint.startsWith('\\\\.\\pipe\\');
+
+    if (shouldRemoveStaleEndpoint) {
         await rm(endpoint, { force: true });
     }
 
@@ -330,7 +333,7 @@ export const createMiaomaMcpBridgeServer = async ({
                     }
 
                     void (
-                        removeStaleEndpoint
+                        shouldRemoveStaleEndpoint
                             ? rm(endpoint, { force: true })
                             : Promise.resolve()
                     ).then(() => resolve(), reject);

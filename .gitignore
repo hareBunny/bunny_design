@@ -48,6 +48,8 @@ coverage
 .vite/
 out/
 dist/
+packages/miaoma-mcp/bin/*.exe
+packages/miaoma-mcp/sidecar-dist/
 
 /temp
 /tmp

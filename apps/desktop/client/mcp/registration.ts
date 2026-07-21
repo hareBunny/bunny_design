@@ -61,28 +61,39 @@ export const runMiaomaMcpCommand: MiaomaMcpCommandRunner = ({
 
 export const buildMiaomaMcpStdioRegistration = ({
     appPath,
+    bridgeEndpoint,
     executablePath,
     isPackaged,
-    platform
+    platform,
+    sidecarPath
 }: {
     appPath: string;
+    bridgeEndpoint?: string | null;
     executablePath: string;
     isPackaged: boolean;
     platform: NodeJS.Platform;
+    sidecarPath?: string | null;
 }): MiaomaMcpStdioRegistration | null => {
-    if (platform !== 'darwin') {
-        return null;
+    if (platform === 'darwin') {
+        return {
+            command: executablePath,
+            args: [
+                ...(isPackaged ? [] : [appPath]),
+                '--mcp-stdio',
+                '--app',
+                'desktop'
+            ]
+        };
     }
 
-    return {
-        command: executablePath,
-        args: [
-            ...(isPackaged ? [] : [appPath]),
-            '--mcp-stdio',
-            '--app',
-            'desktop'
-        ]
-    };
+    if (platform === 'win32' && sidecarPath && bridgeEndpoint) {
+        return {
+            command: sidecarPath,
+            args: ['--app', 'desktop', '--bridge-endpoint', bridgeEndpoint]
+        };
+    }
+
+    return null;
 };
 
 const parseMcpList = (stdout: string): CodexMcpListEntry[] => {

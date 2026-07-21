@@ -21,7 +21,8 @@ const config: ForgeConfig = {
             path.resolve(
                 __dirname,
                 '../../packages/miaoma-design-generation/schemas'
-            )
+            ),
+            path.resolve(__dirname, '../../packages/miaoma-mcp/bin')
         ]
     },
     rebuildConfig: {},

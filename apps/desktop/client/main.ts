@@ -35,6 +35,7 @@ import {
     createMiaomaDesktopMcpRuntime,
     startMiaomaMcpStdioMode
 } from './mcp/runtime';
+import { getMiaomaMcpSidecarPath } from './mcp/sidecarPath';
 import {
     getProjectImportDialogOptions,
     readProjectImportDocument
@@ -43,6 +44,35 @@ import { createProjectStore, type ProjectStore } from './projects/projectStore';
 import { getMiaomaCodexExecutable } from './codexExecutable';
 
 const isMcpStdioMode = process.argv.includes('--mcp-stdio');
+
+const startMcpStdioCommand = async () => {
+    const endpoint = getMiaomaMcpBridgeEndpoint({
+        platform: process.platform,
+        userDataPath: app.getPath('userData')
+    });
+
+    if (!endpoint) {
+        process.stderr.write(
+            `Miaoma MCP is not available on ${process.platform}.\n`
+        );
+        app.exit(1);
+        return;
+    }
+
+    try {
+        await startMiaomaMcpStdioMode({ endpoint });
+        process.stdin.once('end', () => app.quit());
+    } catch (error) {
+        process.stderr.write(
+            `${error instanceof Error ? error.message : 'Unable to start Miaoma MCP.'}\n`
+        );
+        app.exit(1);
+    }
+};
+
+if (isMcpStdioMode) {
+    void startMcpStdioCommand();
+}
 
 if (started && !isMcpStdioMode) {
     app.quit();
@@ -439,31 +469,14 @@ const registerGenerationIpcHandlers = (
 };
 
 app.whenReady().then(async () => {
+    if (isMcpStdioMode) {
+        return;
+    }
+
     const mcpEndpoint = getMiaomaMcpBridgeEndpoint({
         platform: process.platform,
         userDataPath: app.getPath('userData')
     });
-
-    if (isMcpStdioMode) {
-        if (!mcpEndpoint) {
-            process.stderr.write(
-                `Miaoma MCP is not available on ${process.platform}.\n`
-            );
-            app.exit(1);
-            return;
-        }
-
-        try {
-            await startMiaomaMcpStdioMode({ endpoint: mcpEndpoint });
-            process.stdin.once('end', () => app.quit());
-        } catch (error) {
-            process.stderr.write(
-                `${error instanceof Error ? error.message : 'Unable to start Miaoma MCP.'}\n`
-            );
-            app.exit(1);
-        }
-        return;
-    }
 
     const { createMiaomaDesktopGenerationRuntime } = await import(
         './generation/generationRuntime'
@@ -516,9 +529,16 @@ app.whenReady().then(async () => {
         codexExecutable: getMiaomaCodexExecutable(),
         registration: buildMiaomaMcpStdioRegistration({
             appPath: app.getAppPath(),
+            bridgeEndpoint: mcpEndpoint,
             executablePath: process.execPath,
             isPackaged: app.isPackaged,
-            platform: process.platform
+            platform: process.platform,
+            sidecarPath: getMiaomaMcpSidecarPath({
+                appPath: app.getAppPath(),
+                isPackaged: app.isPackaged,
+                platform: process.platform,
+                resourcesPath: process.resourcesPath
+            })
         })
     }).catch((error) => {
         process.stderr.write(

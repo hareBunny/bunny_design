@@ -7,18 +7,65 @@
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-export const getMiaomaCodexExecutable = () => {
-    const configured = process.env.MIAOMA_CODEX_EXECUTABLE;
+type MiaomaCodexEnvironment = {
+    CODEX_CLI_PATH?: string;
+    LOCALAPPDATA?: string;
+    MIAOMA_CODEX_EXECUTABLE?: string;
+};
+
+export const resolveMiaomaCodexExecutable = ({
+    environment,
+    fileExists = existsSync,
+    platform,
+    resourcesPath
+}: {
+    environment: MiaomaCodexEnvironment;
+    fileExists?: (filePath: string) => boolean;
+    platform: NodeJS.Platform;
+    resourcesPath: string;
+}) => {
+    const pathApi = platform === 'win32' ? path.win32 : path;
+    const configured =
+        environment.MIAOMA_CODEX_EXECUTABLE ?? environment.CODEX_CLI_PATH;
+    const executableName = platform === 'win32' ? 'codex.exe' : 'codex';
+    const windowsCandidates =
+        platform === 'win32' && environment.LOCALAPPDATA
+            ? [
+                  pathApi.join(
+                      environment.LOCALAPPDATA,
+                      'Programs',
+                      'ChatGPT',
+                      'resources',
+                      'codex.exe'
+                  ),
+                  pathApi.join(
+                      environment.LOCALAPPDATA,
+                      'Microsoft',
+                      'WindowsApps',
+                      'codex.exe'
+                  )
+              ]
+            : [];
     const candidates = [
         configured,
-        path.join(process.resourcesPath, 'codex'),
-        '/Applications/ChatGPT.app/Contents/Resources/codex',
-        'codex'
+        pathApi.join(resourcesPath, executableName),
+        ...(platform === 'darwin'
+            ? ['/Applications/ChatGPT.app/Contents/Resources/codex']
+            : windowsCandidates),
+        executableName
     ].filter((candidate): candidate is string => Boolean(candidate));
 
     return (
         candidates.find(
-            (candidate) => candidate === 'codex' || existsSync(candidate)
-        ) ?? 'codex'
+            (candidate) =>
+                !pathApi.isAbsolute(candidate) || fileExists(candidate)
+        ) ?? executableName
     );
 };
+
+export const getMiaomaCodexExecutable = () =>
+    resolveMiaomaCodexExecutable({
+        environment: process.env,
+        platform: process.platform,
+        resourcesPath: process.resourcesPath
+    });

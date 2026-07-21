@@ -7,9 +7,10 @@
     "main": ".vite/build/main.js",
     "scripts": {
         "start": "electron-forge start",
+        "prestart": "pnpm --filter @miaoma-design-ai/miaoma-mcp run build:sidecar:host",
         "package": "pnpm run package:mac && pnpm run package:win",
         "package:mac": "electron-forge package --platform darwin",
-        "package:win": "electron-forge package --platform win32 --arch x64",
+        "package:win": "pnpm --filter @miaoma-design-ai/miaoma-mcp run build:sidecar:win && electron-forge package --platform win32 --arch x64",
         "make": "pnpm run make:mac && pnpm run make:win",
         "make:mac": "electron-forge make --platform darwin",
         "make:win": "electron-forge make --platform win32 --arch x64",

@@ -13,7 +13,7 @@ import {
 } from '../client/mcp/registration';
 
 describe('Miaoma MCP registration', () => {
-    it('builds development and packaged macOS commands from runtime paths', () => {
+    it('builds development and packaged commands from platform runtime paths', () => {
         expect(
             buildMiaomaMcpStdioRegistration({
                 appPath: '/workspace/apps/desktop',
@@ -37,6 +37,57 @@ describe('Miaoma MCP registration', () => {
             command: '/Applications/Miaoma.app/Contents/MacOS/Miaoma',
             args: ['--mcp-stdio', '--app', 'desktop']
         });
+        expect(
+            buildMiaomaMcpStdioRegistration({
+                appPath: 'C:\\workspace\\apps\\desktop',
+                bridgeEndpoint:
+                    '\\\\.\\pipe\\miaomadesign-mcp-0123456789abcdef',
+                executablePath:
+                    'C:\\workspace\\node_modules\\electron\\dist\\electron.exe',
+                isPackaged: false,
+                platform: 'win32',
+                sidecarPath:
+                    'C:\\workspace\\packages\\miaoma-mcp\\bin\\miaoma-mcp-win32-x64.exe'
+            })
+        ).toEqual({
+            command:
+                'C:\\workspace\\packages\\miaoma-mcp\\bin\\miaoma-mcp-win32-x64.exe',
+            args: [
+                '--app',
+                'desktop',
+                '--bridge-endpoint',
+                '\\\\.\\pipe\\miaomadesign-mcp-0123456789abcdef'
+            ]
+        });
+        expect(
+            buildMiaomaMcpStdioRegistration({
+                appPath: 'C:\\Program Files\\Miaoma\\resources\\app',
+                bridgeEndpoint:
+                    '\\\\.\\pipe\\miaomadesign-mcp-0123456789abcdef',
+                executablePath: 'C:\\Program Files\\Miaoma\\Miaoma.exe',
+                isPackaged: true,
+                platform: 'win32',
+                sidecarPath:
+                    'C:\\Program Files\\Miaoma\\resources\\bin\\miaoma-mcp-win32-x64.exe'
+            })
+        ).toEqual({
+            command:
+                'C:\\Program Files\\Miaoma\\resources\\bin\\miaoma-mcp-win32-x64.exe',
+            args: [
+                '--app',
+                'desktop',
+                '--bridge-endpoint',
+                '\\\\.\\pipe\\miaomadesign-mcp-0123456789abcdef'
+            ]
+        });
+        expect(
+            buildMiaomaMcpStdioRegistration({
+                appPath: '/workspace/apps/desktop',
+                executablePath: '/workspace/electron',
+                isPackaged: false,
+                platform: 'linux'
+            })
+        ).toBeNull();
     });
 
     it('leaves an exact registration unchanged', async () => {
