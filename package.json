@@ -38,6 +38,7 @@
         "@eslint/js": "9.38.0",
         "commitizen": "4.3.1",
         "commitlint": "20.1.0",
+        "cspell": "10.0.1",
         "cz-git": "1.12.0",
         "eslint": "9.38.0",
         "eslint-plugin-prettier": "5.5.4",
@@ -47,6 +48,6 @@
         "prettier": "3.6.2",
         "typescript": "5.9.3",
         "typescript-eslint": "8.46.2",
-        "cspell": "10.0.1"
+        "unrun": "^0.3.1"
     }
 }

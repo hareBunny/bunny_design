@@ -22,6 +22,7 @@ export type MiaomaDesignGenerationStartInput = {
     agentSessions?: MiaomaAgentSession[];
     workingDirectory?: string;
     maxRepairAttempts?: number;
+    referenceImagePath?: string;
     model?: string;
     sandbox?: MiaomaCodexSandbox;
     onDocumentUpdated?: (

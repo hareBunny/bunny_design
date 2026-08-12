@@ -56,25 +56,42 @@ describe('Miaoma MCP Windows support', () => {
         ).toBe('codex.exe');
     });
 
-    it('resolves development and packaged sidecar paths', () => {
+    it('resolves the bundled OpenAI Codex executable before PATH fallback', () => {
+        const bundledCodex =
+            'C:\\Users\\Alice\\AppData\\Local\\OpenAI\\Codex\\bin\\a7c12ebff69fb123\\codex.exe';
+
         expect(
+            resolveMiaomaCodexExecutable({
+                environment: {
+                    LOCALAPPDATA: 'C:\\Users\\Alice\\AppData\\Local'
+                },
+                fileExists: (candidate) => candidate === bundledCodex,
+                platform: 'win32',
+                readDirectory: () => ['34ab3e1324cc55b5', 'a7c12ebff69fb123'],
+                resourcesPath: 'C:\\Program Files\\Miaoma\\resources'
+            })
+        ).toBe(bundledCodex);
+    });
+
+    it('resolves development and packaged sidecar paths', async () => {
+        await expect(
             getMiaomaMcpSidecarPath({
                 appPath: 'C:\\workspace\\apps\\desktop',
                 isPackaged: false,
                 platform: 'win32',
                 resourcesPath: 'C:\\workspace\\apps\\desktop\\resources'
             })
-        ).toBe(
+        ).resolves.toBe(
             'C:\\workspace\\packages\\miaoma-mcp\\bin\\miaoma-mcp-win32-x64.exe'
         );
-        expect(
+        await expect(
             getMiaomaMcpSidecarPath({
                 appPath: 'C:\\Program Files\\Miaoma\\resources\\app',
                 isPackaged: true,
                 platform: 'win32',
                 resourcesPath: 'C:\\Program Files\\Miaoma\\resources'
             })
-        ).toBe(
+        ).resolves.toBe(
             'C:\\Program Files\\Miaoma\\resources\\bin\\miaoma-mcp-win32-x64.exe'
         );
     });

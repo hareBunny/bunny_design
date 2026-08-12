@@ -133,7 +133,7 @@ const LeftSidebarContent = ({
 
             <section
                 aria-label="Sidebar surface"
-                className="editor-sidebar-surface grid h-[calc(100%-var(--editor-header-height))] min-h-0 w-[var(--editor-sidebar-width)] grid-rows-[30px_minmax(0,1fr)] overflow-hidden rounded-3xl"
+                className="editor-sidebar-surface grid h-[calc(100%-var(--editor-header-height))] min-h-0 w-[var(--editor-sidebar-width)] grid-rows-[30px_minmax(0,1fr)] overflow-hidden rounded-3xl bg-[#f6f6f6]"
             >
                 <SidebarTabs activeTab={activeTab} onSelectTab={onSelectTab} />
                 <SidebarContent

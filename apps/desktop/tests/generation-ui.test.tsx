@@ -187,6 +187,14 @@ describe('editor generation UI', () => {
             projects: createProjectsApi(),
             generation: {
                 start,
+                selectReferenceImage: vi.fn(async () => ({
+                    success: false as const,
+                    canceled: true as const
+                })),
+                saveReferenceImage: vi.fn(async () => ({
+                    success: false as const,
+                    canceled: true as const
+                })),
                 cancel: vi.fn(async (runId: string) => {
                     void runId;
                     return { success: true as const };
@@ -361,6 +369,14 @@ describe('editor generation UI', () => {
             projects: createProjectsApi(),
             generation: {
                 start: vi.fn(),
+                selectReferenceImage: vi.fn(async () => ({
+                    success: false as const,
+                    canceled: true as const
+                })),
+                saveReferenceImage: vi.fn(async () => ({
+                    success: false as const,
+                    canceled: true as const
+                })),
                 cancel: vi.fn(),
                 getLatestRun,
                 subscribe: vi.fn(() => () => undefined)

@@ -8,6 +8,8 @@ import type {
     MiaomaGenerationCancelResult,
     MiaomaGenerationEvent,
     MiaomaGenerationLatestRunResult,
+    MiaomaGenerationReferenceImageInput,
+    MiaomaGenerationReferenceImageResult,
     MiaomaGenerationStartInput,
     MiaomaGenerationStartResult
 } from './shared/generation';
@@ -58,6 +60,11 @@ declare global {
                 start: (
                     input: MiaomaGenerationStartInput
                 ) => Promise<MiaomaGenerationStartResult>;
+                selectReferenceImage: () =>
+                    Promise<MiaomaGenerationReferenceImageResult>;
+                saveReferenceImage: (
+                    input: MiaomaGenerationReferenceImageInput
+                ) => Promise<MiaomaGenerationReferenceImageResult>;
                 cancel: (
                     runId: string
                 ) => Promise<MiaomaGenerationCancelResult>;

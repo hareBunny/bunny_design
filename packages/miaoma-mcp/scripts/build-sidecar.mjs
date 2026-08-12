@@ -16,7 +16,8 @@ import { build } from 'esbuild';
 const execute = promisify(execFile);
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageDirectory = path.resolve(scriptDirectory, '..');
-const target = process.argv.includes('--host')
+const isHostBuild = process.argv.includes('--host');
+const target = isHostBuild
     ? process.platform === 'win32'
         ? 'win32-x64'
         : null
@@ -29,7 +30,10 @@ if (target !== 'win32-x64') {
 const intermediateDirectory = path.join(packageDirectory, 'sidecar-dist');
 const outputDirectory = path.join(packageDirectory, 'bin');
 const bundlePath = path.join(intermediateDirectory, 'miaoma-mcp.cjs');
-const executablePath = path.join(outputDirectory, 'miaoma-mcp-win32-x64.exe');
+const executableName = isHostBuild
+    ? `miaoma-mcp-win32-x64-${Date.now()}.exe`
+    : 'miaoma-mcp-win32-x64.exe';
+const executablePath = path.join(outputDirectory, executableName);
 
 await Promise.all([
     mkdir(intermediateDirectory, { recursive: true }),

@@ -4,7 +4,7 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 
 type MiaomaCodexEnvironment = {
@@ -13,15 +13,44 @@ type MiaomaCodexEnvironment = {
     MIAOMA_CODEX_EXECUTABLE?: string;
 };
 
+const getOpenAiCodexCandidates = ({
+    localAppData,
+    pathApi,
+    readDirectory
+}: {
+    localAppData?: string;
+    pathApi: typeof path;
+    readDirectory: (directory: string) => string[];
+}) => {
+    if (!localAppData) {
+        return [];
+    }
+
+    const binDirectory = pathApi.join(localAppData, 'OpenAI', 'Codex', 'bin');
+
+    try {
+        return readDirectory(binDirectory)
+            .sort()
+            .reverse()
+            .map((versionDirectory) =>
+                pathApi.join(binDirectory, versionDirectory, 'codex.exe')
+            );
+    } catch {
+        return [];
+    }
+};
+
 export const resolveMiaomaCodexExecutable = ({
     environment,
     fileExists = existsSync,
     platform,
+    readDirectory = readdirSync,
     resourcesPath
 }: {
     environment: MiaomaCodexEnvironment;
     fileExists?: (filePath: string) => boolean;
     platform: NodeJS.Platform;
+    readDirectory?: (directory: string) => string[];
     resourcesPath: string;
 }) => {
     const pathApi = platform === 'win32' ? path.win32 : path;
@@ -31,6 +60,11 @@ export const resolveMiaomaCodexExecutable = ({
     const windowsCandidates =
         platform === 'win32' && environment.LOCALAPPDATA
             ? [
+                  ...getOpenAiCodexCandidates({
+                      localAppData: environment.LOCALAPPDATA,
+                      pathApi,
+                      readDirectory
+                  }),
                   pathApi.join(
                       environment.LOCALAPPDATA,
                       'Programs',

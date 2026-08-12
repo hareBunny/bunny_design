@@ -594,6 +594,8 @@ export const SidebarAgentPanel = ({ generation }: SidebarAgentPanelProps) => {
                 <PromptDock
                     isRunning={generation?.isRunning}
                     onCancel={generation?.cancel}
+                    onReferenceImagePaste={generation?.saveReferenceImage}
+                    onReferenceImageSelect={generation?.selectReferenceImage}
                     onSubmit={generation?.start}
                     onValueChange={setPromptDraft}
                     value={promptDraft}

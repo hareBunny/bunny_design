@@ -9,6 +9,8 @@ import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
 import {
     MIAOMA_GENERATION_IPC_CHANNELS,
     type MiaomaGenerationEvent,
+    type MiaomaGenerationReferenceImageInput,
+    type MiaomaGenerationReferenceImageResult,
     type MiaomaGenerationStartInput
 } from '../shared/generation';
 import {
@@ -48,6 +50,17 @@ contextBridge.exposeInMainWorld('miaomaAPI', {
     generation: {
         start: (input: MiaomaGenerationStartInput) =>
             ipcRenderer.invoke(MIAOMA_GENERATION_IPC_CHANNELS.start, input),
+        selectReferenceImage: (): Promise<MiaomaGenerationReferenceImageResult> =>
+            ipcRenderer.invoke(
+                MIAOMA_GENERATION_IPC_CHANNELS.selectReferenceImage
+            ),
+        saveReferenceImage: (
+            input: MiaomaGenerationReferenceImageInput
+        ): Promise<MiaomaGenerationReferenceImageResult> =>
+            ipcRenderer.invoke(
+                MIAOMA_GENERATION_IPC_CHANNELS.saveReferenceImage,
+                input
+            ),
         cancel: (runId: string) =>
             ipcRenderer.invoke(MIAOMA_GENERATION_IPC_CHANNELS.cancel, runId),
         getLatestRun: (projectId: string) =>

@@ -507,6 +507,7 @@ const executeGeneration = async ({
         response: { format: 'json'; schemaPath: string };
         conversation: { type: 'new' } | { type: 'resume'; threadId: string };
         model?: string;
+        referenceImagePath?: string;
         sandbox: NonNullable<MiaomaDesignGenerationStartInput['sandbox']>;
     }) =>
         codex.execute({
@@ -515,6 +516,9 @@ const executeGeneration = async ({
             sandbox,
             conversation,
             model,
+            images: input.referenceImagePath
+                ? [input.referenceImagePath]
+                : undefined,
             response,
             signal,
             onEvent: (event) =>

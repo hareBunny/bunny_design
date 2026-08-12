@@ -5,6 +5,8 @@
   */
 
 import { app, BrowserWindow, dialog, ipcMain, nativeTheme } from 'electron';
+import { readFile, stat, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
 import started from 'electron-squirrel-startup';
 import path from 'node:path';
 
@@ -458,9 +460,118 @@ const registerProjectIpcHandlers = (projectStore: ProjectStore) => {
     );
 };
 
+const REFERENCE_IMAGE_MIME_TYPES = {
+    png: 'image/png',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    webp: 'image/webp'
+} as const;
+
+const getReferenceImageExtension = (imagePath: string) => {
+    const extension = path.extname(imagePath).slice(1).toLowerCase();
+
+    return extension in REFERENCE_IMAGE_MIME_TYPES
+        ? (extension as keyof typeof REFERENCE_IMAGE_MIME_TYPES)
+        : null;
+};
+
+const createReferenceImage = async (imagePath: string) => {
+    const extension = getReferenceImageExtension(imagePath);
+    if (!extension) {
+        throw new Error('Unsupported image type.');
+    }
+
+    const bytes = await readFile(imagePath);
+
+    return {
+        path: imagePath,
+        previewUrl: `data:${REFERENCE_IMAGE_MIME_TYPES[extension]};base64,${bytes.toString('base64')}`
+    };
+};
+
 const registerGenerationIpcHandlers = (
     generation: ReturnType<typeof createMiaomaDesktopGenerationRuntime>
 ) => {
+    ipcMain.handle(
+        MIAOMA_GENERATION_IPC_CHANNELS.selectReferenceImage,
+        async (event) => {
+            const parentWindow = BrowserWindow.fromWebContents(event.sender);
+            const result = parentWindow
+                ? await dialog.showOpenDialog(parentWindow, {
+                      properties: ['openFile'],
+                      filters: [
+                          {
+                              name: 'Images',
+                              extensions: ['png', 'jpg', 'jpeg', 'webp']
+                          }
+                      ]
+                  })
+                : await dialog.showOpenDialog({
+                      properties: ['openFile'],
+                      filters: [
+                          {
+                              name: 'Images',
+                              extensions: ['png', 'jpg', 'jpeg', 'webp']
+                          }
+                      ]
+                  });
+            const imagePath = result.filePaths[0];
+
+            if (result.canceled || !imagePath) {
+                return { success: false, canceled: true };
+            }
+
+            try {
+                const metadata = await stat(imagePath);
+                if (!metadata.isFile() || metadata.size > 10 * 1024 * 1024) {
+                    return {
+                        success: false,
+                        error: 'Image must be a file no larger than 10 MB.'
+                    };
+                }
+
+                return {
+                    success: true,
+                    image: await createReferenceImage(imagePath)
+                };
+            } catch {
+                return { success: false, error: 'Unable to read the image.' };
+            }
+        }
+    );
+    ipcMain.handle(
+        MIAOMA_GENERATION_IPC_CHANNELS.saveReferenceImage,
+        async (_event, input) => {
+            const extension = input?.extension;
+            const bytes = input?.bytes;
+            if (
+                !['png', 'jpg', 'jpeg', 'webp'].includes(extension) ||
+                !(bytes instanceof Uint8Array) ||
+                bytes.byteLength === 0 ||
+                bytes.byteLength > 10 * 1024 * 1024
+            ) {
+                return {
+                    success: false,
+                    error: 'Image must be PNG, JPEG, or WebP and no larger than 10 MB.'
+                };
+            }
+
+            try {
+                const imagePath = path.join(
+                    app.getPath('temp'),
+                    `miaoma-reference-${randomUUID()}.${extension}`
+                );
+                await writeFile(imagePath, bytes);
+
+                return {
+                    success: true,
+                    image: await createReferenceImage(imagePath)
+                };
+            } catch {
+                return { success: false, error: 'Unable to save the image.' };
+            }
+        }
+    );
     ipcMain.handle(MIAOMA_GENERATION_IPC_CHANNELS.start, async (event, input) =>
         generation.start(event.sender, input)
     );
@@ -531,21 +642,23 @@ app.whenReady().then(async () => {
         }
     }
 
-    void synchronizeMiaomaMcpRegistration({
-        codexExecutable: getMiaomaCodexExecutable(),
-        registration: buildMiaomaMcpStdioRegistration({
+    const mcpRegistration = buildMiaomaMcpStdioRegistration({
+        appPath: app.getAppPath(),
+        bridgeEndpoint: mcpEndpoint,
+        executablePath: process.execPath,
+        isPackaged: app.isPackaged,
+        platform: process.platform,
+        sidecarPath: await getMiaomaMcpSidecarPath({
             appPath: app.getAppPath(),
-            bridgeEndpoint: mcpEndpoint,
-            executablePath: process.execPath,
             isPackaged: app.isPackaged,
             platform: process.platform,
-            sidecarPath: getMiaomaMcpSidecarPath({
-                appPath: app.getAppPath(),
-                isPackaged: app.isPackaged,
-                platform: process.platform,
-                resourcesPath: process.resourcesPath
-            })
+            resourcesPath: process.resourcesPath
         })
+    });
+
+    void synchronizeMiaomaMcpRegistration({
+        codexExecutable: getMiaomaCodexExecutable(),
+        registration: mcpRegistration
     }).catch((error) => {
         process.stderr.write(
             `Unable to register Miaoma MCP with Codex: ${error instanceof Error ? error.message : 'Unknown error.'}\n`

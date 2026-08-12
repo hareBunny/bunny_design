@@ -10,9 +10,11 @@ import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 
+
 export default defineConfig({
     plugins: [react(), tailwindcss()],
     resolve: {
+        dedupe: ['react', 'react-dom', 'react-router-dom'],
         alias: {
             '@miaoma-design-ai/miaoma-canvas-ruler': path.resolve(
                 __dirname,

@@ -4,8 +4,10 @@
 - 妙码学院官方出品，作者 @Heyi，项目实战源码，供学员学习使用，可用作练习，可用作美化简历，不可开源。
   */
 
-import { ArrowUp, Square } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { ArrowUp, ImagePlus, Square, X } from 'lucide-react';
+import { useEffect, useRef, useState, type ClipboardEvent } from 'react';
+
+import type { MiaomaGenerationReferenceImage } from '../../../shared/generation';
 
 import { classNames } from '../../utils/classNames';
 
@@ -27,8 +29,19 @@ type PromptDockProps = {
     variant: PromptDockVariant;
     isRunning?: boolean;
     onCancel?: () => Promise<void> | void;
+    onReferenceImageSelect?: () =>
+        | Promise<MiaomaGenerationReferenceImage | null>
+        | MiaomaGenerationReferenceImage
+        | null;
+    onReferenceImagePaste?: (input: {
+        bytes: Uint8Array;
+        extension: 'png' | 'jpg' | 'jpeg' | 'webp';
+    }) => Promise<MiaomaGenerationReferenceImage | null>;
     onValueChange?: (value: string) => void;
-    onSubmit?: (prompt: string) => Promise<void> | void;
+    onSubmit?: (
+        prompt: string,
+        referenceImagePath?: string
+    ) => Promise<void> | void;
     value?: string;
 };
 
@@ -101,6 +114,8 @@ const PromptChevronIcon = () => (
 export const PromptDock = ({
     isRunning = false,
     onCancel,
+    onReferenceImageSelect,
+    onReferenceImagePaste,
     onValueChange,
     onSubmit,
     value,
@@ -108,6 +123,8 @@ export const PromptDock = ({
 }: PromptDockProps) => {
     const config = PROMPT_DOCK_CONFIG[variant];
     const [internalPromptValue, setInternalPromptValue] = useState('');
+    const [referenceImage, setReferenceImage] =
+        useState<MiaomaGenerationReferenceImage | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const promptValue = value ?? internalPromptValue;
     const updatePromptValue = (nextValue: string) => {
@@ -146,6 +163,33 @@ export const PromptDock = ({
                 : 'hidden';
     }, [promptValue, variant]);
 
+    const attachPastedImage = (event: ClipboardEvent<HTMLTextAreaElement>) => {
+        const imageFile = [...event.clipboardData.files].find((file) =>
+            ['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
+        );
+        if (!imageFile || !onReferenceImagePaste) {
+            return;
+        }
+
+        const extension =
+            imageFile.type === 'image/png'
+                ? 'png'
+                : imageFile.type === 'image/webp'
+                  ? 'webp'
+                  : 'jpg';
+        event.preventDefault();
+        void imageFile.arrayBuffer().then((buffer) =>
+            onReferenceImagePaste({
+                bytes: new Uint8Array(buffer),
+                extension
+            }).then((image) => {
+                if (image) {
+                    setReferenceImage(image);
+                }
+            })
+        );
+    };
+
     const submitPrompt = () => {
         const normalizedPrompt = promptValue.trim();
         if (!normalizedPrompt || !onSubmit) {
@@ -153,6 +197,12 @@ export const PromptDock = ({
         }
 
         updatePromptValue('');
+        const imagePath = referenceImage?.path;
+        setReferenceImage(null);
+        if (imagePath) {
+            void onSubmit(normalizedPrompt, imagePath);
+            return;
+        }
         void onSubmit(normalizedPrompt);
     };
 
@@ -166,12 +216,30 @@ export const PromptDock = ({
                     : undefined
             }
         >
+            {variant === 'agent' && referenceImage ? (
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md border border-[#ececee] bg-[#f6f6f6]">
+                    <img
+                        alt="待转换的 UI 截图"
+                        className="h-full w-full object-cover"
+                        src={referenceImage.previewUrl}
+                    />
+                    <button
+                        aria-label="移除截图"
+                        className="absolute right-0.5 top-0.5 grid h-4 w-4 place-items-center rounded-full border-0 bg-[#202328cc] p-0 text-white"
+                        onClick={() => setReferenceImage(null)}
+                        type="button"
+                    >
+                        <X aria-hidden="true" size={10} />
+                    </button>
+                </div>
+            ) : null}
             <textarea
                 aria-label={config.inputAriaLabel}
                 className={config.inputClassName}
                 onChange={(event) => {
                     updatePromptValue(event.target.value);
                 }}
+                onPaste={attachPastedImage}
                 onKeyDown={(event) => {
                     if (
                         event.key !== 'Enter' ||
@@ -192,7 +260,41 @@ export const PromptDock = ({
                 value={promptValue}
             />
             <footer className={config.footerClassName}>
-                <span className={config.boostClassName}>⚡ 6x</span>
+                <div className="flex min-w-0 items-center gap-2">
+                    <span className={config.boostClassName}>⚡ 6x</span>
+                    {variant === 'agent' && onReferenceImageSelect ? (
+                        <button
+                            aria-label="截图转 UI 图"
+                            className="flex h-6 min-w-0 cursor-default items-center gap-1 rounded-md border-0 bg-transparent px-1 text-[12px] text-[#5e5f67] hover:bg-[#f3f4f6]"
+                            onClick={() => {
+                                void Promise.resolve(onReferenceImageSelect()).then(
+                                    (image) => {
+                                        if (image) {
+                                            setReferenceImage(image);
+                                        }
+                                    }
+                                );
+                            }}
+                            type="button"
+                        >
+                            <ImagePlus aria-hidden="true" size={14} />
+                            <span className="truncate">
+                                {referenceImage ? '已添加截图' : '截图转 UI'}
+                            </span>
+                            {referenceImage ? (
+                                <X
+                                    aria-label="移除截图"
+                                    className="shrink-0"
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        setReferenceImage(null);
+                                    }}
+                                    size={12}
+                                />
+                            ) : null}
+                        </button>
+                    ) : null}
+                </div>
                 <div className="flex items-center gap-2">
                     <button className={config.modelClassName} type="button">
                         GPT 5.5

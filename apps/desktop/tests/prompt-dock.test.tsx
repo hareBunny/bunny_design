@@ -52,6 +52,69 @@ describe('agent prompt dock', () => {
         expect(onSubmit).toHaveBeenCalledWith('Create a dashboard');
     });
 
+    it('attaches a selected screenshot to the next agent prompt', async () => {
+        const onReferenceImageSelect = vi.fn().mockResolvedValue({
+            path: 'C:\\temp\\ui.png',
+            previewUrl: 'file:///C:/temp/ui.png'
+        });
+        const onSubmit = vi.fn();
+
+        render(
+            <PromptDock
+                onReferenceImageSelect={onReferenceImageSelect}
+                onSubmit={onSubmit}
+                variant="agent"
+            />
+        );
+        fireEvent.click(
+            screen.getByRole('button', { name: '截图转 UI 图' })
+        );
+        await screen.findByText('已添加截图');
+        expect(
+            screen.getByRole('img', { name: '待转换的 UI 截图' }).getAttribute('src')
+        ).toBe('file:///C:/temp/ui.png');
+        fireEvent.change(screen.getByLabelText('Agent prompt'), {
+            target: { value: '按截图重建界面' }
+        });
+        fireEvent.click(
+            screen.getByRole('button', { name: 'Send agent prompt' })
+        );
+
+        expect(onSubmit).toHaveBeenCalledWith(
+            '按截图重建界面',
+            'C:\\temp\\ui.png'
+        );
+    });
+
+    it('attaches a pasted screenshot and prevents text paste', async () => {
+        const onReferenceImagePaste = vi.fn().mockResolvedValue({
+            path: 'C:\\temp\\pasted.png',
+            previewUrl: 'file:///C:/temp/pasted.png'
+        });
+
+        render(
+            <PromptDock
+                onReferenceImagePaste={onReferenceImagePaste}
+                variant="agent"
+            />
+        );
+        const screenshot = new File(['screenshot'], 'screenshot.png', {
+            type: 'image/png'
+        });
+        const preventDefault = vi.fn();
+
+        fireEvent.paste(screen.getByLabelText('Agent prompt'), {
+            clipboardData: { files: [screenshot] },
+            preventDefault
+        });
+
+        await screen.findByRole('img', { name: '待转换的 UI 截图' });
+        expect(onReferenceImagePaste).toHaveBeenCalledWith({
+            bytes: expect.any(Uint8Array),
+            extension: 'png'
+        });
+    });
+
     it('routes the running state to cancel instead of send', () => {
         const onCancel = vi.fn();
 

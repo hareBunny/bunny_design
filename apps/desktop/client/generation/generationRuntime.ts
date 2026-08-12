@@ -205,6 +205,7 @@ export const createMiaomaDesktopGenerationRuntime = ({
                 document: input.document
             },
             agentSessions: [...sessionByAgent.values()],
+            referenceImagePath: input.referenceImagePath,
             model: input.model,
             sandbox: 'workspace-write',
             workingDirectory,

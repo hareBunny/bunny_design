@@ -12,7 +12,10 @@ import {
     schemaToEditorDocument
 } from '@miaoma-design-ai/miaoma-editor-core';
 
-import type { MiaomaGenerationEvent } from '../../../../shared/generation';
+import type {
+    MiaomaGenerationEvent,
+    MiaomaGenerationReferenceImage
+} from '../../../../shared/generation';
 
 import { useEditorSession } from './useEditorSession';
 
@@ -25,7 +28,11 @@ export type MiaomaGenerationController = {
     error: string | null;
     isRunning: boolean;
     run: MiaomaGenerationRun | null;
-    start(prompt: string): Promise<void>;
+    start(prompt: string, referenceImagePath?: string): Promise<void>;
+    selectReferenceImage(): Promise<MiaomaGenerationReferenceImage | null>;
+    saveReferenceImage(
+        input: { bytes: Uint8Array; extension: 'png' | 'jpg' | 'jpeg' | 'webp' }
+    ): Promise<MiaomaGenerationReferenceImage | null>;
     cancel(): Promise<void>;
 };
 
@@ -125,7 +132,7 @@ export const useMiaomaGeneration = ({
     }, [projectId, session]);
 
     const start = useCallback(
-        async (prompt: string) => {
+        async (prompt: string, referenceImagePath?: string) => {
             const normalizedPrompt = prompt.trim();
             if (!normalizedPrompt) {
                 return;
@@ -154,7 +161,8 @@ export const useMiaomaGeneration = ({
                     prompt: normalizedPrompt,
                     document: editorDocumentToRenderable(
                         session.getSnapshot().document
-                    )
+                    ),
+                    referenceImagePath
                 });
 
                 if (result.success === false) {
@@ -173,6 +181,46 @@ export const useMiaomaGeneration = ({
             }
         },
         [projectId, session]
+    );
+
+    const selectReferenceImage = useCallback(async () => {
+        const generation = window.miaomaAPI?.generation;
+        if (!generation) {
+            setError('Design generation is unavailable in this window.');
+            return null;
+        }
+
+        const result = await generation.selectReferenceImage();
+        if (result.success === true) {
+            setError(null);
+            return result.image;
+        }
+        if (!result.canceled) {
+            setError(result.error ?? 'Unable to select the screenshot.');
+        }
+        return null;
+    }, []);
+
+    const saveReferenceImage = useCallback(
+        async (input: {
+            bytes: Uint8Array;
+            extension: 'png' | 'jpg' | 'jpeg' | 'webp';
+        }) => {
+            const generation = window.miaomaAPI?.generation;
+            if (!generation) {
+                setError('Design generation is unavailable in this window.');
+                return null;
+            }
+
+            const result = await generation.saveReferenceImage(input);
+            if (result.success === true) {
+                setError(null);
+                return result.image;
+            }
+            setError(result.error ?? 'Unable to save the screenshot.');
+            return null;
+        },
+        []
     );
 
     const cancel = useCallback(async () => {
@@ -209,6 +257,8 @@ export const useMiaomaGeneration = ({
         error,
         isRunning,
         run: visibleRun,
+        saveReferenceImage,
+        selectReferenceImage,
         start
     };
 };

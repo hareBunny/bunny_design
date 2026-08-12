@@ -10,6 +10,8 @@ import type { MiaomaDesignDocument } from '@miaoma-design-ai/miaoma-design-schem
 export const MIAOMA_GENERATION_IPC_CHANNELS = {
     start: 'miaoma:generation:start',
     cancel: 'miaoma:generation:cancel',
+    selectReferenceImage: 'miaoma:generation:select-reference-image',
+    saveReferenceImage: 'miaoma:generation:save-reference-image',
     latestRun: 'miaoma:generation:latest-run',
     event: 'miaoma:generation:event'
 } as const;
@@ -18,6 +20,7 @@ export type MiaomaGenerationStartInput = {
     projectId: string;
     prompt: string;
     document: MiaomaDesignDocument;
+    referenceImagePath?: string;
     model?: string;
 };
 
@@ -29,6 +32,27 @@ export type MiaomaGenerationStartResult =
     | {
           success: false;
           error: string;
+      };
+
+export type MiaomaGenerationReferenceImageInput = {
+    bytes: Uint8Array;
+    extension: 'png' | 'jpg' | 'jpeg' | 'webp';
+};
+
+export type MiaomaGenerationReferenceImage = {
+    path: string;
+    previewUrl: string;
+};
+
+export type MiaomaGenerationReferenceImageResult =
+    | {
+          success: true;
+          image: MiaomaGenerationReferenceImage;
+      }
+    | {
+          success: false;
+          canceled?: true;
+          error?: string;
       };
 
 export type MiaomaGenerationCancelResult =
